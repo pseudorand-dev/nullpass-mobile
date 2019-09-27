@@ -1,0 +1,12 @@
+<!--
+  ~ Created by Ilan Rasekh on 2019/9/27
+  ~ Copyright (c) 2019 Pseudorand Development. All rights reserved.
+  -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.pseudorand.nullpass">
+    <!-- Flutter needs it to communicate with the running application
+         to allow setting breakpoints, to provide hot reload, etc.
+    -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+</manifest>
