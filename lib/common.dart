@@ -3,6 +3,10 @@
  * Copyright (c) 2019 Pseudorand Development. All rights reserved.
  */
 
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:nullpass/secret.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 SharedPreferences sharedPrefs;
@@ -43,4 +47,52 @@ void setupSharedPreferences() {
     sharedPrefs.setBool(SharedPrefSetupKey, true).then((worked) {
       if (worked) print('Shared Preference Setup Complete');
     });
+}
+
+bool isTrue(dynamic value) {
+  bool b = false;
+
+  if (value != null) {
+    b = value.toString().toLowerCase() == 'true';
+  }
+
+  return b;
+}
+
+List<Secret> SecretsListFromJsonString(String jsonBlob) {
+  List<Secret> secretList;
+  var decoded = jsonDecode(jsonBlob);
+
+  try {
+    var jsonList = decoded as List;
+    secretList = jsonList != null
+        ? jsonList.map((i) => Secret.fromJson(i)).toList()
+        : null;
+    // secretList = jsonList.map((i) => Secret.fromJson(i)).toList();
+  } catch (e) {}
+  if (secretList == null) {
+    secretList = <Secret>[];
+    var jsonMap = decoded as Map;
+    jsonMap.forEach((k, v) => secretList.add(Secret.fromJson(v)));
+  }
+
+  return secretList;
+}
+
+Future<void> showSnackBar(BuildContext context, String text) async {
+  await showSnackBar(context, text);
+//  Scaffold.of(context)
+//    ..removeCurrentSnackBar()
+//    ..showSnackBar(SnackBar(content: Text(text)));
+}
+
+enum NullPassRoute {
+  ViewSecretsList,
+  FindSecret,
+  NewSecret,
+  GenerateSecret,
+  RegisterDevice,
+  ManageDevices,
+  Settings,
+  HelpAndFeedback
 }
