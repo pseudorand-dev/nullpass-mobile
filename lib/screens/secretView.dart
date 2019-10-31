@@ -102,9 +102,6 @@ class _SecretViewState extends State<SecretView> {
                 onLongPress: () async {
                   await Clipboard.setData(
                       ClipboardData(text: secret.thumbnailURI));
-                  // Scaffold.of(context).showSnackBar(
-                  //     SnackBar(content: Text('Copied the Website')));
-                  // showSnackBar(context, 'Copied the website');
                   _scaffoldKey.currentState.showSnackBar(
                       SnackBar(content: Text('Copied the Website')));
                 }),
@@ -116,7 +113,6 @@ class _SecretViewState extends State<SecretView> {
                   onPressed: () async {
                     await Clipboard.setData(
                         ClipboardData(text: secret.username));
-                    //Scaffold.of(context).showSnackBar(
                     _scaffoldKey.currentState.showSnackBar(
                         SnackBar(content: Text('Copied the Username')));
                   }),
@@ -129,7 +125,6 @@ class _SecretViewState extends State<SecretView> {
                   onPressed: () async {
                     await Clipboard.setData(
                         ClipboardData(text: secret.message));
-                    //Scaffold.of(context).showSnackBar(
                     _scaffoldKey.currentState.showSnackBar(
                         SnackBar(content: Text('Copied the Password')));
                   }),
@@ -138,9 +133,12 @@ class _SecretViewState extends State<SecretView> {
                     context: context,
                     builder: (BuildContext context) {
                       return SimpleDialog(
-                        // title: const Text('Select assignment'),
                         children: <Widget>[
                           Center(
+                            // TODO: customize text:
+                            //       - increasing fonts
+                            //       - add color so all numbers are a unique color, as well as
+                            //         each of lowercase, uppercase, and symbol characters
                             child: SelectableText(secret.message),
                           ),
                         ],
@@ -160,7 +158,6 @@ class _SecretViewState extends State<SecretView> {
                   icon: Icon(Icons.content_copy),
                   onPressed: () async {
                     await Clipboard.setData(ClipboardData(text: secret.notes));
-                    // Scaffold.of(context).showSnackBar(
                     _scaffoldKey.currentState.showSnackBar(
                         SnackBar(content: Text('Copied the Notes')));
                   }),
@@ -171,7 +168,6 @@ class _SecretViewState extends State<SecretView> {
                 onLongPress: () async {
                   await Clipboard.setData(
                       ClipboardData(text: secret.thumbnailURI));
-                  // Scaffold.of(context).showSnackBar(
                   _scaffoldKey.currentState.showSnackBar(
                       SnackBar(content: Text('Copied the Thumbnail URL')));
                 }),
