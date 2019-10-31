@@ -4,8 +4,10 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/screens/secretGenerate.dart';
 import 'package:nullpass/secret.dart';
+import 'package:nullpass/widgets.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
 
@@ -14,7 +16,7 @@ enum SecretEditType { Create, Update }
 class SecretEdit extends StatefulWidget {
   Secret secret =
       new Secret(nickname: '', website: '', username: '', message: '');
-  SecretEditType edit;
+  final SecretEditType edit;
 
   SecretEdit({Key key, this.secret, @required this.edit}) : super(key: key);
 
@@ -24,33 +26,31 @@ class SecretEdit extends StatefulWidget {
 
 class _CreateSecretState extends State<SecretEdit> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  Secret _secret;
+  TextEditingController _passwordController = new TextEditingController();
 
+  // Submit sends the new password data to the db to be saved then pop's up one level
   void submit(BuildContext context) async {
     // First validate form.
     if (this._formKey.currentState.validate()) {
       _formKey.currentState.save(); // Save our form now.
 
       // SAVE
-      if (widget.secret.uuid == null ||
-          !isUUID(widget.secret.uuid.trim(), '4')) {
-        widget.secret.uuid = (new Uuid()).v4();
+      if (_secret.uuid == null || !isUUID(_secret.uuid.trim(), '4')) {
+        _secret.uuid = (new Uuid()).v4();
       }
-      Secret secretSave = Secret(
-          uuid: widget.secret.uuid,
-          nickname: widget.secret.nickname,
-          website: widget.secret.website,
-          username: widget.secret.username,
-          message: widget
-              .secret.message, // TODO: move password to secure storage - remove
-          notes: widget.secret.notes);
       NullPassDB helper = NullPassDB.instance;
       bool success = false;
       if (widget.edit == SecretEditType.Create) {
-        success = await helper.insert(secretSave);
+        var now = DateTime.now().toUtc();
+        _secret.lastModified = now;
+        _secret.lastModified = now;
+        success = await helper.insert(_secret);
         print('inserted row(s) - $success');
         // await showSnackBar(context, 'Created!');
       } else if (widget.edit == SecretEditType.Update) {
-        success = await helper.update(secretSave);
+        _secret.lastModified = DateTime.now().toUtc();
+        success = await helper.update(_secret);
         print('updated row(s) - $success');
         // await showSnackBar(context, 'Updated!');
       }
@@ -60,8 +60,24 @@ class _CreateSecretState extends State<SecretEdit> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    if (_secret == null) {
+      _secret = (widget.secret != null
+          ? widget.secret
+          : new Secret(nickname: '', website: '', username: '', message: ''));
+    }
+  }
+
+  void setPassword(String value) {
+    setState(() {
+      _secret.message = value;
+    });
+    _passwordController.text = value;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // final Size screenSize = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         title: (widget.edit == SecretEditType.Create)
@@ -71,13 +87,14 @@ class _CreateSecretState extends State<SecretEdit> {
                 : Text('Secret Action')),
         actions: <Widget>[
           FlatButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white),
-              ))
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
         ],
       ),
       body: new Container(
@@ -89,10 +106,12 @@ class _CreateSecretState extends State<SecretEdit> {
               ListTile(
                 title: TextFormField(
                   onChanged: (value) {
-                    widget.secret.nickname = value;
-                    print('new nickname ${widget.secret.nickname}');
+                    setState(() {
+                      _secret.nickname = value;
+                    });
+                    print('new nickname ${_secret.nickname}');
                   },
-                  initialValue: widget.secret.nickname,
+                  initialValue: _secret.nickname,
                   decoration: InputDecoration(
                       labelText: 'Nickname', border: InputBorder.none),
                   validator: (value) {
@@ -103,14 +122,16 @@ class _CreateSecretState extends State<SecretEdit> {
                   },
                 ),
               ),
-              _FormDivider(),
+              FormDivider(),
               ListTile(
                 title: TextFormField(
                   onChanged: (value) {
-                    widget.secret.website = value;
-                    print('new website ${widget.secret.website}');
+                    setState(() {
+                      _secret.website = value;
+                    });
+                    print('new website ${_secret.website}');
                   },
-                  initialValue: widget.secret.website,
+                  initialValue: _secret.website,
                   decoration: InputDecoration(
                       labelText: 'Website', border: InputBorder.none),
                   keyboardType: TextInputType.url,
@@ -122,14 +143,16 @@ class _CreateSecretState extends State<SecretEdit> {
                   },
                 ),
               ),
-              _FormDivider(),
+              FormDivider(),
               ListTile(
                 title: TextFormField(
                   onChanged: (value) {
-                    widget.secret.username = value;
-                    print('new username ${widget.secret.username}');
+                    setState(() {
+                      _secret.username = value;
+                    });
+                    print('new username ${_secret.username}');
                   },
-                  initialValue: widget.secret.username,
+                  initialValue: _secret.username,
                   decoration: InputDecoration(
                     labelText: 'Username',
                     border: InputBorder.none,
@@ -143,26 +166,33 @@ class _CreateSecretState extends State<SecretEdit> {
                   },
                 ),
               ),
-              _FormDivider(),
+              FormDivider(),
               PasswordInput(
-                  onChange: (value) {
-                    widget.secret.message = value;
-                    print('new password ${widget.secret.message}');
-                  },
-                  initialValue: widget.secret.message),
-              _FormDivider(),
+                onChange: (value) {
+                  setState(() {
+                    _secret.message = value;
+                  });
+                  print('new password ${_secret.message}');
+                },
+                controller: _passwordController,
+                initialValue: _secret.message,
+                setPassword: setPassword,
+              ),
+              FormDivider(),
               ListTile(
                 title: TextFormField(
                   onChanged: (value) {
-                    widget.secret.notes = value;
-                    print('new notes ${widget.secret.notes}');
+                    setState(() {
+                      _secret.notes = value;
+                    });
+                    print('new notes ${_secret.notes}');
                   },
-                  initialValue: widget.secret.notes,
+                  initialValue: _secret.notes,
                   decoration: InputDecoration(
                       labelText: 'Notes', border: InputBorder.none),
                 ),
               ),
-              _FormDivider(),
+              FormDivider(),
               // Padding(padding: EdgeInsetsGeometry(2,2,2,2))
               ListTile(
                 title: RaisedButton(
@@ -189,33 +219,29 @@ class _CreateSecretState extends State<SecretEdit> {
                 return new SecretGenerate();
               });
           if (result != null && result.toString().trim() != '') {
-            widget.secret.message = result.toString();
+            _secret.message = result.toString();
+            setPassword(_secret.message);
           }
         },
         tooltip: 'Generate',
-        child: Icon(Icons.lock_outline),
+        child: Icon(Icons.lock),
       ),
-    );
-  }
-}
-
-class _FormDivider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Divider(
-      height: 0.5,
-      thickness: 1,
-      indent: 16,
-      endIndent: 16,
     );
   }
 }
 
 class PasswordInput extends StatefulWidget {
   final Function onChange;
-  String initialValue = '';
+  final String initialValue;
+  final TextEditingController controller;
+  final Function setPassword;
 
-  PasswordInput({Key key, @required this.onChange, this.initialValue})
+  PasswordInput(
+      {Key key,
+      @required this.onChange,
+      @required this.controller,
+      @required this.setPassword,
+      this.initialValue = ''})
       : super(key: key);
 
   @override
@@ -224,12 +250,26 @@ class PasswordInput extends StatefulWidget {
 
 class _PasswordInputState extends State<PasswordInput> {
   bool _visible = false;
-  // String _initialValue = '';
+  String _initialValue;
+  TextEditingController _controller;
+  Function _setPassword;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_initialValue == null) {
+      _initialValue = (widget.initialValue != null ? widget.initialValue : '');
+    }
+    _controller = widget.controller;
+    _controller.text = _initialValue;
+    _setPassword = widget.setPassword;
+  }
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       title: TextFormField(
+        controller: _controller,
         onChanged: (value) {
           widget.onChange(value);
         },
@@ -237,7 +277,7 @@ class _PasswordInputState extends State<PasswordInput> {
           labelText: 'Password',
           border: InputBorder.none,
         ),
-        initialValue: widget.initialValue,
+        // initialValue: _initialValue,
         obscureText: !_visible,
         validator: (value) {
           if (value.isEmpty) {
@@ -251,11 +291,9 @@ class _PasswordInputState extends State<PasswordInput> {
         child: Row(
           children: <Widget>[
             IconButton(
-              icon: Icon(_visible
-                  // TODO: FIX ICON ISSUES FOR SHOW AND HIDE PASSWORD FIELD
-                  ? /* el-eye-close */ IconData(0xf150, fontFamily: 'Elusive')
-                  // : /* el-eye-open */ IconData(0xf151, fontFamily: 'Elusive'),
-                  : Icons.remove_red_eye),
+              icon: _visible
+                  ? new Icon(FontAwesomeIcons.solidEye, size: 20)
+                  : new Icon(FontAwesomeIcons.solidEyeSlash, size: 20),
               onPressed: () {
                 // _initialValue = this.widget.
                 setState(() {
@@ -264,7 +302,8 @@ class _PasswordInputState extends State<PasswordInput> {
               },
             ),
             IconButton(
-              icon: Icon(Icons.lock_outline),
+              // icon: new Icon(FontAwesomeIcons.lock, size: 20),
+              icon: new Icon(Icons.lock),
               onPressed: () async {
                 final result = await showModalBottomSheet(
                     context: context,
@@ -272,7 +311,10 @@ class _PasswordInputState extends State<PasswordInput> {
                       return new SecretGenerate();
                     });
                 if (result != null && result.toString().trim() != '') {
-                  widget.initialValue = result.toString();
+                  _setPassword(result.toString());
+                  setState(() {
+                    _initialValue = result.toString();
+                  });
                 }
               },
             ),
