@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/screens/secretEdit.dart';
+import 'package:nullpass/screens/secretSearch.dart';
 import 'package:nullpass/screens/secretView.dart';
 import 'package:nullpass/secret.dart';
 import 'package:nullpass/widgets.dart';
@@ -61,7 +62,15 @@ class _SecretListContainer extends StatelessWidget {
         appBar: AppBar(
           title: Text(title),
           actions: <Widget>[
-            IconButton(icon: Icon(Icons.search), onPressed: () {}),
+            IconButton(
+                icon: Icon(Icons.search),
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SecretSearch()),
+                  );
+                  await this.reloadSecretList('true');
+                }),
           ],
         ),
         drawer: AppDrawer(currentPage: NullPassRoute.ViewSecretsList),
