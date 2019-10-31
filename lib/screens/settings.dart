@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/secret.dart';
 
 class Settings extends StatefulWidget {
@@ -47,6 +48,7 @@ class _settingsState extends State<Settings> {
         appBar: AppBar(
           title: Text(_title),
         ),
+        drawer: AppDrawer(currentPage: NullPassRoute.Settings),
         body: Center(
           child: ListView(
             children: <Widget>[
