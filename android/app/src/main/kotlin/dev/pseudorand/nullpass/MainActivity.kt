@@ -6,6 +6,7 @@
 package dev.pseudorand.nullpass
 
 import android.os.Bundle
+import android.view.WindowManager.LayoutParams
 
 import io.flutter.app.FlutterActivity
 import io.flutter.plugins.GeneratedPluginRegistrant
@@ -13,6 +14,7 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 class MainActivity: FlutterActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    getWindow().addFlags(LayoutParams.FLAG_SECURE)
     GeneratedPluginRegistrant.registerWith(this)
   }
 }
