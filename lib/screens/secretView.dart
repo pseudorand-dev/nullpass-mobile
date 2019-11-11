@@ -135,11 +135,7 @@ class _SecretViewState extends State<SecretView> {
                       return SimpleDialog(
                         children: <Widget>[
                           Center(
-                            // TODO: customize text:
-                            //       - increasing fonts
-                            //       - add color so all numbers are a unique color, as well as
-                            //         each of lowercase, uppercase, and symbol characters
-                            child: SelectableText(secret.message),
+                            child: SecretPreview(secret.message),
                           ),
                         ],
                       );
@@ -185,6 +181,50 @@ class _SecretViewState extends State<SecretView> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class SecretPreview extends StatelessWidget {
+  String _secretText;
+  Runes get _secretRunes => (this._secretText.runes);
+  List<TextSpan> get secretSpan {
+    List<TextSpan> sList = <TextSpan>[];
+    _secretRunes.forEach((int rune) {
+      var character = new String.fromCharCode(rune);
+      var textColor = Colors.black;
+      if (65 <= rune && rune <= 90) {
+        // uppercase alpha
+        textColor = Colors.blue;
+      } else if (97 <= rune && rune <= 122) {
+        // lowercase alpha
+        textColor = Colors.green;
+      } else if (!(48 <= rune && rune <= 57)) {
+        // Not a number i.e. a symbol
+        textColor = Colors.orange;
+      }
+
+      sList.add(new TextSpan(
+        text: character,
+        style: TextStyle(
+            fontWeight: FontWeight.bold, color: textColor, fontSize: 20),
+      ));
+    });
+    return sList;
+  }
+
+  SecretPreview(
+    this._secretText, {
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SelectableText.rich(
+      TextSpan(
+        children: secretSpan,
+      ),
+      textAlign: TextAlign.center,
     );
   }
 }
