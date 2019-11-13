@@ -75,8 +75,7 @@ class _SecretViewState extends State<SecretView> {
         ],
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+        child: ListView(
           children: <Widget>[
             ListTile(
                 title: Text('Website'),
