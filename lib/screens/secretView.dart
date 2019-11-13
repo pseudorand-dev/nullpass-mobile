@@ -100,9 +100,11 @@ class _SecretViewState extends State<SecretView> {
                     }),
                 onLongPress: () async {
                   await Clipboard.setData(
-                      ClipboardData(text: secret.thumbnailURI));
-                  _scaffoldKey.currentState.showSnackBar(
-                      SnackBar(content: Text('Copied the Website')));
+                      // ClipboardData(text: secret.thumbnailURI));
+                      ClipboardData(text: secret.website));
+                  showSnackBar(_scaffoldKey, 'Website Copied');
+                  // _scaffoldKey.currentState.showSnackBar(
+                  //     SnackBar(content: Text('Copied the Website')));
                 }),
             ListTile(
               title: Text('Username'),
@@ -112,8 +114,9 @@ class _SecretViewState extends State<SecretView> {
                   onPressed: () async {
                     await Clipboard.setData(
                         ClipboardData(text: secret.username));
-                    _scaffoldKey.currentState.showSnackBar(
-                        SnackBar(content: Text('Copied the Username')));
+                    showSnackBar(_scaffoldKey, 'Username Copied');
+                    // _scaffoldKey.currentState.showSnackBar(
+                    //       SnackBar(content: Text('Copied the Username')));
                   }),
             ),
             ListTile(
@@ -124,8 +127,9 @@ class _SecretViewState extends State<SecretView> {
                   onPressed: () async {
                     await Clipboard.setData(
                         ClipboardData(text: secret.message));
-                    _scaffoldKey.currentState.showSnackBar(
-                        SnackBar(content: Text('Copied the Password')));
+                    showSnackBar(_scaffoldKey, 'Password Copied');
+                    // _scaffoldKey.currentState.showSnackBar(
+                    //     SnackBar(content: Text('Copied the Password')));
                   }),
               onLongPress: () async {
                 await showDialog(
@@ -153,8 +157,9 @@ class _SecretViewState extends State<SecretView> {
                   icon: Icon(Icons.content_copy),
                   onPressed: () async {
                     await Clipboard.setData(ClipboardData(text: secret.notes));
-                    _scaffoldKey.currentState.showSnackBar(
-                        SnackBar(content: Text('Copied the Notes')));
+                    showSnackBar(_scaffoldKey, 'Notes Copied');
+                    // _scaffoldKey.currentState.showSnackBar(
+                    //     SnackBar(content: Text('Copied the Notes')));
                   }),
             ),
             ListTile(

@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:nullpass/secret.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vibration/vibration.dart';
 
 SharedPreferences sharedPrefs;
 const String SecretLengthPrefKey = 'SecretLength';
@@ -79,11 +80,22 @@ List<Secret> SecretsListFromJsonString(String jsonBlob) {
   return secretList;
 }
 
-Future<void> showSnackBar(BuildContext context, String text) async {
-  await showSnackBar(context, text);
+//Future<void> showSnackBar(BuildContext context, String text) async {
+//  await showSnackBar(context, text);
 //  Scaffold.of(context)
 //    ..removeCurrentSnackBar()
 //    ..showSnackBar(SnackBar(content: Text(text)));
+//}
+
+void showSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String text,
+    {bool vibrate = true, int vibrateDuration = 5}) async {
+  scaffoldKey.currentState.showSnackBar(
+      SnackBar(content: Text(text), duration: Duration(milliseconds: 1000)));
+  var hasVibrator = await Vibration.hasVibrator();
+  if (vibrate && hasVibrator) {
+    // if (Vibration.hasVibrator())
+    Vibration.vibrate(duration: vibrateDuration);
+  }
 }
 
 enum NullPassRoute {
