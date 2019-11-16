@@ -8,8 +8,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/screens/secretEdit.dart';
+import 'package:nullpass/secret.dart';
 
 class SecretGenerate extends StatefulWidget {
+  bool inEditor = false;
+  SecretGenerate({Key key, this.inEditor = false}) : super(key: key);
   _SecretGenerateState createState() => _SecretGenerateState();
 }
 
@@ -184,6 +188,20 @@ class _SecretGenerateState extends State<SecretGenerate> {
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: _secretText));
                 Navigator.pop(context, _secretText);
+                if (!widget.inEditor) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          // builder: (context) => SecretEdit(edit: SecretEditType.Create, // SecretNew(
+                          builder: (context) => SecretEdit(
+                              edit: SecretEditType.Create, // SecretNew(
+                              secret: new Secret(
+                                nickname: '',
+                                website: '',
+                                username: '',
+                                message: _secretText,
+                              ))));
+                }
               },
               child: Text(
                 'Use',

@@ -16,8 +16,11 @@ import 'package:nullpass/widgets.dart';
 
 class AppDrawer extends StatelessWidget {
   final NullPassRoute currentPage;
+  final Function reloadSecretList;
 
-  AppDrawer({Key key, @required this.currentPage}) : super(key: key);
+  AppDrawer(
+      {Key key, @required this.currentPage, @required this.reloadSecretList})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -79,10 +82,10 @@ class AppDrawer extends StatelessWidget {
                       color: (currentPage == NullPassRoute.NewSecret)
                           ? ThemeData.light().accentColor
                           : ThemeData.light().unselectedWidgetColor)),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
                 if (currentPage != NullPassRoute.NewSecret) {
-                  Navigator.push(
+                  await Navigator.push(
                       context,
                       MaterialPageRoute(
                           // builder: (context) => SecretEdit(edit: SecretEditType.Create, // SecretNew(
@@ -90,6 +93,7 @@ class AppDrawer extends StatelessWidget {
                               edit: SecretEditType.Create,
                               secret: new Secret(
                                   nickname: '', website: '', username: ''))));
+                  this.reloadSecretList('true');
                 }
               },
             ),
@@ -101,10 +105,10 @@ class AppDrawer extends StatelessWidget {
                       color: ThemeData.light().unselectedWidgetColor)),
               onTap: () async {
                 Navigator.pop(context);
-                final result = await showModalBottomSheet(
+                await showModalBottomSheet(
                     context: context,
                     builder: (BuildContext context) {
-                      return new SecretGenerate();
+                      return new SecretGenerate(inEditor: false);
                     });
                 /*
                 if (result != null && result.toString().trim() != '') {
@@ -121,6 +125,7 @@ class AppDrawer extends StatelessWidget {
                                   password: result.toString()))));
                 }
                 */
+                // this.reloadSecretList('true');
               },
             ),
             FormDivider(),

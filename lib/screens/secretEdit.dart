@@ -216,7 +216,7 @@ class _CreateSecretState extends State<SecretEdit> {
           final result = await showModalBottomSheet(
               context: context,
               builder: (BuildContext context) {
-                return new SecretGenerate();
+                return new SecretGenerate(inEditor: true);
               });
           if (result != null && result.toString().trim() != '') {
             _secret.message = result.toString();
@@ -308,7 +308,7 @@ class _PasswordInputState extends State<PasswordInput> {
                 final result = await showModalBottomSheet(
                     context: context,
                     builder: (BuildContext context) {
-                      return new SecretGenerate();
+                      return new SecretGenerate(inEditor: true);
                     });
                 if (result != null && result.toString().trim() != '') {
                   _setPassword(result.toString());

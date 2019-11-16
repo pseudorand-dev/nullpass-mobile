@@ -13,6 +13,7 @@ import 'package:nullpass/screens/secretSearch.dart';
 import 'package:nullpass/screens/secretView.dart';
 import 'package:nullpass/secret.dart';
 import 'package:nullpass/widgets.dart';
+import 'package:flutter_widgets/src/visibility_detector/visibility_detector.dart';
 
 class SecretList extends StatelessWidget {
   final List<Secret> items;
@@ -45,54 +46,75 @@ class SecretList extends StatelessWidget {
 }
 
 class _SecretListContainer extends StatelessWidget {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final Widget bodyWidget;
   final Function reloadSecretList;
+  static Size screenSize;
+  static Rect screenRect;
 
   _SecretListContainer(
       {Key key, @required this.bodyWidget, @required this.reloadSecretList})
       : super(key: key);
 
+  void visibilityHasChanged(VisibilityInfo info) {
+    if (info.size != Size.zero &&
+        info.size != screenSize &&
+        info.visibleBounds != Rect.zero &&
+        info.visibleBounds != screenRect &&
+        reloadSecretList != null) {
+      reloadSecretList('true');
+    }
+    if (screenSize == null) screenSize = info.size;
+    if (screenRect == null) screenRect = info.visibleBounds;
+  }
+
   @override
   Widget build(BuildContext context) {
     final title = 'NullPass';
 
-    return MaterialApp(
-      title: title,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-          actions: <Widget>[
-            IconButton(
-                icon: Icon(Icons.search),
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SecretSearch()),
-                  );
-                  await this.reloadSecretList('true');
-                }),
-          ],
-        ),
-        drawer: AppDrawer(currentPage: NullPassRoute.ViewSecretsList),
-        body: bodyWidget,
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                    // builder: (context) => SecretEdit(edit: SecretEditType.Create, // SecretNew(
-                    builder: (context) => SecretEdit(
-                        edit: SecretEditType.Create, // SecretNew(
-                        secret: new Secret(
-                          nickname: '',
-                          website: '',
-                          username: '',
-                          message: '',
-                        ))));
-            await this.reloadSecretList(result);
-          },
-          tooltip: 'Increment',
-          child: Icon(Icons.add),
+    return VisibilityDetector(
+      key: _scaffoldKey,
+      onVisibilityChanged: visibilityHasChanged,
+      child: MaterialApp(
+        title: title,
+        home: Scaffold(
+          appBar: AppBar(
+            title: Text(title),
+            actions: <Widget>[
+              IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SecretSearch()),
+                    );
+                    await this.reloadSecretList('true');
+                  }),
+            ],
+          ),
+          drawer: AppDrawer(
+              currentPage: NullPassRoute.ViewSecretsList,
+              reloadSecretList: reloadSecretList),
+          body: bodyWidget,
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      // builder: (context) => SecretEdit(edit: SecretEditType.Create, // SecretNew(
+                      builder: (context) => SecretEdit(
+                          edit: SecretEditType.Create, // SecretNew(
+                          secret: new Secret(
+                            nickname: '',
+                            website: '',
+                            username: '',
+                            message: '',
+                          ))));
+              await this.reloadSecretList(result);
+            },
+            tooltip: 'Increment',
+            child: Icon(Icons.add),
+          ),
         ),
       ),
     );

@@ -48,7 +48,8 @@ class _settingsState extends State<Settings> {
         appBar: AppBar(
           title: Text(_title),
         ),
-        drawer: AppDrawer(currentPage: NullPassRoute.Settings),
+        drawer: AppDrawer(
+            currentPage: NullPassRoute.Settings, reloadSecretList: () {}),
         body: Center(
           child: ListView(
             children: <Widget>[
