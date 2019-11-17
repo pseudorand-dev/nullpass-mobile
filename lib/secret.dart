@@ -159,7 +159,52 @@ class Secret {
   }
 
   int _secretStrength() {
-    return 0;
+    Map<String, double> entropyMap = new Map<String, double>();
+    this.message.split('').forEach((String character) {
+      entropyMap[character] =
+          entropyMap[character] != null ? entropyMap[character] + 1.0 : 1.0;
+    });
+
+    var score = 0.0;
+    if (entropyMap.length == 1) {
+      var val = entropyMap.values.first;
+      score =
+          0 - ((val / this.message.length) * log(val / this.message.length));
+    } else {
+      // var result = 0.0;
+      score = entropyMap.values.reduce((result, val) =>
+          result -
+          ((val / this.message.length) * log(val / this.message.length)));
+    }
+    if ((score >= 3.5 && score < 4) || (score >= 4.5 && score < 5)) {
+      return score.ceil();
+    }
+    return score.floor();
+  }
+
+  Color strengthColor() {
+    switch (this.strength) {
+      case 5:
+        {
+          return Colors.blue;
+        }
+      case 4:
+        {
+          return Colors.green;
+        }
+      case 3:
+        {
+          return Colors.orange;
+        }
+      case 2:
+        {
+          return Colors.red;
+        }
+      default:
+        {
+          return Colors.black;
+        }
+    }
   }
 
   // convenience constructor to create a Secret object

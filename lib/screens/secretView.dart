@@ -139,7 +139,9 @@ class _SecretViewState extends State<SecretView> {
             ),
             ListTile(
               title: Text('Password Difficulty'),
-              trailing: IconButton(icon: Icon(Icons.stars), onPressed: () {}),
+              trailing: IconButton(
+                  icon: Icon(Icons.stars, color: secret.strengthColor()),
+                  onPressed: () {}),
               onLongPress: () {},
             ),
             ListTile(
