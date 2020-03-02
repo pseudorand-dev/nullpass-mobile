@@ -20,6 +20,7 @@ dependencies:
   flutter:
     sdk: flutter
   cached_network_image: ^2.0.0
+  community_material_icon: ^3.5.95
   flutter_secure_storage: ^3.3.1+1
   flutter_widgets: ^0.1.7+1
   font_awesome_flutter: ^8.5.0

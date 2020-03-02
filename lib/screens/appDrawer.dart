@@ -3,6 +3,7 @@
  * Copyright (c) 2019 Pseudorand Development. All rights reserved.
  */
 
+import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/common.dart';
@@ -130,9 +131,24 @@ class AppDrawer extends StatelessWidget {
             ),
             FormDivider(),
             ListTile(
+              selected: (currentPage == NullPassRoute.QrCode),
+              leading: new Icon(CommunityMaterialIcons.qrcode_edit),
+              title: Text('Sync To This Device',
+                  style: TextStyle(
+                      color: (currentPage == NullPassRoute.QrCode)
+                          ? ThemeData.light().accentColor
+                          : ThemeData.light().unselectedWidgetColor)),
+              onTap: () {
+                Navigator.pop(context);
+                // if (currentPage != NullPassRoute.QrCode) {
+                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterThisDevice()));
+                // }
+              },
+            ),
+            ListTile(
               selected: (currentPage == NullPassRoute.RegisterDevice),
-              leading: new Icon(FontAwesomeIcons.qrcode),
-              title: Text('Register Device',
+              leading: new Icon(CommunityMaterialIcons.qrcode_scan),
+              title: Text('Sync To New Device',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.RegisterDevice)
                           ? ThemeData.light().accentColor
@@ -140,7 +156,7 @@ class AppDrawer extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 // if (currentPage != NullPassRoute.RegisterDevice) {
-                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NullPassApp()));
+                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterExternalDevice()));
                 // }
               },
             ),
@@ -155,7 +171,7 @@ class AppDrawer extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 // if (currentPage != NullPassRoute.ManageDevices) {
-                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NullPassApp()));
+                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ManageDevices()));
                 // }
               },
             ),

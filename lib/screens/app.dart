@@ -36,6 +36,10 @@ class _NullPassAppState extends State<NullPassApp> {
       print('debug on');
     }
 
+    setupNotifications().then((_) {
+      print('OneSignal Setup');
+    });
+
     if (sharedPrefs == null) {
       SharedPreferences.getInstance().then((sp) {
         sharedPrefs = sp;

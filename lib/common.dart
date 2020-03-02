@@ -6,9 +6,16 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:nullpass/notification.dart' as Np;
 import 'package:nullpass/secret.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
+
+// TODO: Determine a better way to handle the OneSignal Key
+const String OneSignalKey = "<THIS_NEEDS_TO_BE_ADDED_BEFORE_COMPILATION>";
+
+// A common variable for the internal notification system
+Np.Notification notify;
 
 SharedPreferences sharedPrefs;
 const String SecretLengthPrefKey = 'SecretLength';
@@ -103,8 +110,14 @@ enum NullPassRoute {
   FindSecret,
   NewSecret,
   GenerateSecret,
+  QrCode,
   RegisterDevice,
   ManageDevices,
   Settings,
   HelpAndFeedback
+}
+
+Future<void> setupNotifications() async {
+  notify = Np.OneSignalNotification(key: OneSignalKey);
+  await notify.initialize();
 }
