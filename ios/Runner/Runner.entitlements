@@ -6,7 +6,7 @@
 	<string>development</string>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.dev.pseudorand.nullpass.onesignal</string>
+		<string>group.app.nullpass.ios.onesignal</string>
 	</array>
 </dict>
 </plist>
