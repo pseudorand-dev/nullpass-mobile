@@ -17,7 +17,7 @@ import 'package:flutter_widgets/src/visibility_detector/visibility_detector.dart
 
 class SecretList extends StatelessWidget {
   final List<Secret> items;
-  bool loading = true;
+  final bool loading;
   final Function reloadSecretList;
 
   SecretList(
