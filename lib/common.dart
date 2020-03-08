@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:nullpass/notification.dart' as Np;
 import 'package:nullpass/secret.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vibration/vibration.dart';
+// import 'package:vibration/vibration.dart';
 
 // TODO: Determine a better way to handle the OneSignal Key
 const String OneSignalKey = "<THIS_NEEDS_TO_BE_ADDED_BEFORE_COMPILATION>";
@@ -98,11 +98,13 @@ void showSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String text,
     {bool vibrate = true, int vibrateDuration = 5}) async {
   scaffoldKey.currentState.showSnackBar(
       SnackBar(content: Text(text), duration: Duration(milliseconds: 1000)));
+  /*
   var hasVibrator = await Vibration.hasVibrator();
   if (vibrate && hasVibrator) {
     // if (Vibration.hasVibrator())
     Vibration.vibrate(duration: vibrateDuration);
   }
+  */
 }
 
 enum NullPassRoute {
