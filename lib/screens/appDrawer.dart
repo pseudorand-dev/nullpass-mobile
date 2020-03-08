@@ -93,7 +93,10 @@ class AppDrawer extends StatelessWidget {
                           builder: (context) => SecretEdit(
                               edit: SecretEditType.Create,
                               secret: new Secret(
-                                  nickname: '', website: '', username: ''))));
+                                  nickname: '',
+                                  website: '',
+                                  username: '',
+                                  message: ''))));
                   this.reloadSecretList('true');
                 }
               },
