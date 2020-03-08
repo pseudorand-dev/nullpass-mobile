@@ -31,7 +31,7 @@ class SecretList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (loading) {
       return _SecretListContainer(
-          bodyWidget: _SecretLoading(), reloadSecretList: () {});
+          bodyWidget: _SecretLoading(), reloadSecretList: (dynamic d) {});
     } else if (items != null && items.length > 0) {
       return _SecretListContainer(
           bodyWidget: SecretListWidget(
