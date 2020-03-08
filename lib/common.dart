@@ -6,7 +6,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:nullpass/notification.dart' as Np;
+import 'package:nullpass/services/notification.dart' as Np;
 import 'package:nullpass/secret.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:vibration/vibration.dart';

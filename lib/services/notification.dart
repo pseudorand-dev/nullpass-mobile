@@ -4,6 +4,7 @@
  */
 
 import 'dart:io';
+import 'package:nullpass/services/logging.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 class Notification {
@@ -39,13 +40,13 @@ class OneSignalNotification implements Notification {
       OneSignal.shared
           .promptUserForPushNotificationPermission()
           .then((accepted) {
-        print('Accepted permission: $accepted');
+        Log.debug('Accepted permission: $accepted');
       });
     }
 
     OneSignal.shared.getPermissionSubscriptionState().then((status) {
       var playerId = status.subscriptionStatus.userId;
-      print('device id: $playerId\n');
+      Log.debug('device id: $playerId\n');
     });
   }
 
