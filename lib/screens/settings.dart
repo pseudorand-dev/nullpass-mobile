@@ -13,10 +13,10 @@ import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/secret.dart';
 
 class Settings extends StatefulWidget {
-  _settingsState createState() => _settingsState();
+  _SettingsState createState() => _SettingsState();
 }
 
-class _settingsState extends State<Settings> {
+class _SettingsState extends State<Settings> {
   final _title = 'Settings';
   int _secretLength = 512;
   bool _alphaCharacters = true;
