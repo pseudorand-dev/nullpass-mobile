@@ -218,7 +218,7 @@ class _settingsState extends State<Settings> {
                                 onPressed: () async {
                                   NullPassDB npDB = NullPassDB.instance;
                                   await npDB.insertBulk(
-                                      SecretsListFromJsonString(_importText));
+                                      secretsListFromJsonString(_importText));
                                   Navigator.of(context).pop();
                                 })
                           ],

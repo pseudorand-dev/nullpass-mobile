@@ -68,7 +68,7 @@ bool isTrue(dynamic value) {
   return b;
 }
 
-List<Secret> SecretsListFromJsonString(String jsonBlob) {
+List<Secret> secretsListFromJsonString(String jsonBlob) {
   List<Secret> secretList;
   var decoded = jsonDecode(jsonBlob);
 
