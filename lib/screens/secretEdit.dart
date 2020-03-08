@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/screens/secretGenerate.dart';
 import 'package:nullpass/secret.dart';
+import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
@@ -46,12 +47,12 @@ class _CreateSecretState extends State<SecretEdit> {
         _secret.lastModified = now;
         _secret.lastModified = now;
         success = await helper.insert(_secret);
-        print('inserted row(s) - $success');
+        Log.debug('inserted row(s) - $success');
         // await showSnackBar(context, 'Created!');
       } else if (widget.edit == SecretEditType.Update) {
         _secret.lastModified = DateTime.now().toUtc();
         success = await helper.update(_secret);
-        print('updated row(s) - $success');
+        Log.debug('updated row(s) - $success');
         // await showSnackBar(context, 'Updated!');
       }
 
@@ -109,7 +110,7 @@ class _CreateSecretState extends State<SecretEdit> {
                     setState(() {
                       _secret.nickname = value;
                     });
-                    print('new nickname ${_secret.nickname}');
+                    Log.debug('new nickname ${_secret.nickname}');
                   },
                   initialValue: _secret.nickname,
                   decoration: InputDecoration(
@@ -129,7 +130,7 @@ class _CreateSecretState extends State<SecretEdit> {
                     setState(() {
                       _secret.website = value;
                     });
-                    print('new website ${_secret.website}');
+                    Log.debug('new website ${_secret.website}');
                   },
                   initialValue: _secret.website,
                   decoration: InputDecoration(
@@ -150,7 +151,7 @@ class _CreateSecretState extends State<SecretEdit> {
                     setState(() {
                       _secret.username = value;
                     });
-                    print('new username ${_secret.username}');
+                    Log.debug('new username ${_secret.username}');
                   },
                   initialValue: _secret.username,
                   decoration: InputDecoration(
@@ -172,7 +173,7 @@ class _CreateSecretState extends State<SecretEdit> {
                   setState(() {
                     _secret.message = value;
                   });
-                  print('new password ${_secret.message}');
+                  Log.debug('new password ${_secret.message}');
                 },
                 controller: _passwordController,
                 initialValue: _secret.message,
@@ -185,7 +186,7 @@ class _CreateSecretState extends State<SecretEdit> {
                     setState(() {
                       _secret.notes = value;
                     });
-                    print('new notes ${_secret.notes}');
+                    Log.debug('new notes ${_secret.notes}');
                   },
                   initialValue: _secret.notes,
                   decoration: InputDecoration(

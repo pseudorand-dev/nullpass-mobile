@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/screens/secretList.dart';
 import 'package:nullpass/secret.dart';
+import 'package:nullpass/services/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NullPassApp extends StatefulWidget {
@@ -17,13 +18,13 @@ class NullPassApp extends StatefulWidget {
 class _NullPassAppState extends State<NullPassApp> {
   List<Secret> _secrets = <Secret>[];
   bool _loading = true;
-  bool debug = false;
+  // bool debug = false;
 
   @override
   void initState() {
     super.initState();
 
-    assert((debug = true) || true);
+    assert((isDebug = true) || true);
     /*
     assert(() {
       debug = true;
@@ -32,12 +33,14 @@ class _NullPassAppState extends State<NullPassApp> {
     }());
     */
 
-    if (debug) {
-      print('debug on');
+    if (isDebug) {
+      // print('debug on');
+      Log.debug('debug on');
     }
 
     setupNotifications().then((_) {
-      print('OneSignal Setup');
+      // print('OneSignal Setup');
+      Log.debug('OneSignal Setup');
     });
 
     if (sharedPrefs == null) {

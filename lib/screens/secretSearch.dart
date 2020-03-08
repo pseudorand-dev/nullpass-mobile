@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:nullpass/screens/secretView.dart';
 import 'package:nullpass/secret.dart';
+import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';
 
 class SecretSearch extends StatefulWidget {
@@ -51,7 +52,7 @@ class _secretSearchState extends State<SecretSearch> {
           IconButton(
             icon: Icon(Icons.clear),
             onPressed: () {
-              print("clear");
+              Log.debug("clear");
               setState(() {
                 _tec.clear();
                 // _searchText = '';

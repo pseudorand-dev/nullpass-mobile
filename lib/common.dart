@@ -7,6 +7,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:nullpass/services/notification.dart' as Np;
+import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/secret.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:vibration/vibration.dart';
@@ -28,32 +29,32 @@ const String InAppWebpagesPrefKey = 'InAppWebpages';
 void setupSharedPreferences() {
   if (!sharedPrefs.containsKey(SecretLengthPrefKey))
     sharedPrefs.setInt(SecretLengthPrefKey, 512).then((worked) {
-      if (worked) print('Added $SecretLengthPrefKey');
+      if (worked) Log.debug('Added $SecretLengthPrefKey');
     });
 
   if (!sharedPrefs.containsKey(AlphaCharactersPrefKey))
     sharedPrefs.setBool(AlphaCharactersPrefKey, true).then((worked) {
-      if (worked) print('Added $AlphaCharactersPrefKey');
+      if (worked) Log.debug('Added $AlphaCharactersPrefKey');
     });
 
   if (!sharedPrefs.containsKey(NumericCharactersPrefKey))
     sharedPrefs.setBool(NumericCharactersPrefKey, true).then((worked) {
-      if (worked) print('Added $NumericCharactersPrefKey');
+      if (worked) Log.debug('Added $NumericCharactersPrefKey');
     });
 
   if (!sharedPrefs.containsKey(SymbolCharactersPrefKey))
     sharedPrefs.setBool(SymbolCharactersPrefKey, true).then((worked) {
-      if (worked) print('Added $SymbolCharactersPrefKey');
+      if (worked) Log.debug('Added $SymbolCharactersPrefKey');
     });
 
   if (!sharedPrefs.containsKey(InAppWebpagesPrefKey))
     sharedPrefs.setBool(InAppWebpagesPrefKey, true).then((worked) {
-      if (worked) print('Added $InAppWebpagesPrefKey');
+      if (worked) Log.debug('Added $InAppWebpagesPrefKey');
     });
 
   if (!sharedPrefs.containsKey(SharedPrefSetupKey))
     sharedPrefs.setBool(SharedPrefSetupKey, true).then((worked) {
-      if (worked) print('Shared Preference Setup Complete');
+      if (worked) Log.debug('Shared Preference Setup Complete');
     });
 }
 

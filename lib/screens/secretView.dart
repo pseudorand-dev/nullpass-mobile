@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/screens/secretEdit.dart';
 import 'package:nullpass/secret.dart';
+import 'package:nullpass/services/logging.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SecretView extends StatefulWidget {
@@ -43,7 +44,7 @@ class _SecretViewState extends State<SecretView> {
               onPressed: () async {
                 NullPassDB npDB = NullPassDB.instance;
                 bool success = await npDB.delete(secret.uuid);
-                print(success);
+                Log.debug(success.toString());
                 // await showSnackBar(context, 'Deleted!');
                 Navigator.pop(context, 'true');
               }),

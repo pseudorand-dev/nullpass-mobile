@@ -9,6 +9,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:nullpass/services/logging.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -324,7 +325,7 @@ class NullPassDB {
     try {
       await _detailsDB.insert(s);
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to add the secret to the details db: $e");
       return false;
     }
@@ -332,7 +333,7 @@ class NullPassDB {
     try {
       await _messageSecureStorage.write(key: s.uuid, value: s.message);
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to add the secret to the secure storage: $e");
       return false;
     }
@@ -344,7 +345,7 @@ class NullPassDB {
     try {
       await _detailsDB.insertBulkSecrets(ls);
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to bulk insert the secrets into the details db: $e");
     }
 
@@ -352,7 +353,7 @@ class NullPassDB {
       ls.forEach((s) async =>
           await _messageSecureStorage.write(key: s.uuid, value: s.message));
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to bulk insert the secrets into the secure storage: $e");
     }
 
@@ -364,7 +365,7 @@ class NullPassDB {
     try {
       result = await _detailsDB.getSecretByID(uuid);
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to fetch the secret from the details db: $e");
     }
 
@@ -372,7 +373,7 @@ class NullPassDB {
       result.message = await _messageSecureStorage.read(key: uuid);
       return result;
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to fetch the secret from the secure storage: $e");
     }
 
@@ -384,7 +385,7 @@ class NullPassDB {
     try {
       secretList = await _detailsDB.getAllSecrets();
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to fetch the secrets from the details db: $e");
     }
 
@@ -396,7 +397,7 @@ class NullPassDB {
         //     (s.message = await _messageSecureStorage.read(key: s.uuid)));
         return secretList;
       } catch (e) {
-        print(
+        Log.debug(
             "an error occured while trying to fetch the secrets from the secure storage: $e");
       }
     }
@@ -407,7 +408,7 @@ class NullPassDB {
     try {
       await _messageSecureStorage.write(key: s.uuid, value: s.message);
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to update the secret in the secure storage: $e");
       return false;
     }
@@ -415,7 +416,7 @@ class NullPassDB {
     try {
       await _detailsDB.update(s);
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to update the secret in the details db: $e");
       return false;
     }
@@ -427,7 +428,7 @@ class NullPassDB {
     try {
       await _messageSecureStorage.delete(key: uuid);
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to delete the secret from the secure storage: $e");
       return false;
     }
@@ -435,7 +436,7 @@ class NullPassDB {
     try {
       await _detailsDB.delete(uuid);
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to delete the secret from the details db: $e");
       return false;
     }
@@ -446,7 +447,7 @@ class NullPassDB {
     try {
       await _messageSecureStorage.deleteAll();
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to delete all secrets from the secure storage: $e");
       return false;
     }
@@ -454,7 +455,7 @@ class NullPassDB {
     try {
       await _detailsDB.deleteAll();
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to add the secret to the details db: $e");
       return false;
     }
@@ -468,7 +469,7 @@ class NullPassDB {
     try {
       sList = await _detailsDB.find(keyword);
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to add the secret to the details db: $e");
       return null;
     }
@@ -479,7 +480,7 @@ class NullPassDB {
         s.message = message;
       });
     } catch (e) {
-      print(
+      Log.debug(
           "an error occured while trying to delete all secrets from the secure storage: $e");
       return null;
     }
@@ -563,7 +564,7 @@ class _NullPassDetailsDB {
     Database db = await database;
     s.created = DateTime.now().toUtc();
     s.lastModified = DateTime.now().toUtc();
-    print(s.toMap());
+    Log.debug(s.toMap());
     int id = await db.insert(tableName, s.toMap());
     return id;
   }
@@ -573,7 +574,7 @@ class _NullPassDetailsDB {
     var batch = db.batch();
     ls.forEach((s) => batch.insert(tableName, s));
     var results = await batch.commit(continueOnError: true);
-    print(results);
+    Log.debug(results);
     return;
   }
 
