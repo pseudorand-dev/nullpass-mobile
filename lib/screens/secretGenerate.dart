@@ -12,7 +12,7 @@ import 'package:nullpass/screens/secretEdit.dart';
 import 'package:nullpass/secret.dart';
 
 class SecretGenerate extends StatefulWidget {
-  bool inEditor = false;
+  final bool inEditor;
   SecretGenerate({Key key, this.inEditor = false}) : super(key: key);
   _SecretGenerateState createState() => _SecretGenerateState();
 }
