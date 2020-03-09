@@ -89,7 +89,7 @@ class _SecretSearchState extends State<SecretSearch> {
 class _SearchField extends StatelessWidget {
   final Function _onChanged;
   // String _searchText;
-  TextEditingController _tec;
+  final TextEditingController _tec;
 
   // _SearchField(this._searchText, this._onChanged, {Key key}) : super(key: key);
   _SearchField(this._tec, this._onChanged, {Key key}) : super(key: key);
