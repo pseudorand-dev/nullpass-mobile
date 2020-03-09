@@ -183,7 +183,7 @@ class _SecretViewState extends State<SecretView> {
 }
 
 class SecretPreview extends StatelessWidget {
-  String _secretText;
+  final String _secretText;
   Runes get _secretRunes => (this._secretText.runes);
   List<TextSpan> get secretSpan {
     List<TextSpan> sList = <TextSpan>[];
