@@ -73,7 +73,7 @@ class _SecretSearchState extends State<SecretSearch> {
           items: _secrets,
           reloadSecretList: (str) async {
             List<Secret> tempSecrets = <Secret>[];
-            if ((_searchText as String).trim().isNotEmpty) {
+            if ((_searchText).trim().isNotEmpty) {
               NullPassDB npDB = NullPassDB.instance;
               tempSecrets = await npDB.find(_searchText);
             }
