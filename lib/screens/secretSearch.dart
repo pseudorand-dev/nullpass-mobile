@@ -32,8 +32,8 @@ class _SecretSearchState extends State<SecretSearch> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: // _searchField(_searchText, (value) {
-            _searchField(_tec, (value) async {
+        title: // _SearchField(_searchText, (value) {
+            _SearchField(_tec, (value) async {
           setState(() {
             _searchText = value;
             // _tec.text = value;
@@ -86,13 +86,13 @@ class _SecretSearchState extends State<SecretSearch> {
   }
 }
 
-class _searchField extends StatelessWidget {
+class _SearchField extends StatelessWidget {
   Function _onChanged;
   // String _searchText;
   TextEditingController _tec;
 
-  // _searchField(this._searchText, this._onChanged, {Key key}) : super(key: key);
-  _searchField(this._tec, this._onChanged, {Key key}) : super(key: key);
+  // _SearchField(this._searchText, this._onChanged, {Key key}) : super(key: key);
+  _SearchField(this._tec, this._onChanged, {Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
