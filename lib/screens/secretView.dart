@@ -12,7 +12,7 @@ import 'package:nullpass/services/logging.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SecretView extends StatefulWidget {
-  Secret secret;
+  final Secret secret;
 
   SecretView({Key key, @required this.secret}) : super(key: key);
 
