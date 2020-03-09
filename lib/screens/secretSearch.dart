@@ -11,10 +11,10 @@ import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';
 
 class SecretSearch extends StatefulWidget {
-  _secretSearchState createState() => _secretSearchState();
+  _SecretSearchState createState() => _SecretSearchState();
 }
 
-class _secretSearchState extends State<SecretSearch> {
+class _SecretSearchState extends State<SecretSearch> {
   TextEditingController _tec;
   String _searchText;
   List<Secret> _secrets;
