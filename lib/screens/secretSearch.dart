@@ -69,7 +69,7 @@ class _SecretSearchState extends State<SecretSearch> {
           ),
         ],
       ),
-      body: _secretListWidget(
+      body: _SecretListWidget(
           items: _secrets,
           reloadSecretList: (str) async {
             List<Secret> tempSecrets = <Secret>[];
@@ -109,11 +109,11 @@ class _searchField extends StatelessWidget {
   }
 }
 
-class _secretListWidget extends StatelessWidget {
+class _SecretListWidget extends StatelessWidget {
   final List<Secret> items;
   final Function reloadSecretList;
 
-  _secretListWidget(
+  _SecretListWidget(
       {Key key, @required this.items, @required this.reloadSecretList})
       : super(key: key);
 
