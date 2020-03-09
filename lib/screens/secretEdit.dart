@@ -15,11 +15,11 @@ import 'package:validators/validators.dart';
 enum SecretEditType { Create, Update }
 
 class SecretEdit extends StatefulWidget {
-  Secret secret =
-      new Secret(nickname: '', website: '', username: '', message: '');
+  final Secret secret;
   final SecretEditType edit;
 
-  SecretEdit({Key key, this.secret, @required this.edit}) : super(key: key);
+  SecretEdit({Key key, @required this.secret, @required this.edit})
+      : super(key: key);
 
   @override
   _CreateSecretState createState() => _CreateSecretState();
