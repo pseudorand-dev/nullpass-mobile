@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/screens/app.dart';
+import 'package:nullpass/screens/devices/syncDevices.dart';
 import 'package:nullpass/screens/secretEdit.dart';
 import 'package:nullpass/screens/secretGenerate.dart';
 import 'package:nullpass/screens/secretSearch.dart';
@@ -143,9 +144,13 @@ class AppDrawer extends StatelessWidget {
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
-                // if (currentPage != NullPassRoute.QrCode) {
-                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterThisDevice()));
-                // }
+                if (currentPage != NullPassRoute.QrCode) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              SyncDevices(syncState: SyncState.qrcode)));
+                }
               },
             ),
             ListTile(
@@ -158,9 +163,13 @@ class AppDrawer extends StatelessWidget {
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
-                // if (currentPage != NullPassRoute.RegisterDevice) {
-                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterExternalDevice()));
-                // }
+                if (currentPage != NullPassRoute.QrScanner) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              SyncDevices(syncState: SyncState.scan)));
+                }
               },
             ),
             ListTile(
