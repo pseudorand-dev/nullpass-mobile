@@ -1,3 +1,8 @@
+/*
+ * Created by Ilan Rasekh on 2020/3/8
+ * Copyright (c) 2020 Pseudorand Development. All rights reserved.
+ */
+
 import 'dart:developer' as developer;
 
 // Is the App in Debug Mode
