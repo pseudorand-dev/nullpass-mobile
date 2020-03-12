@@ -26,3 +26,12 @@ class FormDivider extends StatelessWidget {
     );
   }
 }
+
+class CenterLoader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+}
