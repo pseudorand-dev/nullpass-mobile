@@ -25,13 +25,6 @@ class _NullPassAppState extends State<NullPassApp> {
     super.initState();
 
     assert((isDebug = true) || true);
-    /*
-    assert(() {
-      debug = true;
-      // TODO: set logging level to debug
-      return true;
-    }());
-    */
 
     if (isDebug) {
       // print('debug on');
