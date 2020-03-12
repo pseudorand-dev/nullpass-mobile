@@ -6,7 +6,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:nullpass/services/notification.dart' as Np;
+import 'package:nullpass/services/notificationManager.dart' as np;
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/secret.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,7 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 const String OneSignalKey = "<THIS_NEEDS_TO_BE_ADDED_BEFORE_COMPILATION>";
 
 // A common variable for the internal notification system
-Np.Notification notify;
+np.NotificationManager notify;
 
 SharedPreferences sharedPrefs;
 const String SecretLengthPrefKey = 'SecretLength';
@@ -114,13 +114,13 @@ enum NullPassRoute {
   NewSecret,
   GenerateSecret,
   QrCode,
-  RegisterDevice,
+  QrScanner,
   ManageDevices,
   Settings,
   HelpAndFeedback
 }
 
 Future<void> setupNotifications() async {
-  notify = Np.OneSignalNotification(key: OneSignalKey);
+  notify = np.OneSignalNotificationManager(key: OneSignalKey);
   await notify.initialize();
 }

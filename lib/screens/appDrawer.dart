@@ -149,11 +149,11 @@ class AppDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              selected: (currentPage == NullPassRoute.RegisterDevice),
+              selected: (currentPage == NullPassRoute.QrScanner),
               leading: new Icon(CommunityMaterialIcons.qrcode_scan),
               title: Text('Sync To New Device',
                   style: TextStyle(
-                      color: (currentPage == NullPassRoute.RegisterDevice)
+                      color: (currentPage == NullPassRoute.QrScanner)
                           ? ThemeData.light().accentColor
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
