@@ -7,11 +7,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/screens/secretEdit.dart';
 import 'package:nullpass/screens/secretSearch.dart';
 import 'package:nullpass/screens/secretView.dart';
-import 'package:nullpass/secret.dart';
 import 'package:nullpass/widgets.dart';
 import 'package:flutter_widgets/src/visibility_detector/visibility_detector.dart';
 

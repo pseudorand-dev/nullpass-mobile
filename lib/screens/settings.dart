@@ -9,8 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/appDrawer.dart';
-import 'package:nullpass/secret.dart';
+import 'package:nullpass/services/datastore.dart';
 
 class Settings extends StatefulWidget {
   _SettingsState createState() => _SettingsState();
@@ -217,7 +218,7 @@ class _SettingsState extends State<Settings> {
                                 child: Text('Import'),
                                 onPressed: () async {
                                   NullPassDB npDB = NullPassDB.instance;
-                                  await npDB.insertBulk(
+                                  await npDB.bulkInsertSecrets(
                                       secretsListFromJsonString(_importText));
                                   Navigator.of(context).pop();
                                 })
@@ -304,7 +305,7 @@ class _SettingsState extends State<Settings> {
                                 ),
                                 onPressed: () async {
                                   NullPassDB npDB = NullPassDB.instance;
-                                  await npDB.deleteAll();
+                                  await npDB.deleteAllSecrets();
                                   Navigator.of(context).pop();
                                 })
                           ],

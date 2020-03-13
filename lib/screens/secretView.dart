@@ -6,8 +6,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/secretEdit.dart';
-import 'package:nullpass/secret.dart';
+import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -43,7 +44,7 @@ class _SecretViewState extends State<SecretView> {
               icon: Icon(Icons.delete),
               onPressed: () async {
                 NullPassDB npDB = NullPassDB.instance;
-                bool success = await npDB.delete(secret.uuid);
+                bool success = await npDB.deleteSecret(secret.uuid);
                 Log.debug(success.toString());
                 // await showSnackBar(context, 'Deleted!');
                 Navigator.pop(context, 'true');

@@ -5,8 +5,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/secretGenerate.dart';
-import 'package:nullpass/secret.dart';
+import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';
 import 'package:uuid/uuid.dart';
@@ -46,12 +47,12 @@ class _CreateSecretState extends State<SecretEdit> {
         var now = DateTime.now().toUtc();
         _secret.lastModified = now;
         _secret.lastModified = now;
-        success = await helper.insert(_secret);
+        success = await helper.insertSecret(_secret);
         Log.debug('inserted row(s) - $success');
         // await showSnackBar(context, 'Created!');
       } else if (widget.edit == SecretEditType.Update) {
         _secret.lastModified = DateTime.now().toUtc();
-        success = await helper.update(_secret);
+        success = await helper.updateSecret(_secret);
         Log.debug('updated row(s) - $success');
         // await showSnackBar(context, 'Updated!');
       }

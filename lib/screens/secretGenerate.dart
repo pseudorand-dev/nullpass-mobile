@@ -8,8 +8,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/secretEdit.dart';
-import 'package:nullpass/secret.dart';
 
 class SecretGenerate extends StatefulWidget {
   final bool inEditor;

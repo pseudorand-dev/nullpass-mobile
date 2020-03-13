@@ -5,8 +5,9 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/secretView.dart';
-import 'package:nullpass/secret.dart';
+import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';
 
@@ -41,7 +42,7 @@ class _SecretSearchState extends State<SecretSearch> {
           List<Secret> tempSecrets = <Secret>[];
           if ((value as String).trim().isNotEmpty) {
             NullPassDB npDB = NullPassDB.instance;
-            tempSecrets = await npDB.find(value);
+            tempSecrets = await npDB.findSecret(value);
           }
           setState(() {
             _secrets = tempSecrets;
@@ -75,7 +76,7 @@ class _SecretSearchState extends State<SecretSearch> {
             List<Secret> tempSecrets = <Secret>[];
             if ((_searchText).trim().isNotEmpty) {
               NullPassDB npDB = NullPassDB.instance;
-              tempSecrets = await npDB.find(_searchText);
+              tempSecrets = await npDB.findSecret(_searchText);
             }
             setState(() {
               _secrets = tempSecrets;

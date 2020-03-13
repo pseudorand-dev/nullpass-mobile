@@ -7,13 +7,13 @@ import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/app.dart';
 import 'package:nullpass/screens/devices/syncDevices.dart';
 import 'package:nullpass/screens/secretEdit.dart';
 import 'package:nullpass/screens/secretGenerate.dart';
 import 'package:nullpass/screens/secretSearch.dart';
 import 'package:nullpass/screens/settings.dart';
-import 'package:nullpass/secret.dart';
 import 'package:nullpass/widgets.dart';
 
 class AppDrawer extends StatelessWidget {
