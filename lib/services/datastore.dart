@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nullpass/models/device.dart';
+import 'package:nullpass/models/deviceSync.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:path/path.dart';
@@ -301,6 +302,93 @@ class NullPassDB {
       return false;
     }
   }
+
+  /* Device Sync */
+  static final _NullPassSyncDevicesDB _syncDeviceDB =
+      _NullPassSyncDevicesDB.instance;
+
+  Future<bool> insertSync(DeviceSync d) async {
+    try {
+      await _syncDeviceDB.insert(d);
+      return true;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to add the device sync record to the db: $e");
+      return false;
+    }
+  }
+
+  Future<void> bulkInsertSync(List<DeviceSync> ld) async {
+    try {
+      await _syncDeviceDB.bulkInsert(ld);
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to bulk add device sync records to the db: $e");
+    }
+  }
+
+  Future<DeviceSync> getSyncByID(String id) async {
+    try {
+      return await _syncDeviceDB.getSyncByID(id);
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to update the device sync record to the db: $e");
+      return null;
+    }
+  }
+
+  Future<List<DeviceSync>> getAllSyncs() async {
+    try {
+      return await _syncDeviceDB.getAllSyncs();
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to update the device sync record to the db: $e");
+      return <DeviceSync>[];
+    }
+  }
+
+  Future<List<DeviceSync>> getAllVaultSyncsFromDevice(String vaultId) async {
+    try {
+      return await _syncDeviceDB.getAllVaultSyncsFromDevice(vaultId);
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to update the device sync record to the db: $e");
+      return <DeviceSync>[];
+    }
+  }
+
+  Future<bool> updateSync(DeviceSync d) async {
+    try {
+      await _syncDeviceDB.update(d);
+      return true;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to update the device sync record to the db: $e");
+      return false;
+    }
+  }
+
+  Future<bool> deleteSync(String id) async {
+    try {
+      await _syncDeviceDB.delete(id);
+      return true;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to add the device sync record to the db: $e");
+      return false;
+    }
+  }
+
+  Future<bool> deleteAllSyncs() async {
+    try {
+      await _syncDeviceDB.deleteAll();
+      return true;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to add the device sync record to the db: $e");
+      return false;
+    }
+  }
 }
 
 /* Secrets */
@@ -575,6 +663,156 @@ class _NullPassDevicesDB {
   Future<int> deleteAll() async {
     Database db = await _database;
     int id = await db.delete(deviceTableName);
+    return id;
+  }
+}
+
+/* Device Syncs */
+class _NullPassSyncDevicesDB {
+  _NullPassSyncDevicesDB._privateConstructor();
+  static final _NullPassSyncDevicesDB instance =
+      _NullPassSyncDevicesDB._privateConstructor();
+
+  // This is the actual database filename that is saved in the docs directory.
+  // static final _dbName = "nullpass_syncs";
+  // Increment this version when you need to change the schema.
+  static final createTable = '''
+              CREATE TABLE $syncTableName (
+                $columnSyncId TEXT PRIMARY KEY,
+                $columnSyncDeviceId TEXT NOT NULL,
+                $columnSyncDeviceConnectionId TEXT,
+                $columnSyncFrom BOOL NOT NULL,
+                $columnSyncVaultId TEXT,
+                $columnSyncVaultName TEXT NOT NULL,
+                $columnSyncVaultAccess TEXT NOT NULL,
+                $columnSyncNotes TEXT,
+                $columnSyncCreated TEXT,
+                $columnSyncModified TEXT,
+                $columnSyncLastPerformed TEXT
+              )
+              ''';
+
+  static final List<String> _syncDevicesTableColumns = [
+    columnSyncId,
+    columnSyncDeviceId,
+    columnSyncDeviceConnectionId,
+    columnSyncFrom,
+    columnSyncVaultId,
+    columnSyncVaultName,
+    columnSyncVaultAccess,
+    columnSyncNotes,
+    columnSyncCreated,
+    columnSyncModified,
+    columnSyncLastPerformed,
+  ];
+
+  /* Database helper methods */
+
+  Future<int> insert(DeviceSync d) async {
+    Database db = await _database;
+    d.created = DateTime.now().toUtc();
+    d.lastModified = DateTime.now().toUtc();
+    Log.debug(d.toMap());
+    int id = await db.insert(syncTableName, d.toMap());
+    return id;
+  }
+
+  Future<void> bulkInsert(List<dynamic> ld) async {
+    Database db = await _database;
+    var batch = db.batch();
+    ld.forEach((d) => batch.insert(syncTableName, d));
+    var results = await batch.commit(continueOnError: true);
+    Log.debug(results);
+    return;
+  }
+
+  Future<void> bulkInsertMaps(List<Map<String, dynamic>> ld) async {
+    Database db = await _database;
+    var batch = db.batch();
+    ld.forEach((d) => batch.insert(syncTableName, d));
+    await batch.commit(noResult: true, continueOnError: true);
+    return;
+  }
+
+  Future<void> bulkInsertSync(List<DeviceSync> ld) async {
+    Database db = await _database;
+    var batch = db.batch();
+    ld.forEach((d) => batch.insert(syncTableName, d.toMap()));
+    await batch.commit(noResult: true, continueOnError: true);
+    return;
+  }
+
+  Future<DeviceSync> getSyncByID(String uid) async {
+    Database db = await _database;
+    List<Map> maps = await db.query(syncTableName,
+        columns: _syncDevicesTableColumns,
+        where: '$columnSyncId = ?',
+        whereArgs: [uid]);
+    if (maps.length > 0) {
+      var d = DeviceSync.fromMap(maps.first);
+      return d;
+    }
+    return null;
+  }
+
+  Future<DeviceSync> getSyncByDeviceID(String uid) async {
+    Database db = await _database;
+    List<Map> maps = await db.query(syncTableName,
+        columns: _syncDevicesTableColumns,
+        where: '$columnSyncDeviceId = ?',
+        whereArgs: [uid]);
+    if (maps.length > 0) {
+      var d = DeviceSync.fromMap(maps.first);
+      return d;
+    }
+    return null;
+  }
+
+  Future<List<DeviceSync>> getAllSyncs() async {
+    Database db = await _database;
+    List<Map> maps = await db.query(syncTableName,
+        columns: _syncDevicesTableColumns, orderBy: columnSyncLastPerformed);
+    if (maps.length > 0) {
+      List<DeviceSync> deviceList = <DeviceSync>[];
+      maps.forEach((m) => deviceList.add(DeviceSync.fromMap(m)));
+      return deviceList;
+    }
+    return null;
+  }
+
+  Future<List<DeviceSync>> getAllVaultSyncsFromDevice(String vault) async {
+    Database db = await _database;
+    List<Map> maps = await db.query(syncTableName,
+        columns: _syncDevicesTableColumns,
+        where: '$columnSyncFrom = true AND $columnSyncVaultId = ?',
+        whereArgs: [vault]);
+    if (maps.length > 0) {
+      List<DeviceSync> deviceList = <DeviceSync>[];
+      maps.forEach((m) => deviceList.add(DeviceSync.fromMap(m)));
+      return deviceList;
+    }
+    return null;
+  }
+
+  Future<int> update(DeviceSync d) async {
+    Database db = await _database;
+    d.lastModified = DateTime.now().toUtc();
+
+    int id = await db.update(syncTableName, d.toMap(),
+        where: '$columnSyncId = ?', whereArgs: [d.id]);
+    return id;
+  }
+
+  Future<int> delete(String id) async {
+    Database db = await _database;
+    int retId = await db
+        .delete(syncTableName, where: '$columnSyncId = ?', whereArgs: [id]);
+    return retId;
+  }
+
+  Future<int> deleteAll() async {
+    Database db = await _database;
+    int id = await db.delete(syncTableName);
     return id;
   }
 }
