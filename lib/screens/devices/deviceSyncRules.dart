@@ -118,14 +118,6 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
                             decoration: InputDecoration(
                                 labelText: 'Device Nickname',
                                 border: InputBorder.none),
-                            /*
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                return 'The Device Nickname field cannot be empty';
-                              }
-                              return null;
-                            },
-                            */
                           ),
                         ),
                         FormDivider(),
