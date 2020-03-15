@@ -128,8 +128,6 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
                   Container(
                     child: ListTile(
                       title: Text('Sync from this device'),
-                      // subtitle: Text(
-                      //     'Should any vaults from this device be synchronized to the new device'),
                       trailing: Switch(
                           value: _syncFromDevice,
                           onChanged: (value) async {
