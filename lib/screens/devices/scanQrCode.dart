@@ -44,7 +44,6 @@ class _QrScannerState extends State<QrScanner> {
   Function _fabPressFunction;
   Function(BuildContext) _nextStep;
   Function(Device) _setDevice;
-  bool _syncFrom = true;
   String _errorText = "";
   BuildContext _context;
 
