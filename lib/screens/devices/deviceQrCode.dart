@@ -28,6 +28,7 @@ class _QrCodeState extends State<QrCode> {
   final String _title = "NullPass Syncing";
   final QrData _qrData = QrData();
   final String _responseNonce = Uuid().v4();
+  String _scannerDeviceId;
   Function _fabPressFunction;
   Function(bool) _nextStep;
   bool _syncFrom = false;
@@ -58,14 +59,15 @@ class _QrCodeState extends State<QrCode> {
           "received_nonce": scannerInfo.generatedNonce,
           "generated_nonce": _responseNonce,
         };
-        var tmpNote = np.Notification(np.NotificationType.CodeSyncInitResponse,
-            data: tmpMap);
+        var tmpNote =
+            np.Notification(np.NotificationType.SyncInitStepTwo, data: tmpMap);
         await notify.sendMessageToAnotherDevice(
             deviceIDs: <String>[scannerInfo.deviceId], message: tmpNote);
 
         Log.debug("sending: $tmpMap");
 
         setState(() {
+          _scannerDeviceId = scannerInfo.deviceId;
           _debugLog = "$_debugLog\nsent response";
         });
       }
@@ -102,6 +104,7 @@ class _QrCodeState extends State<QrCode> {
   void initState() {
     super.initState();
     Log.debug("in initState");
+    _scannerDeviceId = "";
     _fabPressFunction = this.widget.fabPressFunction;
     _nextStep = this.widget.nextStep;
 

@@ -55,7 +55,7 @@ class _QrScannerState extends State<QrScanner> {
           "received_nonce": scannerInfo.generatedNonce,
         };
         Log.debug(tmpMap);
-        var tmpNote = np.Notification(np.NotificationType.ScanSyncInitResponse,
+        var tmpNote = np.Notification(np.NotificationType.SyncInitStepThree,
             data: tmpMap);
         notify.sendMessageToAnotherDevice(
             deviceIDs: <String>[_recipient], message: tmpNote);
@@ -84,7 +84,7 @@ class _QrScannerState extends State<QrScanner> {
       };
       Log.debug(tmpMap);
       var tmpNote =
-          np.Notification(np.NotificationType.ScanSyncInit, data: tmpMap);
+          np.Notification(np.NotificationType.SyncInitStepOne, data: tmpMap);
       await notify.sendMessageToAnotherDevice(
           deviceIDs: <String>[_recipient], message: tmpNote);
     }

@@ -91,9 +91,9 @@ String notificationTypeToString(NotificationType notificationType) {
 }
 
 enum NotificationType {
-  ScanSyncInit,
-  ScanSyncInitResponse,
-  CodeSyncInitResponse,
+  SyncInitStepOne,
+  SyncInitStepTwo,
+  SyncInitStepThree,
   SyncUpdate,
   SyncUpdateReceived,
   Unknown

@@ -145,20 +145,19 @@ class OneSignalNotificationManager implements NotificationManager {
     osInstance
         .setNotificationReceivedHandler((OSNotification receivedNotification) {
       Log.debug("handling notification");
-      Log.debug(receivedNotification.payload.body);
       Log.debug(receivedNotification.payload.additionalData);
       var tmpNotification =
           Notification.fromMap(receivedNotification.payload.additionalData);
       // Notification.fromJson(receivedNotification.payload.body);
       Log.debug(tmpNotification.data);
       switch (tmpNotification.notificationType) {
-        case NotificationType.ScanSyncInit:
+        case NotificationType.SyncInitStepOne:
           syncInitHandshakeStepOneHandler(tmpNotification.data);
           break;
-        case NotificationType.ScanSyncInitResponse:
+        case NotificationType.SyncInitStepTwo:
           syncInitHandshakeStepTwoHandler(tmpNotification.data);
           break;
-        case NotificationType.CodeSyncInitResponse:
+        case NotificationType.SyncInitStepThree:
           syncInitHandshakeStepThreeHandler(tmpNotification.data);
           break;
         case NotificationType.SyncUpdate:
