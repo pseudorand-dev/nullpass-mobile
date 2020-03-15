@@ -51,6 +51,27 @@ class _QrScannerState extends State<QrScanner> {
   String _barcodeData = "";
   String _recipient;
 
+  Future<void> _initiateHandshake() async {
+    if (_scannedQrData.isValid()) {
+      Log.debug("sending initiation message");
+
+      setState(() {
+        _recipient = _scannedQrData.deviceId;
+      });
+
+      var tmpMap = <String, dynamic>{
+        "device_id": notify.deviceId,
+        "received_nonce": _scannedQrData.generatedNonce,
+        "generated_nonce": _responseNonce,
+      };
+      Log.debug(tmpMap);
+      var tmpNote =
+          np.Notification(np.NotificationType.SyncInitStepOne, data: tmpMap);
+      await notify.sendMessageToAnotherDevice(
+          deviceIDs: <String>[_recipient], message: tmpNote);
+    }
+  }
+
   void _syncInitHandshakeStepTwoHandler(dynamic param) {
     Log.debug("in init handler");
     Log.debug("recieved: $param");
@@ -75,27 +96,6 @@ class _QrScannerState extends State<QrScanner> {
       }
     } catch (e) {
       Log.debug("error in _syncInitResponseHandler: ${e.toString()}");
-    }
-  }
-
-  Future<void> _sendInitiationMessage() async {
-    if (_scannedQrData.isValid()) {
-      Log.debug("sending initiation message");
-
-      setState(() {
-        _recipient = _scannedQrData.deviceId;
-      });
-
-      var tmpMap = <String, dynamic>{
-        "device_id": notify.deviceId,
-        "received_nonce": _scannedQrData.generatedNonce,
-        "generated_nonce": _responseNonce,
-      };
-      Log.debug(tmpMap);
-      var tmpNote =
-          np.Notification(np.NotificationType.SyncInitStepOne, data: tmpMap);
-      await notify.sendMessageToAnotherDevice(
-          deviceIDs: <String>[_recipient], message: tmpNote);
     }
   }
 
@@ -129,7 +129,7 @@ class _QrScannerState extends State<QrScanner> {
         _barcodeData.isNotEmpty &&
         _scannedQrData != null &&
         _scannedQrData.isValid()) {
-      _sendInitiationMessage();
+      _initiateHandshake();
 
       return MaterialApp(
         title: _title,
