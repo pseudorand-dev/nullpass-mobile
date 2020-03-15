@@ -45,7 +45,7 @@ class _CreateSecretState extends State<SecretEdit> {
       bool success = false;
       if (widget.edit == SecretEditType.Create) {
         var now = DateTime.now().toUtc();
-        _secret.lastModified = now;
+        _secret.created = now;
         _secret.lastModified = now;
         success = await helper.insertSecret(_secret);
         Log.debug('inserted row(s) - $success');
