@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/app.dart';
+import 'package:nullpass/screens/devices/manageDevices.dart';
 import 'package:nullpass/screens/devices/syncDevices.dart';
 import 'package:nullpass/screens/secretEdit.dart';
 import 'package:nullpass/screens/secretGenerate.dart';
@@ -182,9 +183,10 @@ class AppDrawer extends StatelessWidget {
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
-                // if (currentPage != NullPassRoute.ManageDevices) {
-                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ManageDevices()));
-                // }
+                if (currentPage != NullPassRoute.ManageDevices) {
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => ManageDevices()));
+                }
               },
             ),
             FormDivider(),
