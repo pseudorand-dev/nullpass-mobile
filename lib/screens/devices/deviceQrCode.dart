@@ -6,6 +6,7 @@
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/device.dart';
 import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/screens/devices/qrData.dart';
 import 'package:nullpass/services/logging.dart';
@@ -16,8 +17,14 @@ import 'package:uuid/uuid.dart';
 
 class QrCode extends StatefulWidget {
   final Function fabPressFunction;
-  final Function(bool) nextStep;
-  QrCode({Key key, @required this.fabPressFunction, @required this.nextStep})
+  final Function(BuildContext) nextStep;
+  final Function(Device) setDevice;
+
+  QrCode(
+      {Key key,
+      @required this.fabPressFunction,
+      @required this.nextStep,
+      @required this.setDevice})
       : super(key: key);
 
   @override
@@ -30,10 +37,12 @@ class _QrCodeState extends State<QrCode> {
   final String _responseNonce = Uuid().v4();
   String _scannerDeviceId;
   Function _fabPressFunction;
-  Function(bool) _nextStep;
+  Function(Device) _setDevice;
+  Function(BuildContext) _nextStep;
   bool _syncFrom = false;
   String _errorText = "";
   String _debugLog = "DEBUG LOG";
+  BuildContext _context;
 
   Future<bool> _onWillPop() async {
     Log.debug("in _onWillPop");
@@ -93,7 +102,9 @@ class _QrCodeState extends State<QrCode> {
         setState(() {
           _debugLog = "$_debugLog\nhandshake completed successfully!!!";
         });
-        _nextStep(_syncFrom);
+
+        _setDevice(new Device(deviceID: _scannerDeviceId));
+        _nextStep(_context);
       }
     } catch (e) {
       Log.debug("error in _syncInitResponseHandler: ${e.toString()}");
@@ -107,6 +118,7 @@ class _QrCodeState extends State<QrCode> {
     _scannerDeviceId = "";
     _fabPressFunction = this.widget.fabPressFunction;
     _nextStep = this.widget.nextStep;
+    _setDevice = this.widget.setDevice;
 
     Log.debug(_qrData.toString());
     Log.debug(_responseNonce);
@@ -128,6 +140,9 @@ class _QrCodeState extends State<QrCode> {
   Widget build(BuildContext context) {
     final bodyHeight = MediaQuery.of(context).size.height -
         MediaQuery.of(context).viewInsets.bottom;
+    setState(() {
+      _context = context;
+    });
 
     return new WillPopScope(
       onWillPop: _onWillPop,

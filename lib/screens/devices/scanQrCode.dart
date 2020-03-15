@@ -10,6 +10,7 @@ import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/device.dart';
 import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/screens/devices/qrData.dart';
 import 'package:nullpass/services/logging.dart';
@@ -22,8 +23,14 @@ const String _noDeviceID = "no_device_id";
 
 class QrScanner extends StatefulWidget {
   final Function fabPressFunction;
-  final Function(bool) nextStep;
-  QrScanner({Key key, @required this.fabPressFunction, @required this.nextStep})
+  final Function(BuildContext) nextStep;
+  final Function(Device) setDevice;
+
+  QrScanner(
+      {Key key,
+      @required this.fabPressFunction,
+      @required this.nextStep,
+      @required this.setDevice})
       : super(key: key);
 
   @override
@@ -35,9 +42,11 @@ class _QrScannerState extends State<QrScanner> {
   final QrData _qrData = QrData();
   final String _responseNonce = Uuid().v4();
   Function _fabPressFunction;
-  Function(bool) _nextStep;
+  Function(BuildContext) _nextStep;
+  Function(Device) _setDevice;
   bool _syncFrom = true;
   String _errorText = "";
+  BuildContext _context;
 
   QrData _scannedQrData;
   String _barcodeData = "";
@@ -62,7 +71,8 @@ class _QrScannerState extends State<QrScanner> {
 
         // go to selector
         Log.debug("Moving on to the next step");
-        _nextStep(true);
+        _setDevice(new Device(deviceID: _recipient));
+        _nextStep(_context);
       }
     } catch (e) {
       Log.debug("error in _syncInitResponseHandler: ${e.toString()}");
@@ -96,6 +106,7 @@ class _QrScannerState extends State<QrScanner> {
     Log.debug("in initState");
     _fabPressFunction = this.widget.fabPressFunction;
     _nextStep = this.widget.nextStep;
+    _setDevice = this.widget.setDevice;
 
     Log.debug(_qrData.toString());
     Log.debug(_responseNonce);
@@ -109,6 +120,9 @@ class _QrScannerState extends State<QrScanner> {
   Widget build(BuildContext context) {
     final bodyHeight = MediaQuery.of(context).size.height -
         MediaQuery.of(context).viewInsets.bottom;
+    setState(() {
+      _context = context;
+    });
 
     // check state of barcode and error string
     // if the qr is a valid QrData start processing

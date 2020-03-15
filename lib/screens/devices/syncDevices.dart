@@ -5,6 +5,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/device.dart';
+import 'package:nullpass/screens/devices/deviceSyncRules.dart';
 import 'package:nullpass/screens/devices/scanQrCode.dart';
 import 'package:nullpass/screens/loading.dart';
 
@@ -23,6 +25,7 @@ class SyncDevices extends StatefulWidget {
 
 class _SyncDevicesState extends State<SyncDevices> {
   SyncState _syncState;
+  Device newDevice;
 
   void fabPress() {
     if (_syncState == SyncState.qrcode) {
@@ -36,9 +39,17 @@ class _SyncDevicesState extends State<SyncDevices> {
     }
   }
 
-  void process(bool syncFrom) {
+  Future<void> finishSetup(BuildContext context) async {
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => DeviceSyncRules(newDevice,
+                isSetup: true, syncFromDevice: false)));
+  }
+
+  void setDevice(Device d) {
     setState(() {
-      _syncState = syncFrom ? SyncState.selector : SyncState.processing;
+      newDevice = d;
     });
   }
 
@@ -53,25 +64,37 @@ class _SyncDevicesState extends State<SyncDevices> {
     switch (_syncState) {
       case SyncState.qrcode:
         {
-          return QrCode(fabPressFunction: fabPress, nextStep: process);
+          return QrCode(
+              fabPressFunction: fabPress,
+              nextStep: finishSetup,
+              setDevice: setDevice);
         }
         break;
+
       case SyncState.scan:
         {
-          return QrScanner(fabPressFunction: fabPress, nextStep: process);
-        }
-        break;
-      case SyncState.processing:
-        {
-          return LoadingPage(
-              title: "Setting Up Sync", route: NullPassRoute.ManageDevices);
+          return QrScanner(
+              fabPressFunction: fabPress,
+              nextStep: finishSetup,
+              setDevice: setDevice);
         }
         break;
 
       case SyncState.selector:
         {
+          // return LoadingPage(
+          //     title: "Setup Sync", route: NullPassRoute.ManageDevices);
+          return MaterialApp(
+            home: DeviceSyncRules(newDevice,
+                isSetup: true, syncFromDevice: false),
+          );
+        }
+        break;
+
+      case SyncState.processing:
+        {
           return LoadingPage(
-              title: "Sync Rules", route: NullPassRoute.ManageDevices);
+              title: "Setup Sync", route: NullPassRoute.ManageDevices);
         }
         break;
 
