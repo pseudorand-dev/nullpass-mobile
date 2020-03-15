@@ -140,25 +140,6 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
                   ),
                 ]),
               ),
-              /*
-                    if (_syncFromDevice && _vaults.length > 0)
-                      SliverList(
-                        delegate: SliverChildListDelegate.fixed([
-                          FormDivider(),
-                          Container(
-                            // color: Colors.blueGrey[100],
-                            child: ListTile(
-                              title: Text(
-                                'Vault Sync Rules',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            margin: EdgeInsets.only(top: 25, left: 15, bottom: 10),
-                            // padding: new EdgeInsets.fromLTRB(10, 20, 20, 20),
-                          ),
-                        ]),
-                      ),
-                      */
               _VaultSyncList(
                 syncFromDevice: this._syncFromDevice,
                 vaults: this._vaults,
