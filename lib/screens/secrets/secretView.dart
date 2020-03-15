@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/secret.dart';
-import 'package:nullpass/screens/secretEdit.dart';
+import 'package:nullpass/screens/secrets/secretEdit.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:url_launcher/url_launcher.dart';

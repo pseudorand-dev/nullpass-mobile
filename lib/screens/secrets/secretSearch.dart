@@ -6,7 +6,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:nullpass/models/secret.dart';
-import 'package:nullpass/screens/secretView.dart';
+import 'package:nullpass/screens/secrets/secretView.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';

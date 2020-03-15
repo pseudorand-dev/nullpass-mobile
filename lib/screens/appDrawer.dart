@@ -11,9 +11,9 @@ import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/app.dart';
 import 'package:nullpass/screens/devices/manageDevices.dart';
 import 'package:nullpass/screens/devices/syncDevices.dart';
-import 'package:nullpass/screens/secretEdit.dart';
-import 'package:nullpass/screens/secretGenerate.dart';
-import 'package:nullpass/screens/secretSearch.dart';
+import 'package:nullpass/screens/secrets/secretEdit.dart';
+import 'package:nullpass/screens/secrets/secretGenerate.dart';
+import 'package:nullpass/screens/secrets/secretSearch.dart';
 import 'package:nullpass/screens/settings.dart';
 import 'package:nullpass/widgets.dart';
 

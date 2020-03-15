@@ -6,7 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/models/secret.dart';
-import 'package:nullpass/screens/secretGenerate.dart';
+import 'package:nullpass/screens/secrets/secretGenerate.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';
