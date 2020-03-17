@@ -170,6 +170,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.4"
+  js:
+    dependency: transitive
+    description:
+      name: js
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.6.1+1"
   matcher:
     dependency: transitive
     description:
@@ -191,6 +198,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.3.4"
+  openpgp:
+    dependency: "direct main"
+    description:
+      name: openpgp
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.8.2"
   path:
     dependency: transitive
     description:
@@ -426,7 +440,7 @@ packages:
       name: vibration
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.2"
+    version: "1.2.4"
   xml:
     dependency: transitive
     description:

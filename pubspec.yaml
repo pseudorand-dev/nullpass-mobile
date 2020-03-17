@@ -26,6 +26,7 @@ dependencies:
   flutter_widgets: ^0.1.12
   font_awesome_flutter: ^8.7.0
   onesignal_flutter: ^2.2.0
+  openpgp: ^0.8.2
   path_provider: ^1.6.5
   qr_flutter: ^3.2.0
   shared_preferences: ^0.5.6+3
