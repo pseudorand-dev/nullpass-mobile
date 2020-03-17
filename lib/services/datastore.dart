@@ -5,6 +5,7 @@ import 'package:nullpass/models/device.dart';
 import 'package:nullpass/models/deviceSync.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/services/logging.dart';
+import 'package:openpgp/key_pair.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -45,8 +46,65 @@ class NullPassDB {
   NullPassDB._privateConstructor();
   static final NullPassDB instance = NullPassDB._privateConstructor();
 
+  /* Secure Storage for PGP and Secret / Password Storage */
+  static final _nullpassSecureStorage = new FlutterSecureStorage();
+
+  /* PGP */
+  Future<bool> insertEncryptionKeyPair(KeyPair kp) async {
+    try {
+      if (kp.publicKey != null &&
+          kp.privateKey != null &&
+          kp.publicKey.isNotEmpty &&
+          kp.privateKey.isNotEmpty)
+        await _nullpassSecureStorage.write(
+            key: "encPubKey", value: kp.publicKey);
+      await _nullpassSecureStorage.write(
+          key: "encSecKey", value: kp.privateKey);
+      return true;
+    } catch (e) {
+      Log.debug(
+          "there was an error trying to store the encryption key pair: ${e.toString()}");
+    }
+    return false;
+  }
+
+  Future<KeyPair> getEncryptionKeyPair() async {
+    try {
+      String pubKey = await _nullpassSecureStorage.read(key: "encPubKey");
+      String privKey = await _nullpassSecureStorage.read(key: "encSecKey");
+      if (pubKey != null &&
+          privKey != null &&
+          pubKey.isNotEmpty &&
+          privKey.isNotEmpty)
+        return KeyPair(publicKey: pubKey, privateKey: privKey);
+    } catch (e) {
+      Log.debug(
+          "there was an error trying to fetch the encryption key pair: ${e.toString()}");
+    }
+    return null;
+  }
+
+  Future<String> getEncryptionPublicKey() async {
+    try {
+      return await _nullpassSecureStorage.read(key: "encPubKey");
+    } catch (e) {
+      Log.debug(
+          "there was an error trying to fetch the encryption key pair: ${e.toString()}");
+      return null;
+    }
+  }
+
+  Future<String> getEncryptionPrivateKey() async {
+    try {
+      return await _nullpassSecureStorage.read(key: "encSecKey");
+    } catch (e) {
+      Log.debug(
+          "there was an error trying to fetch the encryption key pair: ${e.toString()}");
+      return null;
+    }
+  }
+
   /* Secrets */
-  static final _messageSecureStorage = new FlutterSecureStorage();
   static final _NullPassSecretDetailsDB _secretDetailsDB =
       _NullPassSecretDetailsDB.instance;
 
@@ -60,7 +118,7 @@ class NullPassDB {
     }
 
     try {
-      await _messageSecureStorage.write(key: s.uuid, value: s.message);
+      await _nullpassSecureStorage.write(key: s.uuid, value: s.message);
     } catch (e) {
       Log.debug(
           "an error occured while trying to add the secret to the secure storage: $e");
@@ -80,7 +138,7 @@ class NullPassDB {
 
     try {
       ls.forEach((s) async =>
-          await _messageSecureStorage.write(key: s.uuid, value: s.message));
+          await _nullpassSecureStorage.write(key: s.uuid, value: s.message));
     } catch (e) {
       Log.debug(
           "an error occured while trying to bulk insert the secrets into the secure storage: $e");
@@ -99,7 +157,7 @@ class NullPassDB {
     }
 
     try {
-      result.message = await _messageSecureStorage.read(key: uuid);
+      result.message = await _nullpassSecureStorage.read(key: uuid);
       return result;
     } catch (e) {
       Log.debug(
@@ -120,10 +178,10 @@ class NullPassDB {
 
     if (secretList != null) {
       try {
-        Map<String, String> messageMap = await _messageSecureStorage.readAll();
+        Map<String, String> messageMap = await _nullpassSecureStorage.readAll();
         secretList.forEach((s) => s.message = messageMap[s.uuid]);
         // secretList.forEach((s) async =>
-        //     (s.message = await _messageSecureStorage.read(key: s.uuid)));
+        //     (s.message = await _nullpassSecureStorage.read(key: s.uuid)));
         return secretList;
       } catch (e) {
         Log.debug(
@@ -135,7 +193,7 @@ class NullPassDB {
 
   Future<bool> updateSecret(Secret s) async {
     try {
-      await _messageSecureStorage.write(key: s.uuid, value: s.message);
+      await _nullpassSecureStorage.write(key: s.uuid, value: s.message);
     } catch (e) {
       Log.debug(
           "an error occured while trying to update the secret in the secure storage: $e");
@@ -155,7 +213,7 @@ class NullPassDB {
 
   Future<bool> deleteSecret(String uuid) async {
     try {
-      await _messageSecureStorage.delete(key: uuid);
+      await _nullpassSecureStorage.delete(key: uuid);
     } catch (e) {
       Log.debug(
           "an error occured while trying to delete the secret from the secure storage: $e");
@@ -174,7 +232,7 @@ class NullPassDB {
 
   Future<bool> deleteAllSecrets() async {
     try {
-      await _messageSecureStorage.deleteAll();
+      await _nullpassSecureStorage.deleteAll();
     } catch (e) {
       Log.debug(
           "an error occured while trying to delete all secrets from the secure storage: $e");
@@ -205,7 +263,7 @@ class NullPassDB {
 
     try {
       sList.forEach((s) async {
-        var message = await _messageSecureStorage.read(key: s.uuid);
+        var message = await _nullpassSecureStorage.read(key: s.uuid);
         s.message = message;
       });
     } catch (e) {

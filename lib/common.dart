@@ -7,6 +7,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:nullpass/models/secret.dart';
+import 'package:nullpass/services/encryption.dart';
 import 'package:nullpass/services/notificationManager.dart' as np;
 import 'package:nullpass/services/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,10 +24,22 @@ const String SecretLengthPrefKey = 'SecretLength';
 const String AlphaCharactersPrefKey = 'AlphaCharacters';
 const String NumericCharactersPrefKey = 'NumericCharacters';
 const String SymbolCharactersPrefKey = 'SymbolCharacters';
+const String EncryptionKeyPairSetupPrefKey = 'EncryptionKeyPairSetup';
 const String SharedPrefSetupKey = 'SpSetup';
 const String InAppWebpagesPrefKey = 'InAppWebpages';
 
 void setupSharedPreferences() {
+  if (!sharedPrefs.containsKey(EncryptionKeyPairSetupPrefKey)) {
+    Crypto.instance.then((instance) {
+      var c = (instance as Crypto);
+      if (c.hasKeyPair) {
+        sharedPrefs.setBool(EncryptionKeyPairSetupPrefKey, true).then((worked) {
+          if (worked) Log.debug('Added $EncryptionKeyPairSetupPrefKey');
+        });
+      }
+    });
+  }
+
   if (!sharedPrefs.containsKey(SecretLengthPrefKey))
     sharedPrefs.setInt(SecretLengthPrefKey, 512).then((worked) {
       if (worked) Log.debug('Added $SecretLengthPrefKey');
