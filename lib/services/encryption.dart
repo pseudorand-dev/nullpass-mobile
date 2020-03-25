@@ -17,19 +17,32 @@ class Crypto {
 
   static Future<Crypto> instance = _init();
   static Future<Crypto> _init() async {
-    var dbKP = await NullPassDB.instance.getEncryptionKeyPair();
-    if (!_isKeyPairValid(dbKP)) {
-      var newkp = await _setupKeyPair();
-      if (!_isKeyPairValid(newkp)) {
+    var dbEncKP = await NullPassDB.instance.getEncryptionKeyPair();
+    if (!Crypto.isKeyPairValid(dbEncKP)) {
+      var newkp = await _setupEncryptionKeyPair();
+      if (!Crypto.isKeyPairValid(newkp)) {
         throw Exception("Could not setup and store a valid key pair");
       }
     }
     _singleton._hasKeyPair = true;
+
     return _singleton;
+  }
+
+  static bool isKeyPairValid(KeyPair kp) {
+    if (kp != null &&
+        kp.publicKey != null &&
+        kp.privateKey != null &&
+        kp.publicKey.isNotEmpty &&
+        kp.privateKey.isNotEmpty) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 
-Future<KeyPair> _setupKeyPair() async {
+Future<KeyPair> _setupEncryptionKeyPair() async {
   try {
     var kp = await OpenPGP.generate(
       options: Options(
@@ -52,16 +65,4 @@ Future<KeyPair> _setupKeyPair() async {
         "An error occurred while trying to setup encryption key pair: ${e.toString()}");
   }
   return null;
-}
-
-bool _isKeyPairValid(KeyPair kp) {
-  if (kp != null &&
-      kp.publicKey != null &&
-      kp.privateKey != null &&
-      kp.publicKey.isNotEmpty &&
-      kp.privateKey.isNotEmpty) {
-    return true;
-  } else {
-    return false;
-  }
 }
