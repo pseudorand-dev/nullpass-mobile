@@ -52,7 +52,8 @@ class NullPassDB {
   /* PGP */
   Future<bool> insertEncryptionKeyPair(KeyPair kp) async {
     try {
-      if (kp.publicKey != null &&
+      if (kp != null &&
+          kp.publicKey != null &&
           kp.privateKey != null &&
           kp.publicKey.isNotEmpty &&
           kp.privateKey.isNotEmpty)
