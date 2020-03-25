@@ -156,6 +156,7 @@ enum NotificationType {
   SyncInitStepOne,
   SyncInitStepTwo,
   SyncInitStepThree,
+  SyncInitStepFour,
   SyncUpdate,
   SyncUpdateReceived,
   Unknown
