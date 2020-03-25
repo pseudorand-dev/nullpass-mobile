@@ -137,3 +137,7 @@ Future<void> setupNotifications() async {
   notify = np.OneSignalNotificationManager(key: OneSignalKey);
   await notify.initialize();
 }
+
+String base64EncodeString(String input) => base64.encode(utf8.encode(input));
+
+String base64DecodeString(String input) => utf8.decode(base64.decode(input));
