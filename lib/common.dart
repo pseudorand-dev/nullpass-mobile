@@ -28,16 +28,20 @@ const String EncryptionKeyPairSetupPrefKey = 'EncryptionKeyPairSetup';
 const String SharedPrefSetupKey = 'SpSetup';
 const String InAppWebpagesPrefKey = 'InAppWebpages';
 
-void setupSharedPreferences() {
+void setupSharedPreferences({Function encryptionKeyCallback}) {
   if (!sharedPrefs.containsKey(EncryptionKeyPairSetupPrefKey)) {
     Crypto.instance.then((instance) {
-      var c = (instance as Crypto);
-      if (c.hasKeyPair) {
+      if (instance.hasKeyPair) {
         sharedPrefs.setBool(EncryptionKeyPairSetupPrefKey, true).then((worked) {
-          if (worked) Log.debug('Added $EncryptionKeyPairSetupPrefKey');
+          if (worked) {
+            Log.debug('Added $EncryptionKeyPairSetupPrefKey');
+            encryptionKeyCallback();
+          }
         });
       }
     });
+  } else {
+    encryptionKeyCallback();
   }
 
   if (!sharedPrefs.containsKey(SecretLengthPrefKey))
