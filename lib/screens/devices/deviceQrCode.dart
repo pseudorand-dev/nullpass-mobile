@@ -175,55 +175,39 @@ class _QrCodeState extends State<QrCode> {
       _context = context;
     });
 
-    return new WillPopScope(
-      onWillPop: _onWillPop,
-      child: MaterialApp(
-        title: _title,
-        home: Scaffold(
-          appBar: AppBar(
-            title: Text(_title),
-          ),
-          drawer: AppDrawer(
-              currentPage: NullPassRoute.QrCode,
-              reloadSecretList: (dynamic) {}),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                RepaintBoundary(
-                  child: qr.QrImage(
-                    data: _qrData.toString(),
-                    size: 0.5 * bodyHeight,
-                  ),
+    return MaterialApp(
+      title: _title,
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text(_title),
+        ),
+        drawer: AppDrawer(
+            currentPage: NullPassRoute.QrCode, reloadSecretList: (dynamic) {}),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              qr.QrImage(
+                data: _qrData.toString(),
+                version: qr.QrVersions.auto,
+                errorCorrectionLevel: qr.QrErrorCorrectLevel.Q,
+                // foregroundColor: Colors.deepOrangeAccent,
+                size: 0.5152 * bodyHeight,
+              ),
+              // TODO: add valuable error details in release
+              if (_debugLog == null || _debugLog.isEmpty)
+                Text(
+                  _errorText,
+                  style: TextStyle(color: Colors.red),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text("Sync From This Device: "),
-                    Switch(
-                        value: _syncFrom,
-                        onChanged: (bool) {
-                          setState(() {
-                            _syncFrom = !_syncFrom;
-                          });
-                        }),
-                  ],
-                ),
-                if (_debugLog == null || _debugLog.isEmpty)
-                  Text(
-                    _errorText,
-                    style: TextStyle(color: Colors.red),
-                  ),
-              ],
-            ),
+            ],
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: _fabPressFunction,
-            tooltip: 'QR Scanner',
-            child: Icon(CommunityMaterialIcons.qrcode_scan),
-          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _fabPressFunction,
+          tooltip: 'QR Scanner',
+          child: Icon(CommunityMaterialIcons.qrcode_scan),
         ),
       ),
     );
