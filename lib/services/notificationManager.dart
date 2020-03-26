@@ -23,6 +23,11 @@ void defaultSyncInitHandshakeStepThreeHandler(dynamic str) {
   // as scanner respond to sync init message from qr code
 }
 
+void defaultSyncInitHandshakeStepFourHandler(dynamic str) {
+  Log.debug("in init response handler placeholder");
+  // as qr code respond to sync init response message from scanner
+}
+
 void defaultSyncDataHandler(dynamic str) {
   Log.debug("in update handler placeholder");
   // received sync data to store
@@ -38,6 +43,7 @@ class NotificationManager {
   Function(dynamic) syncInitHandshakeStepOneHandler;
   Function(dynamic) syncInitHandshakeStepTwoHandler;
   Function(dynamic) syncInitHandshakeStepThreeHandler;
+  Function(dynamic) syncInitHandshakeStepFourHandler;
   Function(dynamic) syncDataHandler;
   Function(dynamic) syncDataResponseHandler;
 
@@ -66,6 +72,8 @@ class OneSignalNotificationManager implements NotificationManager {
   @override
   Function(dynamic) syncInitHandshakeStepThreeHandler;
   @override
+  Function(dynamic) syncInitHandshakeStepFourHandler;
+  @override
   Function(dynamic) syncDataHandler;
   @override
   Function(dynamic) syncDataResponseHandler;
@@ -83,8 +91,7 @@ class OneSignalNotificationManager implements NotificationManager {
     syncInitHandshakeStepTwoHandler = defaultSyncInitHandshakeStepTwoHandler;
     syncInitHandshakeStepThreeHandler =
         defaultSyncInitHandshakeStepThreeHandler;
-    syncDataHandler = defaultSyncDataHandler;
-    syncDataResponseHandler = defaultSyncDataResponseHandler;
+    syncInitHandshakeStepFourHandler = defaultSyncInitHandshakeStepFourHandler;
   }
 
   @override
