@@ -3,6 +3,7 @@
  * Copyright (c) 2020 Pseudorand Development. All rights reserved.
  */
 
+import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/device.dart';
@@ -89,7 +90,7 @@ class _ManageDevicesState extends State<ManageDevices> {
               );
             },
             tooltip: 'Add New Device',
-            child: Icon(Icons.add),
+            child: Icon(CommunityMaterialIcons.qrcode_scan),
           ),
         ),
       );
@@ -106,7 +107,7 @@ class _DeviesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (devices.length < 1) {
+    if (devices == null || devices.length < 1) {
       return Container();
     } else {
       return ListView.builder(
