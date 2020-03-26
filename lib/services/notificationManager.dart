@@ -138,15 +138,16 @@ class OneSignalNotificationManager implements NotificationManager {
   @override
   Future<void> sendMessageToAnotherDevice(
       {List<String> deviceIDs, Notification message}) async {
-    var currNote = OSCreateNotification.silentNotification(
-      // var currNote = OSCreateNotification(
-      playerIds: deviceIDs,
-      additionalData: message.toMap(),
-      // contentAvailable: true,
-    );
+    var dataChunks = message.toDataChunks();
+    for (var data in dataChunks) {
+      var currNote = OSCreateNotification.silentNotification(
+        playerIds: deviceIDs,
+        additionalData: data,
+      );
 
-    var response = await osInstance.postNotification(currNote);
-    Log.debug(response);
+      var response = await osInstance.postNotification(currNote);
+      Log.debug(response);
+    }
   }
 
   @override
