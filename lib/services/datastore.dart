@@ -704,7 +704,7 @@ class _NullPassVaultsDB {
                 $columnVaultIsDefault BOOL NOT NULL,
                 $columnVaultSortKey TEXT NOT NULL,
                 $columnVaultCreated TEXT,
-                $columnVaultModified TEXT,
+                $columnVaultModified TEXT
               )
               ''';
 
