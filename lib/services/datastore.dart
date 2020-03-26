@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nullpass/models/device.dart';
 import 'package:nullpass/models/deviceSync.dart';
 import 'package:nullpass/models/secret.dart';
+import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:openpgp/key_pair.dart';
 import 'package:path/path.dart';
@@ -39,6 +40,7 @@ Future _onCreate(Database db, int version) async {
   // $columnPassword TEXT,
   await db.execute("${_NullPassSecretDetailsDB.createTable}");
   await db.execute("${_NullPassDevicesDB.createTable}");
+  await db.execute("${_NullPassVaultsDB.createTable}");
 }
 
 class NullPassDB {
@@ -274,6 +276,105 @@ class NullPassDB {
     }
 
     return sList;
+  }
+
+  /* Vaults */
+  static final _NullPassVaultsDB _vaultDB = _NullPassVaultsDB.instance;
+  Future<bool> insertVault(Vault v) async {
+    try {
+      await _vaultDB.insert(v);
+      return true;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to add the vault record to the db: $e");
+      return false;
+    }
+  }
+
+  Future<void> bulkInsertVaults(List<Vault> lv) async {
+    try {
+      await _vaultDB.bulkInsert(lv);
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to add the list of vault records to the db: $e");
+    }
+  }
+
+  Future<Vault> getVaultByID(String uid) async {
+    try {
+      var v = await _vaultDB.getVaultByID(uid);
+      return v;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to get the vault record from the db: $e");
+      return null;
+    }
+  }
+
+  Future<List<Vault>> getAllVaults() async {
+    try {
+      var lv = await _vaultDB.getAllVaults();
+      return lv;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to get all of the vault records from the db: $e");
+      return <Vault>[];
+    }
+  }
+
+  Future<List<Vault>> getAllInternallyManagedVaults() async {
+    try {
+      var lv = await _vaultDB.getAllInternalVaults();
+      return lv;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to get all of the vault records from the db: $e");
+      return <Vault>[];
+    }
+  }
+
+  Future<List<Vault>> getAllExternallyManagedVaults() async {
+    try {
+      var lv = await _vaultDB.getAllExternalVaults();
+      return lv;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to get all of the vault records from the db: $e");
+      return <Vault>[];
+    }
+  }
+
+  Future<bool> updateVault(Vault v) async {
+    try {
+      await _vaultDB.update(v);
+      return true;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to update the vault record in the db: $e");
+      return false;
+    }
+  }
+
+  Future<bool> deleteVault(String uid) async {
+    try {
+      await _vaultDB.delete(uid);
+      return true;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to delete the vault record from the db: $e");
+      return false;
+    }
+  }
+
+  Future<bool> deleteAllVaults() async {
+    try {
+      await _vaultDB.deleteAll();
+      return true;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to delete all of the vault records from the db: $e");
+      return false;
+    }
   }
 
   /* Devices */
@@ -585,6 +686,144 @@ class _NullPassSecretDetailsDB {
     //     query != null ? query.map((i) => Secret.fromJson(i)).toList() : null;
     query.forEach((m) => secretList.add(Secret.fromMap(m)));
     return secretList;
+  }
+}
+
+/* Vaults */
+class _NullPassVaultsDB {
+  _NullPassVaultsDB._privateConstructor();
+  static final _NullPassVaultsDB instance =
+      _NullPassVaultsDB._privateConstructor();
+
+  static final createTable = '''
+              CREATE TABLE $vaultTableName (
+                $columnVaultId TEXT PRIMARY KEY,
+                $columnVaultNickname TEXT NOT NULL,
+                $columnVaultSource TEXT NOT NULL,
+                $columnVaultSourceId TEXT NOT NULL,
+                $columnVaultIsDefault BOOL NOT NULL,
+                $columnVaultSortKey TEXT NOT NULL,
+                $columnVaultCreated TEXT,
+                $columnVaultModified TEXT,
+              )
+              ''';
+
+  static final List<String> _vaultsTableColumns = [
+    columnVaultId,
+    columnVaultNickname,
+    columnVaultSource,
+    columnVaultSourceId,
+    columnVaultIsDefault,
+    columnVaultSortKey,
+    columnVaultCreated,
+    columnVaultModified,
+  ];
+
+  Future<int> insert(Vault v) async {
+    Database db = await _database;
+    Log.debug(v.toMap());
+    int id;
+    try {
+      v.createdAt = DateTime.now();
+      v.modifiedAt = DateTime.now();
+      id = await db.insert(vaultTableName, v.toMap());
+    } catch (e) {
+      Log.debug(e);
+      throw e;
+    }
+    return id;
+  }
+
+  Future<void> bulkInsert(List<dynamic> lv) async {
+    Database db = await _database;
+    var batch = db.batch();
+    lv.forEach((v) {
+      (v as Vault).createdAt = DateTime.now();
+      (v as Vault).modifiedAt = DateTime.now();
+      batch.insert(vaultTableName, v);
+    });
+    var results = await batch.commit(continueOnError: true);
+    Log.debug(results);
+    return;
+  }
+
+  Future<Vault> getVaultByID(String uid) async {
+    Database db = await _database;
+    List<Map> maps = await db.query(vaultTableName,
+        columns: _vaultsTableColumns,
+        where: '$columnVaultId = ?',
+        whereArgs: [uid]);
+    if (maps.length > 0) {
+      var v = Vault.fromMap(maps.first);
+      return v;
+    }
+    return null;
+  }
+
+  Future<List<Vault>> getAllVaults() async {
+    Database db = await _database;
+    List<Map> maps = await db.query(vaultTableName,
+        columns: _vaultsTableColumns, orderBy: columnVaultNickname);
+    if (maps.length > 0) {
+      List<Vault> vaultList = <Vault>[];
+      maps.forEach((m) => vaultList.add(Vault.fromMap(m)));
+      return vaultList;
+    }
+    return null;
+  }
+
+  Future<List<Vault>> getAllInternalVaults() async {
+    Database db = await _database;
+    List<Map> maps = await db.query(vaultTableName,
+        columns: _vaultsTableColumns,
+        where: '$columnVaultSource = ?',
+        whereArgs: [vaultSourceToString(VaultSource.Internal)],
+        orderBy: columnVaultNickname);
+    if (maps.length > 0) {
+      List<Vault> vaultList = <Vault>[];
+      maps.forEach((m) => vaultList.add(Vault.fromMap(m)));
+      return vaultList;
+    }
+    return null;
+  }
+
+  Future<List<Vault>> getAllExternalVaults() async {
+    Database db = await _database;
+    List<Map> maps = await db.query(vaultTableName,
+        columns: _vaultsTableColumns,
+        where: '$columnVaultSource = ?',
+        whereArgs: [vaultSourceToString(VaultSource.External)],
+        orderBy: columnVaultNickname);
+    if (maps.length > 0) {
+      List<Vault> vaultList = <Vault>[];
+      maps.forEach((m) => vaultList.add(Vault.fromMap(m)));
+      return vaultList;
+    }
+    return null;
+  }
+
+  Future<int> update(Vault v) async {
+    Database db = await _database;
+
+    v.modifiedAt = DateTime.now();
+    int id = await db.update(vaultTableName, v.toMap(),
+        where: '$columnVaultId = ?', whereArgs: [v.uid]);
+    return id;
+  }
+
+  Future<int> delete(String uid) async {
+    Database db = await _database;
+
+    int id = await db
+        .delete(vaultTableName, where: '$columnVaultId = ?', whereArgs: [uid]);
+    return id;
+  }
+
+  Future<int> deleteAll() async {
+    Database db = await _database;
+
+    int id = await db.delete(vaultTableName);
+    return id;
   }
 }
 
