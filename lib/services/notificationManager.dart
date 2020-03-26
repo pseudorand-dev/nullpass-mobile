@@ -4,6 +4,8 @@
  */
 
 import 'dart:io';
+
+import 'package:nullpass/common.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/services/notification.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -158,26 +160,42 @@ class OneSignalNotificationManager implements NotificationManager {
       Log.debug(receivedNotification.payload.additionalData);
       var tmpNotification =
           Notification.fromMap(receivedNotification.payload.additionalData);
-      // Notification.fromJson(receivedNotification.payload.body);
-      Log.debug(tmpNotification.data);
-      switch (tmpNotification.notificationType) {
-        case NotificationType.SyncInitStepOne:
-          syncInitHandshakeStepOneHandler(tmpNotification.data);
-          break;
-        case NotificationType.SyncInitStepTwo:
-          syncInitHandshakeStepTwoHandler(tmpNotification.data);
-          break;
-        case NotificationType.SyncInitStepThree:
-          syncInitHandshakeStepThreeHandler(tmpNotification.data);
-          break;
-        case NotificationType.SyncUpdate:
-          syncDataHandler(tmpNotification.data);
-          break;
-        case NotificationType.SyncUpdateReceived:
-          syncDataResponseHandler(tmpNotification.data);
-          break;
-        default:
-          break;
+      if (haveReceivedAllChunks(tmpNotification)) {
+        var dataString = combineChunks();
+        var notificationDataString = base64DecodeString(dataString);
+
+        // convert notificationDataString to map
+        // var notificationData = jsonDecode(notificationDataString);
+
+        Log.debug(tmpNotification.data);
+        switch (tmpNotification.notificationType) {
+          case NotificationType.SyncInitStepOne:
+            receivedDataChunks = null;
+            syncInitHandshakeStepOneHandler(notificationDataString);
+            break;
+          case NotificationType.SyncInitStepTwo:
+            receivedDataChunks = null;
+            syncInitHandshakeStepTwoHandler(notificationDataString);
+            break;
+          case NotificationType.SyncInitStepThree:
+            receivedDataChunks = null;
+            syncInitHandshakeStepThreeHandler(notificationDataString);
+            break;
+          case NotificationType.SyncInitStepFour:
+            receivedDataChunks = null;
+            syncInitHandshakeStepFourHandler(notificationDataString);
+            break;
+          case NotificationType.SyncUpdate:
+            receivedDataChunks = null;
+            syncDataHandler(tmpNotification.data);
+            break;
+          case NotificationType.SyncUpdateReceived:
+            receivedDataChunks = null;
+            syncDataResponseHandler(tmpNotification.data);
+            break;
+          default:
+            break;
+        }
       }
 
       return;
