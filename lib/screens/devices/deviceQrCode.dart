@@ -3,15 +3,20 @@
  * Copyright (c) 2020 Pseudorand Development. All rights reserved.
  */
 
+import 'dart:convert';
+
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/device.dart';
+import 'package:nullpass/models/qrData.dart';
+import 'package:nullpass/models/syncRegistration.dart';
 import 'package:nullpass/screens/appDrawer.dart';
-import 'package:nullpass/screens/devices/qrData.dart';
+import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/services/notification.dart' as np;
-import 'package:nullpass/services/notificationManager.dart';
+import 'package:openpgp/key_pair.dart';
+import 'package:openpgp/openpgp.dart';
 import 'package:qr_flutter/qr_flutter.dart' as qr;
 import 'package:uuid/uuid.dart';
 
@@ -33,47 +38,56 @@ class QrCode extends StatefulWidget {
 
 class _QrCodeState extends State<QrCode> {
   final String _title = "NullPass Syncing";
-  final QrData _qrData = QrData();
-  final String _responseNonce = Uuid().v4();
-  String _scannerDeviceId;
   Function _fabPressFunction;
   Function(Device) _setDevice;
   Function(BuildContext) _nextStep;
-  bool _syncFrom = false;
+
+  QrData _qrData;
+  String _responseNonce;
+  KeyPair _encryptionKeyPair;
+  String _scannerDeviceId;
+  String _scannerPubKey;
   String _errorText = "";
-  String _debugLog = "DEBUG LOG";
   BuildContext _context;
 
-  Future<bool> _onWillPop() async {
-    Log.debug("in _onWillPop");
-    notify.syncInitHandshakeStepOneHandler =
-        defaultSyncInitHandshakeStepOneHandler;
-    notify.syncInitHandshakeStepThreeHandler =
-        defaultSyncInitHandshakeStepThreeHandler;
-    return true;
-  }
+  String _debugLog = "DEBUG LOG";
 
   Future<void> _syncInitHandshakeStepOneHandler(dynamic param) async {
-    Log.debug("in init handler");
+    // TODO: handle the function parameters better
+    Log.debug("in init step one handler");
     Log.debug("recieved: $param");
     setState(() {
       _debugLog = "$_debugLog\n\nIn Init Handler";
     });
     try {
-      var scannerInfo = QrData.fromMap(param);
+      var decryptedMsg = await OpenPGP.decryptSymmetric(
+          param as String, _qrData.generatedNonce);
+      var syncRegMap = jsonDecode(decryptedMsg);
+      var scannerInfo = SyncRegistration.fromMap(syncRegMap);
 
       if (_qrData.generatedNonce == scannerInfo.receivedNonce) {
-        var tmpMap = <String, dynamic>{
-          "status": "received",
-          "received_nonce": scannerInfo.generatedNonce,
-          "generated_nonce": _responseNonce,
-        };
-        var tmpNote =
-            np.Notification(np.NotificationType.SyncInitStepTwo, data: tmpMap);
+        setState(() {
+          _scannerPubKey = scannerInfo.pgpPubKey;
+        });
+
+        if (_encryptionKeyPair == null) {
+          _encryptionKeyPair = await NullPassDB.instance.getEncryptionKeyPair();
+        }
+
+        var sd = SyncRegistration(
+          deviceId: notify.deviceId,
+          pgpPubKey: _encryptionKeyPair.publicKey,
+          generatedNonce: _responseNonce,
+          receivedNonce: scannerInfo.generatedNonce,
+        );
+
+        var encryptedMsg = await OpenPGP.encrypt(sd.toString(), _scannerPubKey);
+        var tmpNote = np.Notification(np.NotificationType.SyncInitStepTwo,
+            data: encryptedMsg);
         await notify.sendMessageToAnotherDevice(
             deviceIDs: <String>[scannerInfo.deviceId], message: tmpNote);
 
-        Log.debug("sending: $tmpMap");
+        Log.debug("sending: $encryptedMsg");
 
         setState(() {
           _scannerDeviceId = scannerInfo.deviceId;
@@ -81,12 +95,12 @@ class _QrCodeState extends State<QrCode> {
         });
       }
     } catch (e) {
-      Log.debug("error in _syncInitHandler: ${e.toString()}");
+      Log.debug("error init step one handler: ${e.toString()}");
     }
-    // }
   }
 
-  void _syncInitHandshakeStepThreeHandler(dynamic param) {
+  Future<void> _syncInitHandshakeStepThreeHandler(dynamic param) async {
+    // TODO: handle the function parameters better
     Log.debug("in init response handler");
     Log.debug("recieved: $param");
 
@@ -95,19 +109,39 @@ class _QrCodeState extends State<QrCode> {
     });
 
     try {
-      var scannerInfo = QrData.fromMap(param);
+      var decryptedMsg = await OpenPGP.decrypt(
+          param as String, _encryptionKeyPair.privateKey, "");
+      var syncRegMap = jsonDecode(decryptedMsg);
+      var scannerInfo = SyncRegistration.fromMap(syncRegMap);
 
       if (_responseNonce == scannerInfo.receivedNonce) {
+        var sd = SyncRegistration(
+          deviceId: notify.deviceId,
+          receivedNonce: scannerInfo.generatedNonce,
+        );
+
+        var encryptedMsg = await OpenPGP.encrypt(sd.toString(), _scannerPubKey);
+
+        Log.debug(encryptedMsg);
+        var tmpNote = np.Notification(np.NotificationType.SyncInitStepFour,
+            data: encryptedMsg);
+        notify.sendMessageToAnotherDevice(
+            deviceIDs: <String>[scannerInfo.deviceId], message: tmpNote);
+
         Log.debug("success");
         setState(() {
           _debugLog = "$_debugLog\nhandshake completed successfully!!!";
         });
 
-        _setDevice(new Device(deviceID: _scannerDeviceId));
+        // TODO: make sure this sets and resets handlers properly as folks move through pages
+        notify.setDefaultNotificationHandlers();
+
+        _setDevice(new Device(
+            deviceID: _scannerDeviceId, encryptionKey: _scannerPubKey));
         _nextStep(_context);
       }
     } catch (e) {
-      Log.debug("error in _syncInitResponseHandler: ${e.toString()}");
+      Log.debug("error init step three handler: ${e.toString()}");
     }
   }
 
@@ -115,25 +149,22 @@ class _QrCodeState extends State<QrCode> {
   void initState() {
     super.initState();
     Log.debug("in initState");
-    _scannerDeviceId = "";
     _fabPressFunction = this.widget.fabPressFunction;
     _nextStep = this.widget.nextStep;
     _setDevice = this.widget.setDevice;
 
+    _qrData = QrData.generate();
+    _responseNonce = Uuid().v4();
+
     Log.debug(_qrData.toString());
-    Log.debug(_responseNonce);
+    // Log.debug(base64.encode(utf8.encode(_qrData.toString())));
+    // Log.debug(_qrData.toString().length);
+    // Log.debug(base64.encode(utf8.encode(_qrData.toString())).length);
 
+    // TODO: make sure this sets and resets handlers properly as folks move through pages
     notify.syncInitHandshakeStepOneHandler = _syncInitHandshakeStepOneHandler;
-
     notify.syncInitHandshakeStepThreeHandler =
         _syncInitHandshakeStepThreeHandler;
-  }
-
-  @override
-  void deactivate() {
-    Log.debug("in deactivate");
-    _onWillPop();
-    super.deactivate();
   }
 
   @override
