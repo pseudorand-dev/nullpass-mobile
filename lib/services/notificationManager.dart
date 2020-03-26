@@ -64,6 +64,8 @@ class OneSignalNotificationManager implements NotificationManager {
   static bool _initialized = false;
   String deviceId;
 
+  List<String> receivedDataChunks;
+
   // Handler functions
   @override
   Function(dynamic) syncInitHandshakeStepOneHandler;
@@ -179,5 +181,29 @@ class OneSignalNotificationManager implements NotificationManager {
 
       return;
     });
+  }
+
+  bool haveReceivedAllChunks(Notification lastestChunk) {
+    if (receivedDataChunks == null)
+      receivedDataChunks = List<String>(lastestChunk.parts);
+
+    receivedDataChunks[lastestChunk.position - 1] = lastestChunk.data;
+    for (var i = 0; i < receivedDataChunks.length; i++) {
+      if (receivedDataChunks[i] == null ||
+          receivedDataChunks[i].isEmpty ||
+          receivedDataChunks[i].trim().toLowerCase() == "null") {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  String combineChunks() {
+    var tmpStr = "";
+    for (var i = 0; i < receivedDataChunks.length; i++) {
+      tmpStr = "$tmpStr${receivedDataChunks[i]}";
+    }
+    return tmpStr;
   }
 }
