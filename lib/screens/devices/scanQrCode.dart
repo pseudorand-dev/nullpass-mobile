@@ -11,11 +11,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/device.dart';
+import 'package:nullpass/models/qrData.dart';
+import 'package:nullpass/models/syncRegistration.dart';
 import 'package:nullpass/screens/appDrawer.dart';
-import 'package:nullpass/screens/devices/qrData.dart';
+import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/services/notification.dart' as np;
 import 'package:nullpass/widgets.dart';
+import 'package:openpgp/key_options.dart';
+import 'package:openpgp/key_pair.dart';
+import 'package:openpgp/openpgp.dart';
 import 'package:uuid/uuid.dart';
 
 const String _invalidDataType = "invalid data type";
@@ -39,17 +44,20 @@ class QrScanner extends StatefulWidget {
 
 class _QrScannerState extends State<QrScanner> {
   final String _title = "NullPass Syncing";
-  final QrData _qrData = QrData();
-  final String _responseNonce = Uuid().v4();
   Function _fabPressFunction;
   Function(BuildContext) _nextStep;
   Function(Device) _setDevice;
   String _errorText = "";
   BuildContext _context;
 
-  QrData _scannedQrData;
+  String _responseNonce;
+  KeyPair _encryptionKeyPair;
+
   String _barcodeData = "";
+  bool _initiated = false;
+  QrData _scannedQrData;
   String _recipient;
+  String _scannedPublicKey;
 
   Future<void> _initiateHandshake() async {
     if (_scannedQrData.isValid()) {
@@ -59,43 +67,111 @@ class _QrScannerState extends State<QrScanner> {
         _recipient = _scannedQrData.deviceId;
       });
 
-      var tmpMap = <String, dynamic>{
-        "device_id": notify.deviceId,
-        "received_nonce": _scannedQrData.generatedNonce,
-        "generated_nonce": _responseNonce,
-      };
-      Log.debug(tmpMap);
-      var tmpNote =
-          np.Notification(np.NotificationType.SyncInitStepOne, data: tmpMap);
+      if (_encryptionKeyPair == null) {
+        _encryptionKeyPair = await NullPassDB.instance.getEncryptionKeyPair();
+      }
+
+      var receivedNonce = _scannedQrData.generatedNonce;
+
+      var sd = SyncRegistration(
+        deviceId: notify.deviceId,
+        pgpPubKey: _encryptionKeyPair.publicKey,
+        generatedNonce: _responseNonce,
+        receivedNonce: receivedNonce,
+      );
+
+      var encryptedMsg = await OpenPGP.encryptSymmetric(
+          sd.toString(), receivedNonce,
+          options: KeyOptions(cipher: Cypher.aes256));
+
+      // var tmpMap = await sd.toEncryptedMap(_scannedQrData.pgpPubKey);
+      // QrData(
+      //   deviceId: notify.deviceId,
+      //   receivedNonce: _scannedQrData.generatedNonce,
+      //   generatedNonce: _responseNonce,
+      //   pgpPubKey: encryptionKeyPair.publicKey,
+      // ).toMap();
+      // <String, dynamic>{
+      //   "device_id": notify.deviceId,
+      //   "received_nonce": _scannedQrData.generatedNonce,
+      //   "generated_nonce": _responseNonce,
+      // };
+      Log.debug(encryptedMsg);
+      Log.debug(encryptedMsg.length);
+
+      var tmpNotification = np.Notification(np.NotificationType.SyncInitStepOne,
+          data: encryptedMsg);
+
       await notify.sendMessageToAnotherDevice(
-          deviceIDs: <String>[_recipient], message: tmpNote);
+          deviceIDs: <String>[_recipient], message: tmpNotification);
     }
   }
 
-  void _syncInitHandshakeStepTwoHandler(dynamic param) {
-    Log.debug("in init handler");
+  void _syncInitHandshakeStepTwoHandler(dynamic param) async {
+    Log.debug("in init step two handler");
     Log.debug("recieved: $param");
     try {
-      var scannerInfo = QrData.fromMap(param);
+      var decryptedMsg = await OpenPGP.decrypt(
+          param as String, _encryptionKeyPair.privateKey, "");
+      var syncRegMap = jsonDecode(decryptedMsg);
+      var scannedResp = SyncRegistration.fromMap(syncRegMap);
 
-      if (scannerInfo.receivedNonce == _responseNonce) {
-        var tmpMap = <String, dynamic>{
-          "status": "received",
-          "received_nonce": scannerInfo.generatedNonce,
-        };
-        Log.debug(tmpMap);
+      if (scannedResp.receivedNonce == _responseNonce) {
+        setState(() {
+          _scannedPublicKey = scannedResp.pgpPubKey;
+          _responseNonce = Uuid().v4();
+        });
+
+        var sd = SyncRegistration(
+          deviceId: notify.deviceId,
+          receivedNonce: scannedResp.generatedNonce,
+          generatedNonce: _responseNonce,
+        );
+
+        var encryptedMsg =
+            await OpenPGP.encrypt(sd.toString(), scannedResp.pgpPubKey);
+
+        Log.debug(encryptedMsg);
         var tmpNote = np.Notification(np.NotificationType.SyncInitStepThree,
-            data: tmpMap);
+            data: encryptedMsg);
         notify.sendMessageToAnotherDevice(
             deviceIDs: <String>[_recipient], message: tmpNote);
 
+        /*
         // go to selector
         Log.debug("Moving on to the next step");
-        _setDevice(new Device(deviceID: _recipient));
+        notify.setDefaultNotificationHandlers();
+
+        _setDevice(
+            new Device(deviceID: _recipient, encryptionKey: _scannedPublicKey));
+        _nextStep(_context);
+        */
+      }
+    } catch (e) {
+      Log.debug("error init step two handler: ${e.toString()}");
+    }
+  }
+
+  void _syncInitHandshakeStepFourHandler(dynamic param) async {
+    Log.debug("in init step four handler");
+    Log.debug("recieved: $param");
+    try {
+      var decryptedMsg = await OpenPGP.decrypt(
+          param as String, _encryptionKeyPair.privateKey, "");
+      var syncRegMap = jsonDecode(decryptedMsg);
+      var scannedResp = SyncRegistration.fromMap(syncRegMap);
+
+      if (scannedResp.receivedNonce == _responseNonce) {
+        // go to selector
+        Log.debug("Moving on to the next step");
+        notify.setDefaultNotificationHandlers();
+
+        _setDevice(
+            new Device(deviceID: _recipient, encryptionKey: _scannedPublicKey));
         _nextStep(_context);
       }
     } catch (e) {
-      Log.debug("error in _syncInitResponseHandler: ${e.toString()}");
+      Log.debug("error init step four handler: ${e.toString()}");
     }
   }
 
@@ -107,18 +183,22 @@ class _QrScannerState extends State<QrScanner> {
     _nextStep = this.widget.nextStep;
     _setDevice = this.widget.setDevice;
 
-    Log.debug(_qrData.toString());
+    _responseNonce = Uuid().v4();
     Log.debug(_responseNonce);
 
     notify.syncInitHandshakeStepTwoHandler = _syncInitHandshakeStepTwoHandler;
+    notify.syncInitHandshakeStepFourHandler = _syncInitHandshakeStepFourHandler;
 
     scan();
+    NullPassDB.instance.getEncryptionKeyPair().then((kp) {
+      setState(() {
+        _encryptionKeyPair = kp;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final bodyHeight = MediaQuery.of(context).size.height -
-        MediaQuery.of(context).viewInsets.bottom;
     setState(() {
       _context = context;
     });
@@ -129,7 +209,10 @@ class _QrScannerState extends State<QrScanner> {
         _barcodeData.isNotEmpty &&
         _scannedQrData != null &&
         _scannedQrData.isValid()) {
-      _initiateHandshake();
+      if (!_initiated) {
+        _initiateHandshake();
+        _initiated = true;
+      }
 
       return MaterialApp(
         title: _title,
@@ -254,8 +337,10 @@ class _QrScannerState extends State<QrScanner> {
     }
   }
 
+  // TODO: return valuable errors
   Future<void> scan() async {
     try {
+      _initiated = false;
       String barcode = await BarcodeScanner.scan();
       Log.debug(barcode);
       var qrd = jsonDecode(barcode);
@@ -264,7 +349,8 @@ class _QrScannerState extends State<QrScanner> {
         setState(() {
           this._errorText = "";
           this._barcodeData = barcode;
-          _scannedQrData = QrData.fromMap(qrd);
+          // _scannedQrData = QrData.fromMap(qrd);
+          _scannedQrData = tmpData;
         });
       } else if (tmpData.deviceId == null || tmpData.deviceId.isEmpty) {
         setState(() {
@@ -290,7 +376,8 @@ class _QrScannerState extends State<QrScanner> {
           this._barcodeData = "";
         });
       }
-    } on FormatException {
+    } on FormatException catch (e) {
+      Log.debug("format exception ${e.toString()}");
       setState(() {
         this._errorText =
             "null (User returned using the 'back'-button before scanning anything)";
