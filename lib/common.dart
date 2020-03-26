@@ -7,6 +7,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:nullpass/models/secret.dart';
+import 'package:nullpass/models/vault.dart';
+import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/encryption.dart';
 import 'package:nullpass/services/notificationManager.dart' as np;
 import 'package:nullpass/services/logging.dart';
@@ -25,6 +27,7 @@ const String AlphaCharactersPrefKey = 'AlphaCharacters';
 const String NumericCharactersPrefKey = 'NumericCharacters';
 const String SymbolCharactersPrefKey = 'SymbolCharacters';
 const String EncryptionKeyPairSetupPrefKey = 'EncryptionKeyPairSetup';
+const String VaultsSetupPrefKey = 'VaultsSetup';
 const String SharedPrefSetupKey = 'SpSetup';
 const String InAppWebpagesPrefKey = 'InAppWebpages';
 
@@ -44,6 +47,25 @@ void setupSharedPreferences({Function encryptionKeyCallback}) {
     encryptionKeyCallback();
   }
 
+  if (!sharedPrefs.containsKey(VaultsSetupPrefKey) ||
+      !sharedPrefs.getBool(VaultsSetupPrefKey)) {
+    NullPassDB.instance
+        .insertVault(Vault(
+            nickname: "Personal",
+            source: VaultSource.Internal,
+            sourceId: "myDevice",
+            isDefault: true))
+        .then((response) {
+      sharedPrefs.setBool(VaultsSetupPrefKey, true).then((worked) {
+        if (worked) Log.debug('Default Vault Setup Complete');
+      });
+    }).catchError((e) {
+      sharedPrefs.setBool(VaultsSetupPrefKey, false).then((worked) {
+        if (worked)
+          Log.debug('There was a problem setting up the default Vault');
+      });
+    });
+  }
   if (!sharedPrefs.containsKey(SecretLengthPrefKey))
     sharedPrefs.setInt(SecretLengthPrefKey, 512).then((worked) {
       if (worked) Log.debug('Added $SecretLengthPrefKey');
