@@ -5,7 +5,6 @@
 
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/app.dart';
