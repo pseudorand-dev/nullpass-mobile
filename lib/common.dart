@@ -101,7 +101,13 @@ bool isTrue(dynamic value) {
   bool b = false;
 
   if (value != null) {
-    b = value.toString().toLowerCase() == 'true';
+    if (value is bool) {
+      b = value;
+    } else if (value is String) {
+      b = value.toString().toLowerCase() == 'true';
+    } else if (value is int) {
+      b = (value == 1);
+    }
   }
 
   return b;
