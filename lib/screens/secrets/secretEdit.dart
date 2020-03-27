@@ -196,179 +196,205 @@ class _CreateSecretState extends State<SecretEdit> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: (widget.edit == SecretEditType.Create)
-            ? Text('New Secret')
-            : ((widget.edit == SecretEditType.Update)
-                ? Text('Update Secret')
-                : Text('Secret Action')),
-        actions: <Widget>[
-          FlatButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white),
+    if (_loading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: (widget.edit == SecretEditType.Create)
+              ? Text('New Secret')
+              : ((widget.edit == SecretEditType.Update)
+                  ? Text('Update Secret')
+                  : Text('Secret Action')),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
-          ),
-        ],
-      ),
-      body: new Container(
-        padding: new EdgeInsets.all(20.0),
-        child: new Form(
-          key: this._formKey,
-          child: new ListView(
-            children: <Widget>[
-              ListTile(
-                title: TextFormField(
-                  onChanged: (value) {
-                    setState(() {
-                      _secret.nickname = value;
-                    });
-                    Log.debug('new nickname ${_secret.nickname}');
-                  },
-                  initialValue: _secret.nickname,
-                  decoration: InputDecoration(
-                      labelText: 'Nickname', border: InputBorder.none),
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'The Nickname field cannot be empty';
-                    }
-                    return null;
-                  },
-                ),
+          ],
+        ),
+        body: new Container(
+          child: CenterLoader(),
+        ),
+      );
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          title: (widget.edit == SecretEditType.Create)
+              ? Text('New Secret')
+              : ((widget.edit == SecretEditType.Update)
+                  ? Text('Update Secret')
+                  : Text('Secret Action')),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white),
               ),
-              FormDivider(),
-              ListTile(
-                title: TextFormField(
-                  onChanged: (value) {
-                    setState(() {
-                      _secret.website = value;
-                    });
-                    Log.debug('new website ${_secret.website}');
-                  },
-                  initialValue: _secret.website,
-                  decoration: InputDecoration(
-                      labelText: 'Website', border: InputBorder.none),
-                  keyboardType: TextInputType.url,
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'The Website field cannot be empty';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              FormDivider(),
-              ListTile(
-                title: TextFormField(
-                  onChanged: (value) {
-                    setState(() {
-                      _secret.username = value;
-                    });
-                    Log.debug('new username ${_secret.username}');
-                  },
-                  initialValue: _secret.username,
-                  decoration: InputDecoration(
-                    labelText: 'Username',
-                    border: InputBorder.none,
+            ),
+          ],
+        ),
+        body: new Container(
+          padding: new EdgeInsets.all(20.0),
+          child: new Form(
+            key: this._formKey,
+            child: new ListView(
+              children: <Widget>[
+                ListTile(
+                  title: TextFormField(
+                    onChanged: (value) {
+                      setState(() {
+                        _secret.nickname = value;
+                      });
+                      Log.debug('new nickname ${_secret.nickname}');
+                    },
+                    initialValue: _secret.nickname,
+                    decoration: InputDecoration(
+                        labelText: 'Nickname', border: InputBorder.none),
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'The Nickname field cannot be empty';
+                      }
+                      return null;
+                    },
                   ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'The Username field cannot be empty';
-                    }
-                    return null;
-                  },
                 ),
-              ),
-              FormDivider(),
-              PasswordInput(
-                onChange: (value) {
-                  setState(() {
-                    _secret.message = value;
-                  });
-                  Log.debug('new password ${_secret.message}');
-                },
-                controller: _passwordController,
-                initialValue: _secret.message,
-                setPassword: setPassword,
-              ),
-              FormDivider(),
-              ListTile(
-                title: TextFormField(
-                  onChanged: (value) {
+                FormDivider(),
+                ListTile(
+                  title: TextFormField(
+                    onChanged: (value) {
+                      setState(() {
+                        _secret.website = value;
+                      });
+                      Log.debug('new website ${_secret.website}');
+                    },
+                    initialValue: _secret.website,
+                    decoration: InputDecoration(
+                        labelText: 'Website', border: InputBorder.none),
+                    keyboardType: TextInputType.url,
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'The Website field cannot be empty';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                FormDivider(),
+                ListTile(
+                  title: TextFormField(
+                    onChanged: (value) {
+                      setState(() {
+                        _secret.username = value;
+                      });
+                      Log.debug('new username ${_secret.username}');
+                    },
+                    initialValue: _secret.username,
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      border: InputBorder.none,
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'The Username field cannot be empty';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                FormDivider(),
+                PasswordInput(
+                  onChange: (value) {
                     setState(() {
-                      _secret.notes = value;
+                      _secret.message = value;
                     });
-                    Log.debug('new notes ${_secret.notes}');
+                    Log.debug('new password ${_secret.message}');
                   },
-                  initialValue: _secret.notes,
-                  decoration: InputDecoration(
-                      labelText: 'Notes', border: InputBorder.none),
+                  controller: _passwordController,
+                  initialValue: _secret.message,
+                  setPassword: setPassword,
                 ),
-              ),
-              FormDivider(),
-              FormField(
-                builder: (fieldState) => ListTile(
-                  contentPadding: EdgeInsets.fromLTRB(15, 15, 15, 0),
-                  title: Text(
-                    "Vaults",
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      // fontSize: 12.5,
+                FormDivider(),
+                ListTile(
+                  title: TextFormField(
+                    onChanged: (value) {
+                      setState(() {
+                        _secret.notes = value;
+                      });
+                      Log.debug('new notes ${_secret.notes}');
+                    },
+                    initialValue: _secret.notes,
+                    decoration: InputDecoration(
+                        labelText: 'Notes', border: InputBorder.none),
+                  ),
+                ),
+                FormDivider(),
+                FormField(
+                  builder: (fieldState) => ListTile(
+                    contentPadding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                    title: Text(
+                      "Vaults",
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        // fontSize: 12.5,
+                      ),
+                    ),
+                    subtitle: Wrap(
+                      children: _generateChips(context),
+                      spacing: 5.0,
+                      runSpacing: 5.0,
                     ),
                   ),
-                  subtitle: Wrap(
-                    children: _generateChips(context),
-                    spacing: 5.0,
-                    runSpacing: 5.0,
-                  ),
-                ),
-                validator: (value) {
-                  if (!selectedVaults.containsValue(true)) {
-                    // TODO: create an error text widget and set it here
-                    return 'You must select at least one vault to add your secret to';
-                  }
-                  return null;
-                },
-              ),
-              FormDivider(),
-              ListTile(
-                title: RaisedButton(
-                  onPressed: () {
-                    submit(context);
+                  validator: (value) {
+                    if (!selectedVaults.containsValue(true)) {
+                      // TODO: create an error text widget and set it here
+                      return 'You must select at least one vault to add your secret to';
+                    }
+                    return null;
                   },
-                  child: Text(
-                    'Save',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  color: Colors.blue,
                 ),
-              ),
-            ],
+                FormDivider(),
+                ListTile(
+                  title: RaisedButton(
+                    onPressed: () {
+                      submit(context);
+                    },
+                    child: Text(
+                      'Save',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    color: Colors.blue,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
-        onPressed: () async {
-          final result = await showModalBottomSheet(
-              context: context,
-              builder: (BuildContext context) {
-                return new SecretGenerate(inEditor: true);
-              });
-          if (result != null && result.toString().trim() != '') {
-            _secret.message = result.toString();
-            setPassword(_secret.message);
-          }
-        },
-        tooltip: 'Generate',
-        child: Icon(Icons.lock),
-      ),
-    );
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.green,
+          onPressed: () async {
+            final result = await showModalBottomSheet(
+                context: context,
+                builder: (BuildContext context) {
+                  return new SecretGenerate(inEditor: true);
+                });
+            if (result != null && result.toString().trim() != '') {
+              _secret.message = result.toString();
+              setPassword(_secret.message);
+            }
+          },
+          tooltip: 'Generate',
+          child: Icon(Icons.lock),
+        ),
+      );
+    }
   }
 }
 
