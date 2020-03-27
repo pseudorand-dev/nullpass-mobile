@@ -280,6 +280,27 @@ class NullPassDB {
 
   /* Vaults */
   static final _NullPassVaultsDB _vaultDB = _NullPassVaultsDB.instance;
+
+  Future<Vault> createDefaultVault() async {
+    try {
+      var v = await _vaultDB.getDefaultVault();
+      if (v != null) return v;
+
+      var newV = Vault(
+          nickname: "Personal",
+          source: VaultSource.Internal,
+          sourceId: "myDevice",
+          isDefault: true);
+      if (await insertVault(newV)) {
+        return newV;
+      }
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to create the default vault record to the db: $e");
+    }
+    return null;
+  }
+
   Future<bool> insertVault(Vault v) async {
     try {
       await _vaultDB.insert(v);
@@ -307,6 +328,17 @@ class NullPassDB {
     } catch (e) {
       Log.debug(
           "an error occured while trying to get the vault record from the db: $e");
+      return null;
+    }
+  }
+
+  Future<Vault> getDefaultVault() async {
+    try {
+      var v = await _vaultDB.getDefaultVault();
+      return v;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to get the default vault from the db: $e");
       return null;
     }
   }
@@ -734,12 +766,25 @@ class _NullPassVaultsDB {
     return id;
   }
 
-  Future<void> bulkInsert(List<dynamic> lv) async {
+  Future<void> bulkInsert(List<Vault> lv) async {
     Database db = await _database;
     var batch = db.batch();
     lv.forEach((v) {
-      (v as Vault).createdAt = DateTime.now();
-      (v as Vault).modifiedAt = DateTime.now();
+      v.createdAt = DateTime.now();
+      v.modifiedAt = DateTime.now();
+      batch.insert(vaultTableName, v.toMap());
+    });
+    var results = await batch.commit(continueOnError: true);
+    Log.debug(results);
+    return;
+  }
+
+  Future<void> bulkInsertMap(List<Map<String, dynamic>> lv) async {
+    Database db = await _database;
+    var batch = db.batch();
+    lv.forEach((v) {
+      v[columnVaultCreated] = DateTime.now().toIso8601String();
+      v[columnVaultCreated] = DateTime.now().toIso8601String();
       batch.insert(vaultTableName, v);
     });
     var results = await batch.commit(continueOnError: true);
@@ -753,6 +798,22 @@ class _NullPassVaultsDB {
         columns: _vaultsTableColumns,
         where: '$columnVaultId = ?',
         whereArgs: [uid]);
+    if (maps.length > 0) {
+      var v = Vault.fromMap(maps.first);
+      return v;
+    }
+    return null;
+  }
+
+  Future<Vault> getDefaultVault() async {
+    Database db = await _database;
+    List<Map> maps = await db.query(vaultTableName,
+        columns: _vaultsTableColumns, where: '$columnVaultIsDefault = ?',
+        // Have to use `1` instead of `true` because:
+        //      "Invalid argument true with type bool.
+        //       Only num, String and Uint8List are supported"
+        // whereArgs: [true]);
+        whereArgs: [1]);
     if (maps.length > 0) {
       var v = Vault.fromMap(maps.first);
       return v;
