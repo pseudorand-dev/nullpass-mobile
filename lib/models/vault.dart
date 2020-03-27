@@ -3,6 +3,7 @@
  * Copyright (c) 2020 Pseudorand Development. All rights reserved.
  */
 
+import 'package:nullpass/common.dart';
 import 'package:uuid/uuid.dart';
 
 // TODO: replace with better terminology
@@ -92,7 +93,7 @@ class Vault {
     this.nickname = input[_VAULT_NICKNAME_KEY];
     this.source = vaultSourceFromString(input[_VAULT_SOURCE_KEY]);
     this.sourceId = input[_VAULT_SOURCEID_KEY];
-    this.isDefault = input[_VAULT_ISDEFAULT_KEY] ?? false;
+    this.isDefault = isTrue(input[_VAULT_ISDEFAULT_KEY]);
     this.createdAt = DateTime.tryParse(input[_VAULT_CREATED_KEY]);
     this.modifiedAt = DateTime.tryParse(input[_VAULT_MODIFIED_KEY]);
   }
