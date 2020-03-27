@@ -27,6 +27,7 @@ const String AlphaCharactersPrefKey = 'AlphaCharacters';
 const String NumericCharactersPrefKey = 'NumericCharacters';
 const String SymbolCharactersPrefKey = 'SymbolCharacters';
 const String EncryptionKeyPairSetupPrefKey = 'EncryptionKeyPairSetup';
+const String DefaultVaultIDPrefKey = 'DefaultVaultID';
 const String VaultsSetupPrefKey = 'VaultsSetup';
 const String SharedPrefSetupKey = 'SpSetup';
 const String InAppWebpagesPrefKey = 'InAppWebpages';
@@ -49,13 +50,15 @@ void setupSharedPreferences({Function encryptionKeyCallback}) {
 
   if (!sharedPrefs.containsKey(VaultsSetupPrefKey) ||
       !sharedPrefs.getBool(VaultsSetupPrefKey)) {
-    NullPassDB.instance
-        .insertVault(Vault(
-            nickname: "Personal",
-            source: VaultSource.Internal,
-            sourceId: "myDevice",
-            isDefault: true))
-        .then((response) {
+    var newV = Vault(
+        nickname: "Personal",
+        source: VaultSource.Internal,
+        sourceId: "myDevice",
+        isDefault: true);
+    NullPassDB.instance.insertVault(newV).then((response) {
+      sharedPrefs.setString(DefaultVaultIDPrefKey, newV.uid).then((worked) {
+        if (worked) Log.debug('Default Vault ID Added Complete - ${newV.uid}');
+      });
       sharedPrefs.setBool(VaultsSetupPrefKey, true).then((worked) {
         if (worked) Log.debug('Default Vault Setup Complete');
       });
