@@ -218,9 +218,7 @@ class _SettingsState extends State<Settings> {
                             FlatButton(
                                 child: Text('Import'),
                                 onPressed: () async {
-                                  NullPassDB npDB = NullPassDB.instance;
-                                  await npDB.bulkInsertSecrets(
-                                      secretsListFromJsonString(_importText));
+                                  await importSecretsAndVaults(_importText);
                                   Navigator.of(context).pop();
                                 })
                           ],
@@ -257,15 +255,7 @@ class _SettingsState extends State<Settings> {
                             FlatButton(
                                 child: Text('Export'),
                                 onPressed: () async {
-                                  NullPassDB npDB = NullPassDB.instance;
-                                  List<Secret> secretsList =
-                                      await npDB.getAllSecrets();
-                                  List<Map<String, dynamic>> secretsJsonList =
-                                      <Map<String, dynamic>>[];
-                                  secretsList.forEach(
-                                      (s) => secretsJsonList.add(s.toJson()));
-                                  await Clipboard.setData(ClipboardData(
-                                      text: jsonEncode(secretsJsonList)));
+                                  await exportSecretsAndVaults();
                                   Navigator.of(context).pop();
                                 })
                           ],
