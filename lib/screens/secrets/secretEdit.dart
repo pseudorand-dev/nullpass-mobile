@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:nullpass/common.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/secrets/secretGenerate.dart';
@@ -48,6 +49,11 @@ class _CreateSecretState extends State<SecretEdit> {
       if (_secret.uuid == null || !isUUID(_secret.uuid.trim(), '4')) {
         _secret.uuid = (new Uuid()).v4();
       }
+      _secret.vaults = [];
+      selectedVaults.forEach((f, val) {
+        if (val) _secret.vaults.add(f);
+      });
+
       NullPassDB helper = NullPassDB.instance;
       bool success = false;
       if (widget.edit == SecretEditType.Create) {
@@ -76,6 +82,26 @@ class _CreateSecretState extends State<SecretEdit> {
           ? widget.secret
           : new Secret(nickname: '', website: '', username: '', message: ''));
     }
+
+    vaults = <String, Vault>{};
+    selectedVaults = <String, bool>{};
+
+    // _secret.vaults.forEach((v) => )
+
+    defaultVault = sharedPrefs.getString(DefaultVaultIDPrefKey);
+
+    NullPassDB.instance.getAllInternallyManagedVaults().then((vaultsList) {
+      vaultsList.forEach((v) {
+        vaults[v.uid] = v;
+        selectedVaults[v.uid] =
+            (((this._secret.vaults == null || this._secret.vaults.isEmpty) &&
+                    v.uid == defaultVault) ||
+                _secret.vaults.contains(v.uid));
+      });
+      setState(() {
+        _loading = false;
+      });
+    });
   }
 
   void setPassword(String value) {
