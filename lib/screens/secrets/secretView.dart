@@ -64,6 +64,8 @@ class _SecretViewState extends State<SecretView> {
                               message: secret.message,
                               notes: secret.notes,
                               thumbnailURI: secret.thumbnailURI,
+                              vaults: secret.vaults,
+                              tags: secret.tags,
                               uuid: secret.uuid))),
                 );
                 if (isTrue(result)) {
