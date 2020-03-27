@@ -311,7 +311,31 @@ class _CreateSecretState extends State<SecretEdit> {
                 ),
               ),
               FormDivider(),
-              // Padding(padding: EdgeInsetsGeometry(2,2,2,2))
+              FormField(
+                builder: (fieldState) => ListTile(
+                  contentPadding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                  title: Text(
+                    "Vaults",
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      // fontSize: 12.5,
+                    ),
+                  ),
+                  subtitle: Wrap(
+                    children: _generateChips(context),
+                    spacing: 5.0,
+                    runSpacing: 5.0,
+                  ),
+                ),
+                validator: (value) {
+                  if (!selectedVaults.containsValue(true)) {
+                    // TODO: create an error text widget and set it here
+                    return 'You must select at least one vault to add your secret to';
+                  }
+                  return null;
+                },
+              ),
+              FormDivider(),
               ListTile(
                 title: RaisedButton(
                   onPressed: () {
