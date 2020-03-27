@@ -296,7 +296,10 @@ class _SettingsState extends State<Settings> {
                                 ),
                                 onPressed: () async {
                                   NullPassDB npDB = NullPassDB.instance;
+                                  await npDB.deleteAllDevices();
+                                  await npDB.deleteAllSyncs();
                                   await npDB.deleteAllSecrets();
+                                  await npDB.deleteAllVaults();
                                   Navigator.of(context).pop();
                                 })
                           ],
