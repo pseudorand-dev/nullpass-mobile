@@ -315,6 +315,20 @@ class _SettingsState extends State<Settings> {
                   },
                 ),
               ),
+              ListTile(
+                contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
+                title: Text("Create Default Vault"),
+                subtitle: Text(
+                  "If there is no default vault, then create one. This is only needed if you delete all data and do not run an import from a NullPass export",
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.add_circle, color: Colors.blue),
+                  onPressed: () async {
+                    var v = await NullPassDB.instance.createDefaultVault();
+                    sharedPrefs.setString(DefaultVaultIDPrefKey, v.uid);
+                  },
+                ),
+              )
             ],
           ),
         ),
