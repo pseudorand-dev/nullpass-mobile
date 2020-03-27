@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/models/secret.dart';
+import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/secrets/secretGenerate.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
@@ -30,6 +31,12 @@ class _CreateSecretState extends State<SecretEdit> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   Secret _secret;
   TextEditingController _passwordController = new TextEditingController();
+
+  bool _loading = true;
+  Map<String, Vault> vaults;
+  Map<String, bool> selectedVaults;
+  String defaultVault;
+  String newVaultName;
 
   // Submit sends the new password data to the db to be saved then pop's up one level
   void submit(BuildContext context) async {
@@ -76,6 +83,89 @@ class _CreateSecretState extends State<SecretEdit> {
       _secret.message = value;
     });
     _passwordController.text = value;
+  }
+
+  List<Widget> _generateChips(BuildContext context) {
+    var widgetList = <Widget>[];
+
+    this.vaults.forEach((uid, vault) {
+      widgetList.add(NullPassFilterChip(
+        label: vault.nickname,
+        isSelected: this.selectedVaults[uid],
+        onSelected: (isSelected) {
+          setState(() {
+            this.selectedVaults[uid] = isSelected;
+          });
+        },
+      ));
+    });
+
+    // /*
+    widgetList.add(ActionChip(
+      label: Text(
+        "Add",
+        style: TextStyle(color: Colors.black),
+      ),
+      avatar: CircleAvatar(
+        child: Text(
+          "+",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.blue,
+      ),
+      onPressed: () async {
+        showDialog<void>(
+          context: context,
+          // uncomment below to force user to tap button and not just tap outside the alert!
+          // barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Add a new Vault'),
+              content: TextFormField(
+                initialValue: "",
+                decoration: InputDecoration(labelText: 'New Vault'),
+                onChanged: (input) {
+                  newVaultName = input;
+                },
+              ),
+              actions: <Widget>[
+                FlatButton(
+                    child: Text('Cancel'),
+                    onPressed: () {
+                      newVaultName = "";
+                      Navigator.of(context).pop();
+                    }),
+                FlatButton(
+                    child: Text('Add'),
+                    onPressed: () async {
+                      // NullPassDB npDB = NullPassDB.instance;
+                      // await npDB.deleteAllSecrets();
+                      var v = Vault(
+                          nickname: newVaultName,
+                          source: VaultSource.Internal,
+                          sourceId: "myDevice",
+                          isDefault: false);
+                      var added = await NullPassDB.instance.insertVault(v);
+                      newVaultName = "";
+                      if (added) {
+                        setState(() {
+                          this.vaults[v.uid] = v;
+                          this.selectedVaults[v.uid] = true;
+                        });
+                      }
+                      Navigator.of(context).pop();
+                    })
+              ],
+            );
+          },
+        );
+      },
+      backgroundColor: Colors.white,
+      shape: StadiumBorder(side: BorderSide(color: Colors.blue)),
+    ));
+    // */
+
+    return widgetList;
   }
 
   @override
