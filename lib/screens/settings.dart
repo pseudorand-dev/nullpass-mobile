@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/secret.dart';
+import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/services/datastore.dart';
 
@@ -335,4 +336,43 @@ class _SettingsState extends State<Settings> {
       ),
     );
   }
+}
+
+Future<void> exportSecretsAndVaults() async {
+  NullPassDB npDB = NullPassDB.instance;
+  List<Secret> secretsList = await npDB.getAllSecrets();
+  List<Vault> vaultsList = await npDB.getAllVaults();
+
+  List<Map<String, dynamic>> secretsJsonList = <Map<String, dynamic>>[];
+  secretsList.forEach((s) => secretsJsonList.add(s.toJson()));
+
+  List<Map<String, dynamic>> vaultsJsonList = <Map<String, dynamic>>[];
+  vaultsList.forEach((v) => vaultsJsonList.add(v.toJson()));
+
+  await Clipboard.setData(ClipboardData(
+    text: jsonEncode(<String, dynamic>{
+      "secrets": secretsJsonList,
+      "vaults": vaultsJsonList
+    }),
+  ));
+}
+
+Future<void> importSecretsAndVaults(String input) async {
+  NullPassDB npDB = NullPassDB.instance;
+
+  Map<String, dynamic> decodedInput = jsonDecode(input);
+  // var secretsJsonList = decodedInput["secrets"];
+  // var vaultsJsonList = decodedInput["vaults"];
+
+  var secretsList = <Secret>[];
+  var vaultsList = <Vault>[];
+
+  (decodedInput["secrets"] as List)
+      .forEach((sMap) => secretsList.add(Secret.fromJson(sMap)));
+  (decodedInput["vaults"] as List)
+      .forEach((vMap) => vaultsList.add(Vault.fromMap(vMap)));
+
+  // await npDB.bulkInsertSecrets(secretsListFromJsonString(input));
+  await npDB.bulkInsertVaults(vaultsList);
+  await npDB.bulkInsertSecrets(secretsList);
 }
