@@ -721,11 +721,11 @@ class _NullPassVaultsDB {
 
   Future<int> insert(Vault v) async {
     Database db = await _database;
-    Log.debug(v.toMap());
     int id;
     try {
       v.createdAt = DateTime.now();
       v.modifiedAt = DateTime.now();
+      Log.debug(v.toMap());
       id = await db.insert(vaultTableName, v.toMap());
     } catch (e) {
       Log.debug(e);
