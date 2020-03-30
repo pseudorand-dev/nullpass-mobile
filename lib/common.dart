@@ -7,7 +7,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:nullpass/models/secret.dart';
-import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/encryption.dart';
 import 'package:nullpass/services/notificationManager.dart' as np;
@@ -50,18 +49,16 @@ void setupSharedPreferences({Function encryptionKeyCallback}) {
 
   if (!sharedPrefs.containsKey(VaultsSetupPrefKey) ||
       !sharedPrefs.getBool(VaultsSetupPrefKey)) {
-    var newV = Vault(
-        nickname: "Personal",
-        source: VaultSource.Internal,
-        sourceId: "myDevice",
-        isDefault: true);
-    NullPassDB.instance.insertVault(newV).then((response) {
-      sharedPrefs.setString(DefaultVaultIDPrefKey, newV.uid).then((worked) {
-        if (worked) Log.debug('Default Vault ID Added Complete - ${newV.uid}');
-      });
-      sharedPrefs.setBool(VaultsSetupPrefKey, true).then((worked) {
-        if (worked) Log.debug('Default Vault Setup Complete');
-      });
+    NullPassDB.instance.createDefaultVault().then((newV) {
+      if (newV != null) {
+        sharedPrefs.setString(DefaultVaultIDPrefKey, newV.uid).then((worked) {
+          if (worked)
+            Log.debug('Default Vault ID Added Complete - ${newV.uid}');
+        });
+        sharedPrefs.setBool(VaultsSetupPrefKey, true).then((worked) {
+          if (worked) Log.debug('Default Vault Setup Complete');
+        });
+      }
     }).catchError((e) {
       sharedPrefs.setBool(VaultsSetupPrefKey, false).then((worked) {
         if (worked)
