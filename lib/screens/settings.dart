@@ -333,8 +333,8 @@ class _SettingsState extends State<Settings> {
 
 Future<void> exportSecretsAndVaults() async {
   NullPassDB npDB = NullPassDB.instance;
-  List<Secret> secretsList = await npDB.getAllSecrets();
-  List<Vault> vaultsList = await npDB.getAllVaults();
+  List<Secret> secretsList = await npDB.getAllSecrets() ?? <Secret>[];
+  List<Vault> vaultsList = await npDB.getAllVaults() ?? <Vault>[];
 
   List<Map<String, dynamic>> secretsJsonList = <Map<String, dynamic>>[];
   secretsList.forEach((s) => secretsJsonList.add(s.toJson()));
