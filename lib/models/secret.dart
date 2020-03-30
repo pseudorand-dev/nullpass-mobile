@@ -296,7 +296,7 @@ class Secret {
       thumbnailURI: jsonBlob['thumbnailURI'] ?? jsonBlob['thumbnailUri'],
       notes: jsonBlob['notes'],
       tags: new List.from(jsonBlob['tags']) ?? <String>[],
-      vaults: jsonBlob.containsKey('vault')
+      vaults: jsonBlob.containsKey('vaults')
           ? new List.from(jsonBlob['vaults']) ?? <String>[]
           : <String>[],
       created: created,
