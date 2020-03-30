@@ -25,6 +25,7 @@ dependencies:
   flutter_secure_storage: ^3.3.1+1
   flutter_widgets: ^0.1.12
   font_awesome_flutter: ^8.7.0
+  material_design_icons_flutter: ^4.0.5045
   onesignal_flutter: ^2.2.0
   openpgp: ^0.8.2
   path_provider: ^1.6.5
