@@ -161,6 +161,7 @@ enum NullPassRoute {
   FindSecret,
   NewSecret,
   GenerateSecret,
+  ManageVault,
   QrCode,
   QrScanner,
   ManageDevices,

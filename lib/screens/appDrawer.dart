@@ -14,6 +14,7 @@ import 'package:nullpass/screens/secrets/secretEdit.dart';
 import 'package:nullpass/screens/secrets/secretGenerate.dart';
 import 'package:nullpass/screens/secrets/secretSearch.dart';
 import 'package:nullpass/screens/settings.dart';
+import 'package:nullpass/screens/vaults/manageVaults.dart';
 import 'package:nullpass/widgets.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -131,6 +132,25 @@ class AppDrawer extends StatelessWidget {
                 }
                 */
                 // this.reloadSecretList('true');
+              },
+            ),
+            ListTile(
+              selected: (currentPage == NullPassRoute.ManageVault),
+              leading: Icon(MdiIcons.safeSquareOutline),
+              title: Text('Manage Vault',
+                  style: TextStyle(
+                      color: (currentPage == NullPassRoute.ManageVault)
+                          ? ThemeData.light().accentColor
+                          : ThemeData.light().unselectedWidgetColor)),
+              onTap: () async {
+                Navigator.pop(context);
+                if (currentPage != NullPassRoute.ManageVault) {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ManageVault()),
+                  );
+                  this.reloadSecretList('true');
+                }
               },
             ),
             FormDivider(),
