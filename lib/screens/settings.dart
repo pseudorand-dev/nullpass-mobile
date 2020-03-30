@@ -195,12 +195,14 @@ class _SettingsState extends State<Settings> {
                         return AlertDialog(
                           title: Text('Import Data'),
                           content: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               Text(
                                   'Paste a JSON blob containing a list of NullPass Secrets.'),
                               TextFormField(
                                 maxLines: 10,
-                                minLines: 5,
+                                minLines: 1,
+                                autofocus: true,
                                 onChanged: (value) {
                                   setState(() {
                                     _importText = value;
