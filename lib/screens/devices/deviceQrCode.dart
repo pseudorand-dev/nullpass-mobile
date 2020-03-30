@@ -7,6 +7,7 @@ import 'dart:convert';
 
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/device.dart';
 import 'package:nullpass/models/qrData.dart';
@@ -207,7 +208,7 @@ class _QrCodeState extends State<QrCode> {
         floatingActionButton: FloatingActionButton(
           onPressed: _fabPressFunction,
           tooltip: 'QR Scanner',
-          child: Icon(CommunityMaterialIcons.qrcode_scan),
+          child: Icon(MdiIcons.qrcodeScan),
         ),
       ),
     );

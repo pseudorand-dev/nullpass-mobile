@@ -9,6 +9,7 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/device.dart';
 import 'package:nullpass/models/qrData.dart';
@@ -247,7 +248,7 @@ class _QrScannerState extends State<QrScanner> {
           floatingActionButton: FloatingActionButton(
             onPressed: _fabPressFunction,
             tooltip: 'QR Code',
-            child: Icon(CommunityMaterialIcons.qrcode_edit),
+            child: Icon(MdiIcons.qrcodeEdit),
           ),
         ),
       );
@@ -286,7 +287,7 @@ class _QrScannerState extends State<QrScanner> {
           floatingActionButton: FloatingActionButton(
             onPressed: _fabPressFunction,
             tooltip: 'QR Code',
-            child: Icon(CommunityMaterialIcons.qrcode_edit),
+            child: Icon(MdiIcons.qrcodeEdit),
           ),
         ),
       );
@@ -330,7 +331,7 @@ class _QrScannerState extends State<QrScanner> {
           floatingActionButton: FloatingActionButton(
             onPressed: _fabPressFunction,
             tooltip: 'QR Code',
-            child: Icon(CommunityMaterialIcons.qrcode_edit),
+            child: Icon(MdiIcons.qrcodeEdit),
           ),
         ),
       );

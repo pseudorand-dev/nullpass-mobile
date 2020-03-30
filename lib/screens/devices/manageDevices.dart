@@ -5,6 +5,7 @@
 
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/device.dart';
 import 'package:nullpass/screens/appDrawer.dart';
@@ -90,7 +91,7 @@ class _ManageDevicesState extends State<ManageDevices> {
               );
             },
             tooltip: 'Add New Device',
-            child: Icon(CommunityMaterialIcons.qrcode_scan),
+            child: Icon(MdiIcons.qrcodeScan),
           ),
         ),
       );

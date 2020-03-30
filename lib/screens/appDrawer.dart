@@ -5,6 +5,7 @@
 
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/app.dart';
@@ -136,7 +137,7 @@ class AppDrawer extends StatelessWidget {
             FormDivider(),
             ListTile(
               selected: (currentPage == NullPassRoute.QrCode),
-              leading: new Icon(CommunityMaterialIcons.qrcode_edit),
+              leading: new Icon(MdiIcons.qrcodeEdit),
               title: Text('Sync To This Device',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.QrCode)
@@ -155,7 +156,7 @@ class AppDrawer extends StatelessWidget {
             ),
             ListTile(
               selected: (currentPage == NullPassRoute.QrScanner),
-              leading: new Icon(CommunityMaterialIcons.qrcode_scan),
+              leading: new Icon(MdiIcons.qrcodeScan),
               title: Text('Sync To New Device',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.QrScanner)
