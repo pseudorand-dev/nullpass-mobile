@@ -169,7 +169,7 @@ class _CreateSecretState extends State<SecretEdit> {
                       var v = Vault(
                           nickname: newVaultName,
                           source: VaultSource.Internal,
-                          sourceId: "myDevice",
+                          sourceId: Vault.InternalSourceID,
                           isDefault: false);
                       var added = await NullPassDB.instance.insertVault(v);
                       newVaultName = "";

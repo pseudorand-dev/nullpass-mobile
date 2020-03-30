@@ -289,7 +289,7 @@ class NullPassDB {
       var newV = Vault(
           nickname: "Personal",
           source: VaultSource.Internal,
-          sourceId: "myDevice",
+          sourceId: Vault.InternalSourceID,
           isDefault: true);
       if (await insertVault(newV)) {
         return newV;

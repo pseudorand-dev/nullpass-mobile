@@ -167,7 +167,7 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
       nickname: _vaultCopy.nickname,
       isDefault: _vaultCopy.isDefault,
       source: VaultSource.Internal,
-      sourceId: InternalSourceID,
+      sourceId: Vault.InternalSourceID,
     );
     if (await NullPassDB.instance.insertVault(v)) {
       await this.widget.onUpdate();
@@ -210,7 +210,7 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
         nickname: "",
         isDefault: false,
         source: VaultSource.Internal,
-        sourceId: InternalSourceID,
+        sourceId: Vault.InternalSourceID,
       );
     }
   }

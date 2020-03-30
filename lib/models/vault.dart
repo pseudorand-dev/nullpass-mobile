@@ -38,6 +38,8 @@ final String columnVaultCreated = _VAULT_CREATED_KEY;
 final String columnVaultModified = _VAULT_MODIFIED_KEY;
 
 class Vault {
+  static const String InternalSourceID = "myDevice";
+
   String uid;
   String nickname;
   VaultSource source;
