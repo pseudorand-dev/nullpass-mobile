@@ -50,6 +50,8 @@ class NullPassDB {
 
   /* Secure Storage for PGP and Secret / Password Storage */
   static final _nullpassSecureStorage = new FlutterSecureStorage();
+  String _encryptionStorePubKeyID = "encPubKey";
+  String _encryptionStoreSecKeyID = "encSecKey";
 
   /* PGP */
   Future<bool> insertEncryptionKeyPair(KeyPair kp) async {
@@ -58,12 +60,13 @@ class NullPassDB {
           kp.publicKey != null &&
           kp.privateKey != null &&
           kp.publicKey.isNotEmpty &&
-          kp.privateKey.isNotEmpty)
+          kp.privateKey.isNotEmpty) {
         await _nullpassSecureStorage.write(
-            key: "encPubKey", value: kp.publicKey);
-      await _nullpassSecureStorage.write(
-          key: "encSecKey", value: kp.privateKey);
-      return true;
+            key: _encryptionStorePubKeyID, value: kp.publicKey);
+        await _nullpassSecureStorage.write(
+            key: _encryptionStoreSecKeyID, value: kp.privateKey);
+        return true;
+      }
     } catch (e) {
       Log.debug(
           "there was an error trying to store the encryption key pair: ${e.toString()}");
@@ -73,13 +76,16 @@ class NullPassDB {
 
   Future<KeyPair> getEncryptionKeyPair() async {
     try {
-      String pubKey = await _nullpassSecureStorage.read(key: "encPubKey");
-      String privKey = await _nullpassSecureStorage.read(key: "encSecKey");
+      String pubKey =
+          await _nullpassSecureStorage.read(key: _encryptionStorePubKeyID);
+      String privKey =
+          await _nullpassSecureStorage.read(key: _encryptionStoreSecKeyID);
       if (pubKey != null &&
           privKey != null &&
           pubKey.isNotEmpty &&
-          privKey.isNotEmpty)
+          privKey.isNotEmpty) {
         return KeyPair(publicKey: pubKey, privateKey: privKey);
+      }
     } catch (e) {
       Log.debug(
           "there was an error trying to fetch the encryption key pair: ${e.toString()}");
@@ -89,7 +95,7 @@ class NullPassDB {
 
   Future<String> getEncryptionPublicKey() async {
     try {
-      return await _nullpassSecureStorage.read(key: "encPubKey");
+      return await _nullpassSecureStorage.read(key: _encryptionStorePubKeyID);
     } catch (e) {
       Log.debug(
           "there was an error trying to fetch the encryption key pair: ${e.toString()}");
@@ -99,7 +105,7 @@ class NullPassDB {
 
   Future<String> getEncryptionPrivateKey() async {
     try {
-      return await _nullpassSecureStorage.read(key: "encSecKey");
+      return await _nullpassSecureStorage.read(key: _encryptionStoreSecKeyID);
     } catch (e) {
       Log.debug(
           "there was an error trying to fetch the encryption key pair: ${e.toString()}");
@@ -636,10 +642,10 @@ class _NullPassSecretDetailsDB {
     return id;
   }
 
-  Future<void> insertBulk(List<dynamic> ls) async {
+  Future<void> insertBulk(List<Secret> ls) async {
     Database db = await _database;
     var batch = db.batch();
-    ls.forEach((s) => batch.insert(secretTableName, s));
+    ls.forEach((s) => batch.insert(secretTableName, s.toMap()));
     var results = await batch.commit(continueOnError: true);
     Log.debug(results);
     return;
@@ -940,10 +946,10 @@ class _NullPassDevicesDB {
     return id;
   }
 
-  Future<void> bulkInsert(List<dynamic> ld) async {
+  Future<void> bulkInsert(List<Device> ld) async {
     Database db = await _database;
     var batch = db.batch();
-    ld.forEach((d) => batch.insert(deviceTableName, d));
+    ld.forEach((d) => batch.insert(deviceTableName, d.toMap()));
     var results = await batch.commit(continueOnError: true);
     Log.debug(results);
     return;
@@ -1076,10 +1082,10 @@ class _NullPassSyncDevicesDB {
     return id;
   }
 
-  Future<void> bulkInsert(List<dynamic> ld) async {
+  Future<void> bulkInsert(List<DeviceSync> lds) async {
     Database db = await _database;
     var batch = db.batch();
-    ld.forEach((d) => batch.insert(syncTableName, d));
+    lds.forEach((ds) => batch.insert(syncTableName, ds.toMap()));
     var results = await batch.commit(continueOnError: true);
     Log.debug(results);
     return;
