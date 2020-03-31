@@ -43,6 +43,9 @@ Future _onCreate(Database db, int version) async {
   await db.execute("${_NullPassVaultsDB.createTable}");
 }
 
+const String _encryptionStorePubKeyID = "encPubKey";
+const String _encryptionStoreSecKeyID = "encSecKey";
+
 class NullPassDB {
   /* DB singleton */
   NullPassDB._privateConstructor();
@@ -50,8 +53,6 @@ class NullPassDB {
 
   /* Secure Storage for PGP and Secret / Password Storage */
   static final _nullpassSecureStorage = new FlutterSecureStorage();
-  String _encryptionStorePubKeyID = "encPubKey";
-  String _encryptionStoreSecKeyID = "encSecKey";
 
   /* PGP */
   Future<bool> insertEncryptionKeyPair(KeyPair kp) async {
@@ -241,7 +242,9 @@ class NullPassDB {
 
   Future<bool> deleteAllSecrets() async {
     try {
+      var kp = await getEncryptionKeyPair();
       await _nullpassSecureStorage.deleteAll();
+      await insertEncryptionKeyPair(kp);
     } catch (e) {
       Log.debug(
           "an error occured while trying to delete all secrets from the secure storage: $e");
