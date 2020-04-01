@@ -330,9 +330,9 @@ class NullPassDB {
     }
   }
 
-  Future<Vault> getVaultByID(String uid) async {
+  Future<Vault> getVaultByID(String vid) async {
     try {
-      var v = await _vaultDB.getVaultByID(uid);
+      var v = await _vaultDB.getVaultByID(vid);
       return v;
     } catch (e) {
       Log.debug(
@@ -385,6 +385,35 @@ class NullPassDB {
     }
   }
 
+  Future<Vault> setVaultAsDefault(String vid) async {
+    try {
+      var newDefaultVault = await getVaultByID(vid);
+      // if the Vault we are trying to select exists - i.e. can be made default
+      if (newDefaultVault != null) {
+        // get all vaults listed as default that are not the vault
+        // we want to make default and mark them as not default
+        var vList = await _vaultDB.getAllDefaultVaults();
+        vList.forEach((v) async {
+          if (v.uid != vid) {
+            v.isDefault = false;
+            await _vaultDB.update(v);
+          }
+        });
+
+        // Update the vault we want to be marked as default to be default
+        if (!newDefaultVault.isDefault) {
+          newDefaultVault.isDefault = true;
+          await _vaultDB.update(newDefaultVault);
+        }
+        return newDefaultVault;
+      }
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to update the vault record in the db: $e");
+    }
+    return null;
+  }
+
   Future<bool> updateVault(Vault v) async {
     try {
       await _vaultDB.update(v);
@@ -396,9 +425,9 @@ class NullPassDB {
     }
   }
 
-  Future<bool> deleteVault(String uid) async {
+  Future<bool> deleteVault(String vid) async {
     try {
-      await _vaultDB.delete(uid);
+      await _vaultDB.delete(vid);
       return true;
     } catch (e) {
       Log.debug(
@@ -828,6 +857,18 @@ class _NullPassVaultsDB {
       return v;
     }
     return null;
+  }
+
+  Future<List<Vault>> getAllDefaultVaults() async {
+    Database db = await _database;
+    List<Map> maps = await db.query(vaultTableName,
+            columns: _vaultsTableColumns,
+            where: '$columnVaultIsDefault = ?',
+            whereArgs: [1]) ??
+        <Map>[];
+    var defaultVList = <Vault>[];
+    maps.forEach((v) => defaultVList.add(Vault.fromMap(v)));
+    return defaultVList;
   }
 
   Future<List<Vault>> getAllVaults() async {
