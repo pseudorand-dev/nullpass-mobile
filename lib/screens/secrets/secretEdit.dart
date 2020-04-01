@@ -88,7 +88,7 @@ class _CreateSecretState extends State<SecretEdit> {
 
     // _secret.vaults.forEach((v) => )
 
-    defaultVault = sharedPrefs.getString(DefaultVaultIDPrefKey);
+    defaultVault = sharedPrefs.getString(DefaultVaultIDPrefKey) ?? "";
 
     NullPassDB.instance.getAllInternallyManagedVaults().then((vaultsList) {
       vaultsList.forEach((v) {
