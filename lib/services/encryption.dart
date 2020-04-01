@@ -1,3 +1,8 @@
+/*
+ * Created by Ilan Rasekh on 2020/3/15
+ * Copyright (c) 2020 Pseudorand Development. All rights reserved.
+ */
+
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:openpgp/key_options.dart';

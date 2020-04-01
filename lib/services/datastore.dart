@@ -1,3 +1,8 @@
+/*
+ * Created by Ilan Rasekh on 2020/3/12
+ * Copyright (c) 2020 Pseudorand Development. All rights reserved.
+ */
+
 import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
