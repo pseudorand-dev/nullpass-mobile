@@ -168,8 +168,8 @@ class _CreateSecretState extends State<SecretEdit> {
                       // await npDB.deleteAllSecrets();
                       var v = Vault(
                           nickname: newVaultName,
-                          source: VaultSource.Internal,
-                          sourceId: Vault.InternalSourceID,
+                          manager: VaultManager.Internal,
+                          managerId: Vault.InternalSourceID,
                           isDefault: false);
                       var added = await NullPassDB.instance.insertVault(v);
                       newVaultName = "";

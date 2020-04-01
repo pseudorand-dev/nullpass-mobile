@@ -297,8 +297,8 @@ class NullPassDB {
 
       var newV = Vault(
           nickname: "Personal",
-          source: VaultSource.Internal,
-          sourceId: Vault.InternalSourceID,
+          manager: VaultManager.Internal,
+          managerId: Vault.InternalSourceID,
           isDefault: true);
       if (await insertVault(newV)) {
         return newV;
@@ -740,8 +740,8 @@ class _NullPassVaultsDB {
               CREATE TABLE $vaultTableName (
                 $columnVaultId TEXT PRIMARY KEY,
                 $columnVaultNickname TEXT NOT NULL,
-                $columnVaultSource TEXT NOT NULL,
-                $columnVaultSourceId TEXT NOT NULL,
+                $columnVaultManager TEXT NOT NULL,
+                $columnVaultManagerId TEXT NOT NULL,
                 $columnVaultIsDefault BOOL NOT NULL,
                 $columnVaultSortKey TEXT NOT NULL,
                 $columnVaultCreated TEXT,
@@ -752,8 +752,8 @@ class _NullPassVaultsDB {
   static final List<String> _vaultsTableColumns = [
     columnVaultId,
     columnVaultNickname,
-    columnVaultSource,
-    columnVaultSourceId,
+    columnVaultManager,
+    columnVaultManagerId,
     columnVaultIsDefault,
     columnVaultSortKey,
     columnVaultCreated,
@@ -846,8 +846,8 @@ class _NullPassVaultsDB {
     Database db = await _database;
     List<Map> maps = await db.query(vaultTableName,
         columns: _vaultsTableColumns,
-        where: '$columnVaultSource = ?',
-        whereArgs: [vaultSourceToString(VaultSource.Internal)],
+        where: '$columnVaultManager = ?',
+        whereArgs: [vaultSourceToString(VaultManager.Internal)],
         orderBy: columnVaultNickname);
     if (maps.length > 0) {
       List<Vault> vaultList = <Vault>[];
@@ -861,8 +861,8 @@ class _NullPassVaultsDB {
     Database db = await _database;
     List<Map> maps = await db.query(vaultTableName,
         columns: _vaultsTableColumns,
-        where: '$columnVaultSource = ?',
-        whereArgs: [vaultSourceToString(VaultSource.External)],
+        where: '$columnVaultManager = ?',
+        whereArgs: [vaultSourceToString(VaultManager.External)],
         orderBy: columnVaultNickname);
     if (maps.length > 0) {
       List<Vault> vaultList = <Vault>[];

@@ -166,8 +166,8 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
     var v = Vault(
       nickname: _vaultCopy.nickname,
       isDefault: _vaultCopy.isDefault,
-      source: VaultSource.Internal,
-      sourceId: Vault.InternalSourceID,
+      manager: VaultManager.Internal,
+      managerId: Vault.InternalSourceID,
     );
     if (await NullPassDB.instance.insertVault(v)) {
       await this.widget.onUpdate();
@@ -179,8 +179,8 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
       nickname: _vaultCopy.nickname,
       isDefault: _vaultCopy.isDefault,
       uid: this.widget.vault.uid,
-      source: this.widget.vault.source,
-      sourceId: this.widget.vault.sourceId,
+      manager: this.widget.vault.manager,
+      managerId: this.widget.vault.managerId,
       createdAt: this.widget.vault.createdAt,
       modifiedAt: this.widget.vault.modifiedAt,
     );
@@ -198,8 +198,8 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
     if (this.widget.vault != null) {
       _vaultCopy = Vault(
         uid: this.widget.vault.uid,
-        sourceId: this.widget.vault.sourceId,
-        source: this.widget.vault.source,
+        managerId: this.widget.vault.managerId,
+        manager: this.widget.vault.manager,
         nickname: this.widget.vault.nickname,
         modifiedAt: this.widget.vault.modifiedAt,
         isDefault: this.widget.vault.isDefault,
@@ -209,8 +209,8 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
       _vaultCopy = Vault(
         nickname: "",
         isDefault: false,
-        source: VaultSource.Internal,
-        sourceId: Vault.InternalSourceID,
+        manager: VaultManager.Internal,
+        managerId: Vault.InternalSourceID,
       );
     }
   }
