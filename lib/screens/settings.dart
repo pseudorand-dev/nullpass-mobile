@@ -221,9 +221,11 @@ class _SettingsState extends State<Settings> {
                                 child: Text('Import'),
                                 onPressed: () async {
                                   await importSecretsAndVaults(_importText);
-                                  var v = await NullPassDB.instance.getDefaultVault();
+                                  var v = await NullPassDB.instance
+                                      .getDefaultVault();
                                   if (v != null) {
-                                    sharedPrefs.setString(DefaultVaultIDPrefKey, v.uid);
+                                    sharedPrefs.setString(
+                                        DefaultVaultIDPrefKey, v.uid);
                                   }
                                   Navigator.of(context).pop();
                                 })
