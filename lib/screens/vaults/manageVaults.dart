@@ -5,6 +5,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nullpass/common.dart';
 import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/widgets.dart';
