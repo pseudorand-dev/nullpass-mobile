@@ -170,6 +170,9 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
       managerId: Vault.InternalSourceID,
     );
     if (await NullPassDB.instance.insertVault(v)) {
+      if (v.isDefault) {
+        await setVaultAsDefault(v.uid);
+      }
       await this.widget.onUpdate();
     }
   }
@@ -185,8 +188,20 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
       modifiedAt: this.widget.vault.modifiedAt,
     );
     if (await NullPassDB.instance.updateVault(v)) {
+      if (v.isDefault && !this.widget.vault.isDefault) {
+        await setVaultAsDefault(v.uid);
+      }
+
+      if (!v.isDefault && this.widget.vault.isDefault) {
+        sharedPrefs.setString(DefaultVaultIDPrefKey, "");
+      }
       await this.widget.onUpdate();
     }
+  }
+
+  Future<void> setVaultAsDefault(vid) async {
+    await NullPassDB.instance.setVaultAsDefault(vid);
+    sharedPrefs.setString(DefaultVaultIDPrefKey, vid);
   }
 
   @override
