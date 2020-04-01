@@ -13,12 +13,11 @@ import 'package:nullpass/widgets.dart';
 
 class DeviceSyncRules extends StatefulWidget {
   final Device device;
-  final bool isSetup;
-  final bool syncFromDevice;
+  final bool inSetup;
 
-  DeviceSyncRules(this.device,
-      {Key key, @required this.isSetup, @required this.syncFromDevice})
-      : super(key: key);
+  DeviceSyncRules(this.device, {Key key, inSetup})
+      : this.inSetup = inSetup ?? false,
+        super(key: key);
 
   @override
   _DeviceSyncRulesState createState() => _DeviceSyncRulesState();
@@ -27,8 +26,7 @@ class DeviceSyncRules extends StatefulWidget {
 class _DeviceSyncRulesState extends State<DeviceSyncRules> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   Device _device;
-  bool _isSetup;
-  bool _syncFromDevice;
+  bool _inSetup;
   Map<String, DeviceAccess> _deviceAccessMap;
   List<Vault> _vaults;
 
@@ -38,13 +36,15 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
     });
   }
 
-  void onContinue(BuildContext context) async {
+  void onSave(BuildContext context) async {
     if (this._formKey.currentState.validate()) {
       _formKey.currentState.save();
+
+      // validate changes against original and update vault sync
       NullPassDB helper = NullPassDB.instance;
       bool success = false;
 
-      if (_isSetup) {
+      if (_inSetup) {
         var now = DateTime.now().toUtc();
         _device.created = now;
         _device.lastModified = now;
@@ -70,11 +70,16 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
   void initState() {
     super.initState();
     _device = this.widget.device;
-    _isSetup = this.widget.isSetup;
-    _syncFromDevice = this.widget.syncFromDevice;
+    _inSetup = this.widget.inSetup ?? false;
     _deviceAccessMap = <String, DeviceAccess>{};
-    // TODO: getVaults
+
     _vaults = <Vault>[];
+    NullPassDB.instance.getAllInternallyManagedVaults().then((vaultList) {
+      setState(() {
+        _vaults = vaultList;
+        _loading = false;
+      });
+    });
   }
 
   @override
@@ -82,9 +87,9 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
     return Scaffold(
       appBar: AppBar(
         title:
-            (_isSetup) ? Text('Setup Sync Rules') : Text('Manage Sync Rules'),
+            (_inSetup) ? Text('Setup Sync Rules') : Text('Manage Sync Rules'),
         actions: <Widget>[
-          if (!_isSetup)
+          if (!_inSetup)
             FlatButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -125,23 +130,9 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
                     ),
                     padding: EdgeInsets.only(bottom: 25.0),
                   ),
-                  Container(
-                    child: ListTile(
-                      title: Text('Sync from this device'),
-                      trailing: Switch(
-                          value: _syncFromDevice,
-                          onChanged: (value) async {
-                            setState(() {
-                              this._syncFromDevice = !_syncFromDevice;
-                            });
-                          }),
-                      contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
-                    ),
-                  ),
                 ]),
               ),
               _VaultSyncList(
-                syncFromDevice: this._syncFromDevice,
                 vaults: this._vaults,
                 deviceAccessMap: this._deviceAccessMap,
                 onSelectionChange: this.onVaultSelectionChange,
@@ -153,10 +144,10 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
                   child: ListTile(
                     title: RaisedButton(
                       onPressed: () {
-                        onContinue(context);
+                        onSave(context);
                       },
                       child: Text(
-                        'Continue',
+                        'Save',
                         style: TextStyle(color: Colors.white),
                       ),
                       color: Colors.blue,
@@ -172,50 +163,31 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
   }
 }
 
-class _VaultSyncList extends StatefulWidget {
-  final bool syncFromDevice;
+class _VaultSyncList extends StatelessWidget {
   final Map<String, DeviceAccess> deviceAccessMap;
   final Function(String, DeviceAccess) onSelectionChange;
   final List<Vault> vaults;
 
   _VaultSyncList(
       {Key key,
-      @required this.syncFromDevice,
       @required this.vaults,
       @required this.deviceAccessMap,
       @required this.onSelectionChange})
       : super(key: key);
 
   @override
-  _VaultSyncListState createState() => _VaultSyncListState();
-}
-
-class _VaultSyncListState extends State<_VaultSyncList> {
-  Map<String, DeviceAccess> _deviceAccessMap;
-  Function(String, DeviceAccess) _onSelectionChange;
-  List<Vault> _vaults;
-
-  @override
-  void initState() {
-    super.initState();
-    _deviceAccessMap = this.widget.deviceAccessMap;
-    _onSelectionChange = this.widget.onSelectionChange;
-    _vaults = this.widget.vaults;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (this.widget.syncFromDevice && _vaults.length > 0) {
+    if (vaults.length > 0) {
       return SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             return ListTile(
-              title: Text(_vaults[index].nickname),
+              title: Text(vaults[index].nickname),
               // TODO: Set selection for access rule
               trailing: Text("select access"),
             );
           },
-          childCount: _vaults.length,
+          childCount: vaults.length,
         ),
       );
     } else {

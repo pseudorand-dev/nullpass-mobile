@@ -19,13 +19,13 @@ final String columnDeviceCreated = "created_at";
 final String columnDeviceModified = "modified_at";
 final String columnDeviceSortKey = "sort_key";
 
-enum DeviceType { macos, ios, android, unknown }
+enum DeviceType { MacOS, iOS, Android, Unknown }
 
 String deviceTypeToString(DeviceType dt) =>
     dt.toString().substring(dt.toString().lastIndexOf(".") + 1);
 
 DeviceType parseDeviceTypeFromString(String dType) {
-  var ret = DeviceType.unknown;
+  var ret = DeviceType.Unknown;
   try {
     ret = DeviceType.values.firstWhere((e) =>
         e
@@ -72,7 +72,7 @@ class Device {
     this.deviceID = deviceID;
     this.nickname = nickname;
     this.encryptionKey = encryptionKey ?? "";
-    this.type = type ?? DeviceType.unknown;
+    this.type = type ?? DeviceType.Unknown;
     this.notes = notes;
     this.created = created ?? now;
     this.lastModified = lastModified ?? now;

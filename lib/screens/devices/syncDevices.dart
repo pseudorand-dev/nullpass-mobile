@@ -43,8 +43,7 @@ class _SyncDevicesState extends State<SyncDevices> {
     await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => DeviceSyncRules(newDevice,
-                isSetup: true, syncFromDevice: false)));
+            builder: (context) => DeviceSyncRules(newDevice, inSetup: true)));
   }
 
   void setDevice(Device d) {
@@ -85,8 +84,7 @@ class _SyncDevicesState extends State<SyncDevices> {
           // return LoadingPage(
           //     title: "Setup Sync", route: NullPassRoute.ManageDevices);
           return MaterialApp(
-            home: DeviceSyncRules(newDevice,
-                isSetup: true, syncFromDevice: false),
+            home: DeviceSyncRules(newDevice, inSetup: true),
           );
         }
         break;
