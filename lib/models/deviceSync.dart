@@ -23,13 +23,13 @@ final String columnSyncCreated = "created_at";
 final String columnSyncModified = "modified_at";
 final String columnSyncLastPerformed = "last_synced";
 
-enum DeviceAccess { none, backup, read, manage }
+enum DeviceAccess { None, Backup, ReadOnly, Manage }
 
 String deviceAccessToString(DeviceAccess da) =>
     da.toString().substring(da.toString().lastIndexOf(".") + 1);
 
 DeviceAccess parseDeviceAccessFromString(String dAccess) {
-  var ret = DeviceAccess.none;
+  var ret = DeviceAccess.None;
   try {
     ret = DeviceAccess.values.firstWhere((da) =>
         da
@@ -92,7 +92,7 @@ class DeviceSync {
     this.syncFrom = syncFrom;
     this.vaultID = vaultID;
     this.vaultName = vaultName;
-    this.vaultAccess = vaultAccess ?? DeviceAccess.none;
+    this.vaultAccess = vaultAccess ?? DeviceAccess.None;
     this.notes = notes;
     this.created = created ?? now;
     this.lastModified = lastModified ?? now;
