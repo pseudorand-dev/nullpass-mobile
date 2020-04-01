@@ -13,7 +13,7 @@ final String columnSyncId = "_id";
 final String columnSyncDeviceId = "device_id";
 final String columnSyncDeviceConnectionId = "device_sync_id";
 // does this record represent a sync from our device to another device
-final String columnSyncFrom = "sync_from";
+final String columnSyncFromInternal = "sync_from_internal";
 final String columnSyncVaultId = "vault_id";
 final String columnSyncVaultName = "vault_name";
 final String columnSyncVaultAccess = "vault_access";
@@ -55,7 +55,7 @@ class DeviceSync {
   String id;
   String deviceID;
   String deviceSyncID;
-  bool syncFrom;
+  bool syncFromInternal;
   String vaultID;
   String vaultName;
   DeviceAccess vaultAccess;
@@ -71,7 +71,7 @@ class DeviceSync {
     String id,
     @required String deviceID,
     String deviceSyncID,
-    @required bool syncFrom,
+    @required bool syncFromInternal,
     @required String vaultID,
     @required String vaultName,
     @required DeviceAccess vaultAccess,
@@ -89,7 +89,8 @@ class DeviceSync {
     this.id = id;
     this.deviceID = deviceID;
     this.deviceSyncID = deviceSyncID;
-    this.syncFrom = syncFrom;
+    this.syncFromInternal =
+        syncFromInternal ?? (throw ArgumentError.notNull("syncFromInternal"));
     this.vaultID = vaultID;
     this.vaultName = vaultName;
     this.vaultAccess = vaultAccess ?? DeviceAccess.None;
@@ -103,7 +104,7 @@ class DeviceSync {
         columnSyncId: this.id,
         columnSyncDeviceId: this.deviceID,
         columnSyncDeviceConnectionId: this.deviceSyncID,
-        columnSyncFrom: this.syncFrom,
+        columnSyncFromInternal: this.syncFromInternal,
         columnSyncVaultId: this.vaultID,
         columnSyncVaultName: this.vaultName,
         columnSyncVaultAccess: deviceAccessToString(this.vaultAccess),
@@ -125,7 +126,7 @@ class DeviceSync {
         id: input[columnSyncId],
         deviceID: input[columnSyncDeviceId],
         deviceSyncID: input[columnSyncDeviceConnectionId],
-        syncFrom: input[columnSyncFrom],
+        syncFromInternal: input[columnSyncFromInternal],
         vaultID: input[columnSyncVaultId],
         vaultName: input[columnSyncVaultName],
         vaultAccess: parseDeviceAccessFromString(input[columnSyncVaultAccess]),
@@ -145,7 +146,7 @@ class DeviceSync {
         columnSyncId: this.id,
         columnSyncDeviceId: this.deviceID,
         columnSyncDeviceConnectionId: this.deviceSyncID,
-        columnSyncFrom: this.syncFrom,
+        columnSyncFromInternal: this.syncFromInternal,
         columnSyncVaultId: this.vaultID,
         columnSyncVaultName: this.vaultName,
         columnSyncVaultAccess: deviceAccessToString(this.vaultAccess),
@@ -167,7 +168,7 @@ class DeviceSync {
         id: jsonBlob[columnSyncId],
         deviceID: jsonBlob[columnSyncDeviceId],
         deviceSyncID: jsonBlob[columnSyncDeviceConnectionId],
-        syncFrom: jsonBlob[columnSyncFrom],
+        syncFromInternal: jsonBlob[columnSyncFromInternal],
         vaultID: jsonBlob[columnSyncVaultId],
         vaultName: jsonBlob[columnSyncVaultName],
         vaultAccess:

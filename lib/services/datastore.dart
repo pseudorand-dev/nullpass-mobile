@@ -1090,7 +1090,7 @@ class _NullPassSyncDevicesDB {
                 $columnSyncId TEXT PRIMARY KEY,
                 $columnSyncDeviceId TEXT NOT NULL,
                 $columnSyncDeviceConnectionId TEXT,
-                $columnSyncFrom BOOL NOT NULL,
+                $columnSyncFromInternal BOOL NOT NULL,
                 $columnSyncVaultId TEXT,
                 $columnSyncVaultName TEXT NOT NULL,
                 $columnSyncVaultAccess TEXT NOT NULL,
@@ -1105,7 +1105,7 @@ class _NullPassSyncDevicesDB {
     columnSyncId,
     columnSyncDeviceId,
     columnSyncDeviceConnectionId,
-    columnSyncFrom,
+    columnSyncFromInternal,
     columnSyncVaultId,
     columnSyncVaultName,
     columnSyncVaultAccess,
@@ -1193,7 +1193,7 @@ class _NullPassSyncDevicesDB {
     Database db = await _database;
     List<Map> maps = await db.query(syncTableName,
         columns: _syncDevicesTableColumns,
-        where: '$columnSyncFrom = true AND $columnSyncVaultId = ?',
+        where: '$columnSyncFromInternal = true AND $columnSyncVaultId = ?',
         whereArgs: [vault]);
     if (maps.length > 0) {
       List<DeviceSync> deviceList = <DeviceSync>[];
