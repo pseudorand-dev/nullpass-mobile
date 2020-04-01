@@ -320,6 +320,8 @@ class _SettingsState extends State<Settings> {
                                   await npDB.deleteAllSyncs();
                                   await npDB.deleteAllSecrets();
                                   await npDB.deleteAllVaults();
+                                  sharedPrefs.setString(
+                                      DefaultVaultIDPrefKey, "");
                                   Navigator.of(context).pop();
                                 })
                           ],
