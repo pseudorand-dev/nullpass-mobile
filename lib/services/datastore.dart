@@ -44,6 +44,7 @@ Future _onCreate(Database db, int version) async {
   // TODO: move password to secure storage - remove '$columnPassword TEXT,'
   // $columnPassword TEXT,
   await db.execute("${_NullPassSecretDetailsDB.createTable}");
+  await db.execute("${_NullPassSyncDevicesDB.createTable}");
   await db.execute("${_NullPassDevicesDB.createTable}");
   await db.execute("${_NullPassVaultsDB.createTable}");
 }
