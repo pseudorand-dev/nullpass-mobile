@@ -68,17 +68,22 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
     var vaultList = await NullPassDB.instance.getAllVaults();
     var tmpVMap = <String, Vault>{};
     vaultList?.forEach((v) => tmpVMap[v.uid] = v);
+
     var tmpDeviceSyncs =
         await NullPassDB.instance.getAllSyncsWithADevice(_device.deviceID);
     var tmpDeviceSyncMap = <String, DeviceSync>{};
+    var tmpOrigDeviceSyncMap = <String, DeviceSync>{};
     // var tmpDeviceAccessMap = <String, DeviceAccess>{};
-    tmpDeviceSyncs.forEach((ds) => tmpDeviceSyncMap[ds.vaultID] = ds);
+    tmpDeviceSyncs.forEach((ds) {
+      tmpDeviceSyncMap[ds.vaultID] = ds.clone();
+      tmpOrigDeviceSyncMap[ds.vaultID] = ds;
+    });
 
     setState(() {
       _vaults = vaultList;
       _vaultMap = tmpVMap;
       _deviceSyncMap = tmpDeviceSyncMap;
-      _originalSyncMap = tmpDeviceSyncMap;
+      _originalSyncMap = tmpOrigDeviceSyncMap;
     });
   }
 
@@ -208,7 +213,6 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
     _vaults.forEach((v) {
       Widget trailingWidget;
 
-      // _deviceSyncMap.containsKey(v.uid)
       var ds = _deviceSyncMap[v.uid];
 
       if (v.manager == VaultManager.External && ds != null) {

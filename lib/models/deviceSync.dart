@@ -186,4 +186,20 @@ class DeviceSync {
       throw e;
     }
   }
+
+  DeviceSync clone() {
+    return DeviceSync(
+      id: this.id,
+      deviceID: this.deviceID,
+      deviceSyncID: this.deviceSyncID,
+      syncFromInternal: this.syncFromInternal,
+      vaultID: this.vaultID,
+      vaultName: this.vaultName,
+      vaultAccess: this.vaultAccess,
+      notes: this.notes,
+      created: this.created,
+      lastModified: this.lastModified,
+      lastSync: this.lastSync,
+    );
+  }
 }
