@@ -583,12 +583,23 @@ class NullPassDB {
     }
   }
 
-  Future<List<DeviceSync>> getAllVaultSyncsFromDevice(String vaultId) async {
+  Future<List<DeviceSync>> getAllSyncsWithADevice(String deviceId) async {
     try {
-      return await _syncDeviceDB.getAllVaultSyncsFromDevice(vaultId);
+      return await _syncDeviceDB.getAllSyncsWithADeviceByID(deviceId);
     } catch (e) {
       Log.debug(
-          "an error occured while trying to update the device sync record to the db: $e");
+          "an error occured while trying to get all syncs to a device from the db: $e");
+      return <DeviceSync>[];
+    }
+  }
+
+  Future<List<DeviceSync>> getAllVaultSyncsFromThisDevice(
+      String vaultId) async {
+    try {
+      return await _syncDeviceDB.getAllVaultSyncsFromThisDevice(vaultId);
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to get all syncs from this device from the db: $e");
       return <DeviceSync>[];
     }
   }
@@ -1183,6 +1194,20 @@ class _NullPassSyncDevicesDB {
     return null;
   }
 
+  Future<List<DeviceSync>> getAllSyncsWithADeviceByID(String uid) async {
+    Database db = await _database;
+    List<Map> maps = await db.query(syncTableName,
+            columns: _syncDevicesTableColumns,
+            where: '$columnSyncDeviceId = ?',
+            whereArgs: [uid]) ??
+        <Map>[];
+
+    List<DeviceSync> dsList = <DeviceSync>[];
+    maps.forEach((f) => dsList.add(DeviceSync.fromMap(f)));
+
+    return dsList;
+  }
+
   Future<List<DeviceSync>> getAllSyncs() async {
     Database db = await _database;
     List<Map> maps = await db.query(syncTableName,
@@ -1195,7 +1220,7 @@ class _NullPassSyncDevicesDB {
     return null;
   }
 
-  Future<List<DeviceSync>> getAllVaultSyncsFromDevice(String vault) async {
+  Future<List<DeviceSync>> getAllVaultSyncsFromThisDevice(String vault) async {
     Database db = await _database;
     List<Map> maps = await db.query(syncTableName,
         columns: _syncDevicesTableColumns,
