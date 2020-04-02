@@ -51,11 +51,6 @@ class _ManageDevicesState extends State<ManageDevices> {
     return false;
   }
 
-  Future<void> _deleteDevice(String id) async {
-    await _npDB.deleteDevice(id);
-    _reloadDeviceList(true);
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -83,7 +78,7 @@ class _ManageDevicesState extends State<ManageDevices> {
               reloadSecretList: (dynamic) {}),
           body: _DeviesList(
             devices: _devices,
-            deleteDevice: _deleteDevice,
+            reloadDevicesListFunction: _reloadDeviceList,
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () async {
@@ -105,9 +100,12 @@ class _ManageDevicesState extends State<ManageDevices> {
 
 class _DeviesList extends StatelessWidget {
   final List<Device> devices;
-  final Function(String) deleteDevice;
+  final AsyncBoolCallback reloadDevicesListFunction;
 
-  _DeviesList({Key key, @required this.devices, this.deleteDevice})
+  _DeviesList(
+      {Key key,
+      @required this.devices,
+      @required this.reloadDevicesListFunction})
       : super(key: key);
 
   @override
@@ -123,15 +121,13 @@ class _DeviesList extends StatelessWidget {
             title: Text(devices[index].nickname ?? ""),
             trailing: Icon(Icons.arrow_forward_ios),
             onTap: () async {
-              /* TODO: add support for going to set / modify device rules
               await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => DeviceSyncRules(this.devices[index]),
                 ),
               );
-              await this.reloadSecretList('true');
-              */
+              await reloadDevicesListFunction();
             },
           );
         },
