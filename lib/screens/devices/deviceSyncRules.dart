@@ -105,7 +105,7 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
   void changeVaultAccess(String vid, DeviceAccess vaultAccess) {
     var ds = _deviceSyncMap[vid] ??
         DeviceSync(
-            deviceID: _device.id,
+            deviceID: _device.deviceID,
             syncFromInternal: true,
             vaultID: vid,
             vaultName: _vaultMap[vid]?.nickname ?? "",
