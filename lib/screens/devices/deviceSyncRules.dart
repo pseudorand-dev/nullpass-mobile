@@ -25,10 +25,15 @@ class DeviceSyncRules extends StatefulWidget {
 
 class _DeviceSyncRulesState extends State<DeviceSyncRules> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  bool _loading = true;
+  String _title;
   Device _device;
   bool _inSetup;
   Map<String, DeviceAccess> _deviceAccessMap;
+  Map<String, DeviceSync> _deviceSyncMap;
+  Map<String, DeviceSync> _originalSyncMap;
   List<Vault> _vaults;
+  Map<String, Vault> _vaultMap;
 
   void onVaultSelectionChange(String vaultId, DeviceAccess access) {
     setState(() {
@@ -66,17 +71,35 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
     }
   }
 
+  Future<void> setupData() async {
+    var vaultList = await NullPassDB.instance.getAllVaults();
+    var tmpVMap = <String, Vault>{};
+    vaultList?.forEach((v) => tmpVMap[v.uid] = v);
+    var tmpDeviceSyncs =
+        await NullPassDB.instance.getAllSyncsWithADevice(_device.deviceID);
+    var tmpDeviceSyncMap = <String, DeviceSync>{};
+    // var tmpDeviceAccessMap = <String, DeviceAccess>{};
+    tmpDeviceSyncs.forEach((ds) => tmpDeviceSyncMap[ds.vaultID] = ds);
+
+    setState(() {
+      _vaults = vaultList;
+      _vaultMap = tmpVMap;
+      _deviceSyncMap = tmpDeviceSyncMap;
+      _originalSyncMap = tmpDeviceSyncMap;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _device = this.widget.device;
     _inSetup = this.widget.inSetup ?? false;
     _deviceAccessMap = <String, DeviceAccess>{};
-
+    _title = (_inSetup) ? 'Setup Sync Rules' : 'Manage Sync Rules';
     _vaults = <Vault>[];
-    NullPassDB.instance.getAllInternallyManagedVaults().then((vaultList) {
+    _vaultMap = <String, Vault>{};
+    setupData().then((vaultList) {
       setState(() {
-        _vaults = vaultList;
         _loading = false;
       });
     });
@@ -86,8 +109,7 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            (_inSetup) ? Text('Setup Sync Rules') : Text('Manage Sync Rules'),
+        title: Text(_title),
         actions: <Widget>[
           if (!_inSetup)
             FlatButton(
