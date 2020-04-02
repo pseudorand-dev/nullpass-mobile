@@ -56,12 +56,63 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
         // await showSnackBar(context, 'Updated!');
       }
 
-      if (success)
+      if (success) {
+        await _storeSyncs();
+      }
+
+      if (success) {
         await Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => ManageDevices()),
         );
+      }
     }
+  }
+
+  Future<void> _storeSyncs() async {
+    _deviceSyncMap.forEach((vid, ds) async {
+      var ods = _originalSyncMap[vid];
+
+      // if the vault doesnt have a sync for this device already and the
+      // vault access is set to none for this device then no action is needed
+      if (ods == null && ds.vaultAccess == DeviceAccess.None) return;
+      if (ods != null && ods.vaultAccess == ds.vaultAccess) return;
+
+      // if there was no original sync for this vault + device and now the access is
+      // set to something other than none, create a device sync and trigger a data
+      // sync initiation process for sending the vault data to the new device
+      // or
+      // if the vault is managed internally and there was an original sync with for
+      // this vault + device and now the access is set to something other than none
+      // then update the device sync and send the new data sync information to the
+      // end device
+      // or
+      // if there was an original sync for this vault + device and now the access is set
+      // to none then delete the device sync and notify the other device of cancellation
+      // ALSO if the device is externally managed delete the vault and any secrets managed by it
+      //      if the device is internally managed send cancellation notice and wait for
+      //      response from recipient to delete the sync - possibly add a device sync state
+      //      and monitor for deletion
+
+      if (ods == null && ds.vaultAccess != DeviceAccess.None) {
+        // add access
+        if (await NullPassDB.instance.insertSync(ds)) {
+          // start sync
+        }
+      } else if (ods != null &&
+          _vaultMap[vid].manager == VaultManager.Internal &&
+          ds.vaultAccess != DeviceAccess.None) {
+        // update access
+        if (await NullPassDB.instance.insertSync(ds)) {
+          // update sync
+        }
+      } else if (ods != null && ds.vaultAccess == DeviceAccess.None) {
+        // remove access
+        if (await NullPassDB.instance.deleteSync(ds.id)) {
+          // remove sync
+        }
+      }
+    });
   }
 
   Future<void> setupData() async {
