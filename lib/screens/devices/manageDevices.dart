@@ -10,6 +10,7 @@ import 'package:nullpass/models/device.dart';
 import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/screens/devices/syncDevices.dart';
 import 'package:nullpass/services/datastore.dart';
+import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';
 
 class ManageDevices extends StatefulWidget {
@@ -29,21 +30,24 @@ class _ManageDevicesState extends State<ManageDevices> {
 
     _npDB = NullPassDB.instance;
 
-    _npDB.getAllDevices().then((result) {
+    _reloadDeviceList().then((worked) {
       setState(() {
-        _devices = result;
         _loading = false;
       });
     });
   }
 
-  void _reloadDeviceList(result) async {
-    if (isTrue(result)) {
+  Future<bool> _reloadDeviceList() async {
+    try {
       List<Device> dList = await _npDB.getAllDevices();
       setState(() {
         _devices = dList;
       });
+      return true;
+    } catch (e) {
+      Log.debug(e);
     }
+    return false;
   }
 
   Future<void> _deleteDevice(String id) async {
