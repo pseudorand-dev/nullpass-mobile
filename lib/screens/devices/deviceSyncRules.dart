@@ -105,6 +105,159 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
     });
   }
 
+  void changeVaultAccess(String vid, DeviceAccess vaultAccess) {
+    var ds = _deviceSyncMap[vid] ??
+        DeviceSync(
+            deviceID: _device.id,
+            syncFromInternal: true,
+            vaultID: vid,
+            vaultName: _vaultMap[vid]?.nickname ?? "",
+            vaultAccess: vaultAccess);
+
+    ds.vaultAccess = vaultAccess;
+
+    setState(() {
+      _deviceSyncMap[vid] = ds;
+    });
+  }
+
+  Future<void> updateVaultAccessDialog(String vid,
+      {DeviceAccess vaultAccess = DeviceAccess.None}) async {
+    var _radioGroup = vaultAccess;
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(_vaultMap[vid]?.nickname ?? "Update Sync Access"),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                child: Row(
+                  children: <Widget>[
+                    Radio(
+                      activeColor: Colors.blue,
+                      value: DeviceAccess.None,
+                      groupValue: _radioGroup,
+                      onChanged: (newVal) async {
+                        changeVaultAccess(vid, newVal);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    Text("None"),
+                  ],
+                ),
+              ),
+              Container(
+                child: Row(
+                  children: <Widget>[
+                    Radio(
+                      activeColor: Colors.blue,
+                      value: DeviceAccess.Backup,
+                      groupValue: _radioGroup,
+                      onChanged: (newVal) async {
+                        changeVaultAccess(vid, newVal);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    Text("Backup"),
+                  ],
+                ),
+              ),
+              Container(
+                child: Row(
+                  children: <Widget>[
+                    Radio(
+                      activeColor: Colors.blue,
+                      value: DeviceAccess.ReadOnly,
+                      groupValue: _radioGroup,
+                      onChanged: (newVal) async {
+                        changeVaultAccess(vid, newVal);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    Text("Read-Only"),
+                  ],
+                ),
+              ),
+              Container(
+                child: Row(
+                  children: <Widget>[
+                    Radio(
+                      activeColor: Colors.blue,
+                      value: DeviceAccess.Manage,
+                      groupValue: _radioGroup,
+                      onChanged: (newVal) async {
+                        changeVaultAccess(vid, newVal);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    Text("Manage"),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  List<Widget> generateSyncWidgets() {
+    List<Widget> wList = <Widget>[];
+    _vaults.forEach((v) {
+      Widget trailingWidget;
+
+      // _deviceSyncMap.containsKey(v.uid)
+      var ds = _deviceSyncMap[v.uid];
+
+      if (v.manager == VaultManager.External && ds != null) {
+        trailingWidget = FlatButton(
+          child: Text(deviceAccessToString(ds.vaultAccess)),
+          onPressed: null,
+          textColor: Colors.blue,
+          disabledTextColor: Colors.grey,
+        );
+      } else if (v.manager == VaultManager.Internal && ds != null) {
+        trailingWidget = FlatButton(
+          child: Text(deviceAccessToString(ds.vaultAccess)),
+          onPressed: () async {
+            await updateVaultAccessDialog(v.uid, vaultAccess: ds.vaultAccess);
+          },
+          textColor: Colors.blue,
+          disabledTextColor: Colors.grey,
+        );
+      } else if (v.manager == VaultManager.Internal) {
+        trailingWidget = trailingWidget = FlatButton(
+          child: Text(deviceAccessToString(DeviceAccess.None)),
+          onPressed: () async {
+            await updateVaultAccessDialog(v.uid);
+          },
+          textColor: Colors.blue,
+          disabledTextColor: Colors.grey,
+        );
+      }
+
+      wList.add(ListTile(
+        title: Text(v.nickname),
+        subtitle: (v.manager == VaultManager.External
+            ? Text("Synced from ${_device.nickname}")
+            : null),
+        trailing: trailingWidget,
+      ));
+    });
+
+    return wList;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
