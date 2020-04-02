@@ -29,17 +29,10 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
   String _title;
   Device _device;
   bool _inSetup;
-  Map<String, DeviceAccess> _deviceAccessMap;
   Map<String, DeviceSync> _deviceSyncMap;
   Map<String, DeviceSync> _originalSyncMap;
   List<Vault> _vaults;
   Map<String, Vault> _vaultMap;
-
-  void onVaultSelectionChange(String vaultId, DeviceAccess access) {
-    setState(() {
-      _deviceAccessMap[vaultId] = access;
-    });
-  }
 
   void onSave(BuildContext context) async {
     if (this._formKey.currentState.validate()) {
@@ -94,7 +87,6 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
     super.initState();
     _device = this.widget.device;
     _inSetup = this.widget.inSetup ?? false;
-    _deviceAccessMap = <String, DeviceAccess>{};
     _title = (_inSetup) ? 'Setup Sync Rules' : 'Manage Sync Rules';
     _vaults = <Vault>[];
     _vaultMap = <String, Vault>{};
@@ -307,10 +299,8 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
                   ),
                 ]),
               ),
-              _VaultSyncList(
-                vaults: this._vaults,
-                deviceAccessMap: this._deviceAccessMap,
-                onSelectionChange: this.onVaultSelectionChange,
+              SliverList(
+                delegate: SliverChildListDelegate.fixed(generateSyncWidgets()),
               ),
               SliverList(
                   delegate: SliverChildListDelegate.fixed([
