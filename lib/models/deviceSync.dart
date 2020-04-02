@@ -4,6 +4,7 @@
  */
 
 import 'package:flutter/foundation.dart';
+import 'package:nullpass/common.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
@@ -89,8 +90,9 @@ class DeviceSync {
     this.id = id;
     this.deviceID = deviceID;
     this.deviceSyncID = deviceSyncID;
-    this.syncFromInternal =
-        syncFromInternal ?? (throw ArgumentError.notNull("syncFromInternal"));
+    this.syncFromInternal = syncFromInternal != null
+        ? isTrue(syncFromInternal)
+        : (throw ArgumentError.notNull("syncFromInternal"));
     this.vaultID = vaultID;
     this.vaultName = vaultName;
     this.vaultAccess = vaultAccess ?? DeviceAccess.None;
@@ -126,7 +128,7 @@ class DeviceSync {
         id: input[columnSyncId],
         deviceID: input[columnSyncDeviceId],
         deviceSyncID: input[columnSyncDeviceConnectionId],
-        syncFromInternal: input[columnSyncFromInternal],
+        syncFromInternal: isTrue(input[columnSyncFromInternal]),
         vaultID: input[columnSyncVaultId],
         vaultName: input[columnSyncVaultName],
         vaultAccess: parseDeviceAccessFromString(input[columnSyncVaultAccess]),
@@ -168,7 +170,7 @@ class DeviceSync {
         id: jsonBlob[columnSyncId],
         deviceID: jsonBlob[columnSyncDeviceId],
         deviceSyncID: jsonBlob[columnSyncDeviceConnectionId],
-        syncFromInternal: jsonBlob[columnSyncFromInternal],
+        syncFromInternal: isTrue(jsonBlob[columnSyncFromInternal]),
         vaultID: jsonBlob[columnSyncVaultId],
         vaultName: jsonBlob[columnSyncVaultName],
         vaultAccess:
