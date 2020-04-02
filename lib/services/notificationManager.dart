@@ -6,8 +6,8 @@
 import 'dart:io';
 
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/notification.dart';
 import 'package:nullpass/services/logging.dart';
-import 'package:nullpass/services/notification.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 void defaultSyncInitHandshakeStepOneHandler(dynamic str) {
