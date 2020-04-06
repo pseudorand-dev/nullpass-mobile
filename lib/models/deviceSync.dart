@@ -52,6 +52,28 @@ List<String> deviceAccessStringList() {
   return daList;
 }
 
+enum SyncStatus { Unknown, Creating, Active, Syncing, Deleting }
+
+String syncStatusToString(SyncStatus status) =>
+    status.toString().substring(status.toString().lastIndexOf(".") + 1);
+
+SyncStatus parseSyncStatusFromString(String status) {
+  var syncStatus = SyncStatus.Unknown;
+  try {
+    syncStatus = SyncStatus.values.firstWhere((ss) =>
+        ss
+            .toString()
+            .toLowerCase()
+            .substring(ss.toString().lastIndexOf(".") + 1) ==
+        status.toLowerCase());
+  } catch (e) {
+    Log.debug(
+      "An error occurred while trying to translate string to a SyncStatus: ${e.toString()}",
+    );
+  }
+  return syncStatus;
+}
+
 class DeviceSync {
   String id;
   String deviceID;
