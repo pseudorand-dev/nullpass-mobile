@@ -52,6 +52,8 @@ class ManageVaultState extends State<ManageVault> {
               trailing: Container(
                 width: 100,
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     IconButton(
                       icon: Icon(Icons.edit),
