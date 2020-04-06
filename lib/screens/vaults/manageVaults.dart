@@ -55,25 +55,26 @@ class ManageVaultState extends State<ManageVault> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
-                    IconButton(
-                      icon: Icon(Icons.edit),
-                      onPressed: () async {
-                        showDialog<void>(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return NewVaultDialog(
-                                vault: this._vaults[index],
-                                onUpdate: () async {
-                                  var lv =
-                                      await NullPassDB.instance.getAllVaults();
-                                  setState(() {
-                                    this._vaults = lv;
+                    if (this._vaults[index].manager == VaultManager.Internal)
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () async {
+                          showDialog<void>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return NewVaultDialog(
+                                  vault: this._vaults[index],
+                                  onUpdate: () async {
+                                    var lv = await NullPassDB.instance
+                                        .getAllVaults();
+                                    setState(() {
+                                      this._vaults = lv;
+                                    });
                                   });
-                                });
-                          },
-                        );
-                      },
-                    ),
+                            },
+                          );
+                        },
+                      ),
                     IconButton(
                       icon: Icon(
                         Icons.delete,
