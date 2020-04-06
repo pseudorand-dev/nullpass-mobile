@@ -75,48 +75,50 @@ class ManageVaultState extends State<ManageVault> {
                       },
                     ),
                     IconButton(
-                        icon: Icon(
-                          Icons.delete,
-                          color: Colors.red,
-                        ),
-                        onPressed: () async {
-                          showDialog<void>(
-                            context: context,
-                            // uncomment below to force user to tap button and not just tap outside the alert!
-                            // barrierDismissible: false,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('Delete Vault '),
-                                content: Text(
-                                    'This will delete the Vault and any passwords that live only with in it. Be sure before proceeding as this is not undoable or recoverable.'),
-                                actions: <Widget>[
-                                  FlatButton(
-                                      child: Text('Cancel'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      }),
-                                  FlatButton(
-                                      child: Text(
-                                        'Delete',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                      onPressed: () async {
-                                        NullPassDB npDB = NullPassDB.instance;
-                                        // TODO: await npDB.deleteAllSecrets(); that only live in that vault and remove the vault from all secrets
-                                        await npDB.deleteVault(
-                                            this._vaults[index].uid);
-                                        var lv = await NullPassDB.instance
-                                            .getAllVaults();
-                                        setState(() {
-                                          this._vaults = lv;
-                                        });
-                                        Navigator.of(context).pop();
-                                      })
-                                ],
-                              );
-                            },
-                          );
-                        }),
+                      icon: Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                      ),
+                      onPressed: () async {
+                        showDialog<void>(
+                          context: context,
+                          // uncomment below to force user to tap button and not just tap outside the alert!
+                          // barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Delete Vault'),
+                              content: Text(
+                                  'This will delete the Vault and any passwords that live only with in it. Be sure before proceeding as this is not undoable or recoverable.'),
+                              actions: <Widget>[
+                                FlatButton(
+                                    child: Text('Cancel'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    }),
+                                FlatButton(
+                                  child: Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                  onPressed: () async {
+                                    NullPassDB npDB = NullPassDB.instance;
+                                    // TODO: await npDB.deleteAllSecrets(); that only live in that vault and remove the vault from all secrets
+                                    await npDB
+                                        .deleteVault(this._vaults[index].uid);
+                                    var lv = await NullPassDB.instance
+                                        .getAllVaults();
+                                    setState(() {
+                                      this._vaults = lv;
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                )
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
