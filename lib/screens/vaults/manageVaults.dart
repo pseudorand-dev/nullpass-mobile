@@ -47,8 +47,9 @@ class ManageVaultState extends State<ManageVault> {
             return ListTile(
               contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 5),
               title: Text(this._vaults[index].nickname),
-              subtitle:
-                  (this._vaults[index].isDefault) ? Text("Default") : null,
+              subtitle: this._vaults[index].manager == VaultManager.Internal
+                  ? ((this._vaults[index].isDefault) ? Text("Default") : null)
+                  : Text("Synced from External Device"),
               trailing: Container(
                 width: 100,
                 child: Row(
