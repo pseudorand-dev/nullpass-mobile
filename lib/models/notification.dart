@@ -11,9 +11,13 @@ const String _TYPE_KEY = "type";
 const String _DATA_KEY = "data";
 const String _PARTS_KEY = "parts";
 const String _POSITION_KEY = "position";
+const String _DEVICE_ID_KEY = "did";
+const String _NOTIFICATION_ID_KEY = "nid";
 
 class Notification {
   final NotificationType notificationType;
+  String deviceID;
+  String notificationID;
   int parts;
   int position;
   final dynamic data;
@@ -23,13 +27,17 @@ class Notification {
     dynamic data,
     this.parts,
     this.position,
+    this.deviceID,
+    this.notificationID,
   }) : this.data = data;
 
   Map<String, dynamic> toJson() => {
-        'type': notificationTypeToString(this.notificationType),
-        'data': data,
-        'parts': parts ?? 1,
-        'position': position ?? 1,
+        _TYPE_KEY: notificationTypeToString(this.notificationType),
+        _DATA_KEY: data,
+        _PARTS_KEY: parts ?? 1,
+        _POSITION_KEY: position ?? 1,
+        _DEVICE_ID_KEY: deviceID,
+        _NOTIFICATION_ID_KEY: notificationID,
       };
 
   static Notification fromJson(String json) {
@@ -37,6 +45,8 @@ class Notification {
     var nType = notificationTypeFromString(decodedBlob[_TYPE_KEY]);
     var nParts = decodedBlob[_PARTS_KEY] as int;
     var nPos = decodedBlob[_POSITION_KEY] as int;
+    var did = decodedBlob[_DEVICE_ID_KEY];
+    var nid = decodedBlob[_NOTIFICATION_ID_KEY];
 
     dynamic data;
     if (decodedBlob[_DATA_KEY].runtimeType == String) {
@@ -64,7 +74,12 @@ class Notification {
       }
     }
 
-    return Notification(nType, data: data, parts: nParts, position: nPos);
+    return Notification(nType,
+        data: data,
+        parts: nParts,
+        position: nPos,
+        deviceID: did,
+        notificationID: nid);
   }
 
   static Notification fromMap(Map<String, dynamic> input) {
@@ -77,13 +92,23 @@ class Notification {
     var nParts = input[_PARTS_KEY] as int;
     var nPos = input[_POSITION_KEY] as int;
 
-    return Notification(nType, data: nData, parts: nParts, position: nPos);
+    var did = input[_DEVICE_ID_KEY];
+    var nid = input[_NOTIFICATION_ID_KEY];
+
+    return Notification(nType,
+        data: nData,
+        parts: nParts,
+        position: nPos,
+        deviceID: did,
+        notificationID: nid);
   }
 
   Map toMap() {
     return <String, dynamic>{
       _TYPE_KEY: notificationTypeToString(this.notificationType),
       _DATA_KEY: this.data,
+      _DEVICE_ID_KEY: this.deviceID,
+      _NOTIFICATION_ID_KEY: this.notificationID,
     };
   }
 
@@ -126,6 +151,8 @@ class Notification {
         _DATA_KEY: data,
         _PARTS_KEY: totalChunks,
         _POSITION_KEY: currChunk,
+        _DEVICE_ID_KEY: this.deviceID,
+        _NOTIFICATION_ID_KEY: this.notificationID,
       };
 }
 
