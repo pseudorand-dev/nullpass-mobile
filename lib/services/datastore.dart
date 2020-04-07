@@ -624,6 +624,17 @@ class NullPassDB {
     }
   }
 
+  Future<bool> deleteAllSyncsToDevice(String deviceId) async {
+    try {
+      await _syncDeviceDB.deleteAllSyncsToDevice(deviceId);
+      return true;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to add the device sync record to the db: $e");
+      return false;
+    }
+  }
+
   Future<bool> deleteAllSyncs() async {
     try {
       await _syncDeviceDB.deleteAll();
@@ -1247,6 +1258,16 @@ class _NullPassSyncDevicesDB {
     Database db = await _database;
     int retId = await db
         .delete(syncTableName, where: '$columnSyncId = ?', whereArgs: [id]);
+    return retId;
+  }
+
+  Future<int> deleteAllSyncsToDevice(String deviceId) async {
+    Database db = await _database;
+    int retId = await db.delete(
+      deviceTableName,
+      where: '$columnSyncDeviceId = ?',
+      whereArgs: [deviceId],
+    );
     return retId;
   }
 
