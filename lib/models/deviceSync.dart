@@ -18,6 +18,7 @@ final String columnSyncFromInternal = "sync_from_internal";
 final String columnSyncVaultId = "vault_id";
 final String columnSyncVaultName = "vault_name";
 final String columnSyncVaultAccess = "vault_access";
+final String columnSyncStatus = "status";
 // device type info (macos / ios / android / chrome / etc.)
 final String columnSyncNotes = "notes";
 final String columnSyncCreated = "created_at";
@@ -83,6 +84,7 @@ class DeviceSync {
   String vaultName;
   DeviceAccess vaultAccess;
   String notes;
+  SyncStatus status;
   DateTime created;
   DateTime lastModified;
   DateTime lastSync;
@@ -98,6 +100,7 @@ class DeviceSync {
     @required String vaultID,
     @required String vaultName,
     @required DeviceAccess vaultAccess,
+    SyncStatus status,
     String notes,
     DateTime created,
     DateTime lastModified,
@@ -118,6 +121,7 @@ class DeviceSync {
     this.vaultID = vaultID;
     this.vaultName = vaultName;
     this.vaultAccess = vaultAccess ?? DeviceAccess.None;
+    this.status = status ?? SyncStatus.Unknown;
     this.notes = notes;
     this.created = created ?? now;
     this.lastModified = lastModified ?? now;
@@ -132,6 +136,7 @@ class DeviceSync {
         columnSyncVaultId: this.vaultID,
         columnSyncVaultName: this.vaultName,
         columnSyncVaultAccess: deviceAccessToString(this.vaultAccess),
+        columnSyncStatus: syncStatusToString(this.status),
         columnSyncNotes: this.notes,
         columnSyncCreated: (this.created != null)
             ? this.created.toIso8601String()
@@ -154,6 +159,7 @@ class DeviceSync {
         vaultID: input[columnSyncVaultId],
         vaultName: input[columnSyncVaultName],
         vaultAccess: parseDeviceAccessFromString(input[columnSyncVaultAccess]),
+        status: parseSyncStatusFromString(input[columnSyncStatus]),
         notes: input[columnSyncNotes],
         created: DateTime.tryParse(input[columnSyncCreated]),
         lastModified: DateTime.tryParse(input[columnSyncModified]),
@@ -174,6 +180,7 @@ class DeviceSync {
         columnSyncVaultId: this.vaultID,
         columnSyncVaultName: this.vaultName,
         columnSyncVaultAccess: deviceAccessToString(this.vaultAccess),
+        columnSyncStatus: syncStatusToString(this.status),
         columnSyncNotes: this.notes,
         columnSyncCreated: (this.created != null)
             ? this.created.toIso8601String()
@@ -197,6 +204,7 @@ class DeviceSync {
         vaultName: jsonBlob[columnSyncVaultName],
         vaultAccess:
             parseDeviceAccessFromString(jsonBlob[columnSyncVaultAccess]),
+        status: parseSyncStatusFromString(jsonBlob[columnSyncStatus]),
         notes: jsonBlob[columnSyncNotes],
         created: DateTime.tryParse(jsonBlob[columnSyncCreated]),
         lastModified: DateTime.tryParse(jsonBlob[columnSyncModified]),
@@ -218,6 +226,7 @@ class DeviceSync {
       vaultID: this.vaultID,
       vaultName: this.vaultName,
       vaultAccess: this.vaultAccess,
+      status: this.status,
       notes: this.notes,
       created: this.created,
       lastModified: this.lastModified,
