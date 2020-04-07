@@ -453,6 +453,15 @@ class NullPassDB {
 
   Future<bool> deleteVault(String vid) async {
     try {
+      var sL = await getAllSecretsInVault(vid);
+      for (var s in sL) {
+        if (s.vaults.length == 1 && s.vaults[0] == vid) {
+          await deleteSecret(s.uuid);
+        } else if (s.vaults.length > 1 && s.vaults.contains(vid)) {
+          s.vaults.remove(vid);
+          await updateSecret(s);
+        }
+      }
       await _vaultDB.delete(vid);
       return true;
     } catch (e) {
