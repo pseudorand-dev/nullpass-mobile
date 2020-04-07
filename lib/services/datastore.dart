@@ -205,6 +205,28 @@ class NullPassDB {
     return null;
   }
 
+  Future<List<Secret>> getAllSecretsInVault(String vaultID) async {
+    List<Secret> secretList;
+    try {
+      secretList = await _secretDetailsDB.getAllSecretsInVault(vaultID);
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to fetch the secrets from the secrets db: $e");
+    }
+
+    if (secretList != null) {
+      try {
+        Map<String, String> messageMap = await _nullpassSecureStorage.readAll();
+        secretList.forEach((s) => s.message = messageMap[s.uuid]);
+        return secretList;
+      } catch (e) {
+        Log.debug(
+            "an error occured while trying to fetch the secrets from the secure storage: $e");
+      }
+    }
+    return null;
+  }
+
   Future<bool> updateSecret(Secret s) async {
     try {
       await _nullpassSecureStorage.write(key: s.uuid, value: s.message);
@@ -764,6 +786,23 @@ class _NullPassSecretDetailsDB {
     if (maps.length > 0) {
       List<Secret> secretList = <Secret>[];
       maps.forEach((m) => secretList.add(Secret.fromMap(m)));
+      return secretList;
+    }
+    return null;
+  }
+
+  Future<List<Secret>> getAllSecretsInVault(vaultID) async {
+    Database db = await _database;
+    List<Map> maps = await db.query(secretTableName,
+        columns: _secretTableColumns,
+        where: '$columnSecretVaults LIKE ?',
+        whereArgs: ['%$vaultID%']);
+    if (maps.length > 0) {
+      List<Secret> secretList = <Secret>[];
+      maps.forEach((m) {
+        var s = Secret.fromMap(m);
+        if (s.vaults.contains(vaultID)) secretList.add(s);
+      });
       return secretList;
     }
     return null;
