@@ -7,6 +7,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:nullpass/common.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
 
@@ -317,5 +318,71 @@ class Secret {
       created: created,
       lastModified: lastModified,
     );
+  }
+
+  @override
+  String toString() {
+    var sec = "{";
+    sec = "$sec\"gid\":\"${this.uuid}\"";
+
+    if (this.nickname != null) {
+      sec = "$sec,\"nickname\":\"${this.nickname}\"";
+    }
+
+    if (this.username != null) {
+      sec = "$sec,\"username\":\"${this.username}\"";
+    }
+
+    if (this.message != null) {
+      sec = "$sec,\"message\":\"${this.message}\"";
+    }
+
+    if (this.type != null) {
+      sec = "$sec,\"type\":\"${secretTypeToString(this.type)}\"";
+    }
+
+    if (this.website != null) {
+      sec = "$sec,\"website\":\"${this.website}\"";
+    }
+
+    if (this.appName != null) {
+      sec = "$sec,\"appName\":\"${this.appName}\"";
+    }
+
+    if (this.genericEndpoint != null) {
+      sec = "$sec,\"genericEndpoint\":\"${this.genericEndpoint}\"";
+    }
+
+    if (this.thumbnailURI != null) {
+      sec = "$sec,\"thumbnailURI\":\"${this.thumbnailURI}\"";
+    }
+
+    if (this.notes != null) {
+      sec = "$sec,\"notes\":\"${this.notes}\"";
+    }
+
+    if (this.tags != null) {
+      sec = "$sec,\"tags\":${stringListToString(this.tags)}";
+    }
+
+    if (this.vaults != null) {
+      sec = "$sec,\"vaults\":${stringListToString(this.vaults)}";
+    }
+
+    if (this.created != null) {
+      sec = "$sec,\"created\":\"${this.created.toIso8601String()}\"";
+    }
+
+    if (this.lastModified != null) {
+      sec = "$sec,\"lastModified\":\"${this.lastModified.toIso8601String()}\"";
+    }
+
+    if (this.sortKey != null) {
+      sec = "$sec,\"sortKey\":\"${this.sortKey}\"";
+    }
+
+    sec = "$sec}";
+
+    return sec;
   }
 }
