@@ -1117,7 +1117,7 @@ class _NullPassSyncDevicesDB {
                 $columnSyncDeviceId TEXT NOT NULL,
                 $columnSyncDeviceConnectionId TEXT,
                 $columnSyncFromInternal BOOL NOT NULL,
-                $columnSyncVaultId TEXT,
+                $columnSyncVaultId TEXT NOT NULL,
                 $columnSyncVaultName TEXT NOT NULL,
                 $columnSyncVaultAccess TEXT NOT NULL,
                 $columnSyncStatus TEXT,
