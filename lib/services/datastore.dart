@@ -1235,8 +1235,8 @@ class _NullPassSyncDevicesDB {
     Database db = await _database;
     List<Map> maps = await db.query(syncTableName,
         columns: _syncDevicesTableColumns,
-        where: '$columnSyncFromInternal = true AND $columnSyncVaultId = ?',
-        whereArgs: [vault]);
+        where: '$columnSyncFromInternal = ? AND $columnSyncVaultId = ?',
+        whereArgs: [1, vault]);
     if (maps.length > 0) {
       List<DeviceSync> deviceList = <DeviceSync>[];
       maps.forEach((m) => deviceList.add(DeviceSync.fromMap(m)));
