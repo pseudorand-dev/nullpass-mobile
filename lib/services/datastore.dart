@@ -624,6 +624,25 @@ class NullPassDB {
     }
   }
 
+  Future<bool> deleteSyncOfVaultToDevice(
+      String deviceId, String vaultId) async {
+    // Doesn't seem to work so replace with get all syncs and delete any
+    // that have a matching vault id ->
+    // await _syncDeviceDB.deleteSyncOfVaultToDevice(deviceId, vaultId);
+    try {
+      var dsL = await _syncDeviceDB.getAllSyncs();
+      var vaultSync = dsL.where((v) => v.vaultID == vaultId);
+      for (var vs in vaultSync) {
+        await _syncDeviceDB.delete(vs.id);
+      }
+      return true;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to add the device sync record to the db: $e");
+      return false;
+    }
+  }
+
   Future<bool> deleteAllSyncsToDevice(String deviceId) async {
     try {
       await _syncDeviceDB.deleteAllSyncsToDevice(deviceId);
