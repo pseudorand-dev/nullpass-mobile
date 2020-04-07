@@ -203,7 +203,8 @@ class Secret {
 
   // convenience constructor to create a Secret object
   Secret.fromMap(Map<String, dynamic> map) {
-    uuid = map[columnSecretId];
+    uuid = map[columnSecretId] ?? map['uuid'] ?? map['_id'] ?? map['gid'] ?? '';
+    message = map['message'] ?? map['password'];
     nickname = map[columnSecretNickname];
     username = map[columnSecretUsername];
     type = tryParseSecretTypeFromString(map[columnSecretType]);
@@ -212,14 +213,28 @@ class Secret {
     genericEndpoint = map[columnSecretGenericEndpoint];
     // thumbnailURI = map[columnSecretThumbnailURI];
     notes = map[columnSecretNotes];
-    tags = (map[columnSecretTags] as String).trim().isEmpty
-        ? <String>[]
-        : (map[columnSecretTags] as String).split(',');
-    vaults = (map[columnSecretVaults] as String).trim().isEmpty
-        ? <String>[]
-        : (map[columnSecretVaults] as String).split(',');
-    created = DateTime.tryParse(columnSecretCreated);
-    lastModified = DateTime.tryParse(columnSecretLastModified);
+
+    tags = <String>[];
+    if (map[columnSecretTags] is String &&
+        (map[columnSecretTags] as String).trim().isNotEmpty) {
+      tags = (map[columnSecretTags] as String).split(',');
+    } else if (map[columnSecretTags] is List &&
+        (map[columnSecretTags] as List).isNotEmpty) {
+      (map[columnSecretTags] as List).forEach((v) => tags.add(v as String));
+    }
+
+    vaults = <String>[];
+    if (map[columnSecretVaults] is String &&
+        (map[columnSecretVaults] as String).trim().isNotEmpty) {
+      vaults = (map[columnSecretVaults] as String).split(',');
+    } else if (map[columnSecretVaults] is List &&
+        (map[columnSecretVaults] as List).isNotEmpty) {
+      (map[columnSecretVaults] as List).forEach((v) => vaults.add(v as String));
+    }
+
+    created = DateTime.tryParse(columnSecretCreated) ?? DateTime.now();
+    lastModified =
+        DateTime.tryParse(columnSecretLastModified) ?? DateTime.now();
   }
 
   // convenience method to create a Map from this Secret object
