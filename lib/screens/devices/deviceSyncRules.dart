@@ -136,6 +136,11 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
         // remove access
         if (await NullPassDB.instance.deleteSync(ds.id)) {
           // remove sync
+          tmpNotificationType = np.NotificationType.SyncUpdate;
+          tmpNotificationData = SyncDataWrapper(
+            type: SyncType.VaultRemove,
+            data: SyncVaultRemove(vid),
+          );
         }
       }
 
