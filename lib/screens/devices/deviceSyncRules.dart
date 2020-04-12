@@ -312,14 +312,15 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
         title: Text(_title),
         actions: <Widget>[
           if (!_inSetup)
-            FlatButton(
-              onPressed: () {
+            IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () async {
+                // TODO: ensure delete of device and all connected syncs removes vault data and sends notifications to sync devices
+                await NullPassDB.instance
+                    .deleteAllSyncsToDevice(this._device.deviceID);
+                await NullPassDB.instance.deleteDevice(this._device.id);
                 Navigator.pop(context);
               },
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white),
-              ),
             ),
         ],
       ),
