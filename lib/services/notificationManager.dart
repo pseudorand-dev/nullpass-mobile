@@ -30,7 +30,7 @@ void defaultSyncInitHandshakeStepFourHandler(dynamic str) {
   // as qr code respond to sync init response message from scanner
 }
 
-void defaultSyncDataHandler(dynamic str) {
+void defaultSyncDataHandler(String did, dynamic str) {
   Log.debug("in update handler placeholder");
   // received sync data to store
 }
@@ -46,7 +46,7 @@ class NotificationManager {
   Function(dynamic) syncInitHandshakeStepTwoHandler;
   Function(dynamic) syncInitHandshakeStepThreeHandler;
   Function(dynamic) syncInitHandshakeStepFourHandler;
-  Function(dynamic) syncDataHandler;
+  Function(String, dynamic) syncDataHandler;
   Function(dynamic) syncDataResponseHandler;
 
   Future<void> initialize({String key}) async {}
@@ -78,7 +78,7 @@ class OneSignalNotificationManager implements NotificationManager {
   @override
   Function(dynamic) syncInitHandshakeStepFourHandler;
   @override
-  Function(dynamic) syncDataHandler;
+  Function(String, dynamic) syncDataHandler;
   @override
   Function(dynamic) syncDataResponseHandler;
 
