@@ -3,12 +3,18 @@
  * Copyright (c) 2020 Pseudorand Development. All rights reserved.
  */
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/deviceSync.dart';
 import 'package:nullpass/models/notification.dart';
+import 'package:nullpass/models/syncData.dart';
+import 'package:nullpass/models/vault.dart';
+import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:openpgp/openpgp.dart';
 
 void defaultSyncInitHandshakeStepOneHandler(dynamic str) {
   Log.debug("in init handler placeholder");
@@ -96,6 +102,7 @@ class OneSignalNotificationManager implements NotificationManager {
     syncInitHandshakeStepThreeHandler =
         defaultSyncInitHandshakeStepThreeHandler;
     syncInitHandshakeStepFourHandler = defaultSyncInitHandshakeStepFourHandler;
+    syncDataHandler = defaultSyncDataHandler;
   }
 
   @override
@@ -187,7 +194,7 @@ class OneSignalNotificationManager implements NotificationManager {
             break;
           case NotificationType.SyncUpdate:
             receivedDataChunks = null;
-            syncDataHandler(tmpNotification.data);
+            syncDataHandler(tmpNotification.deviceID, notificationDataString);
             break;
           case NotificationType.SyncUpdateReceived:
             receivedDataChunks = null;
@@ -224,5 +231,57 @@ class OneSignalNotificationManager implements NotificationManager {
       tmpStr = "$tmpStr${receivedDataChunks[i]}";
     }
     return tmpStr;
+  }
+
+  Future<void> defaultSyncDataHandler(String senderID, dynamic data) async {
+    Log.debug("in init sync data handler");
+    Log.debug("recieved: $data");
+    try {
+      var privateKey = await NullPassDB.instance.getEncryptionPrivateKey();
+      var decryptedMsg = await OpenPGP.decrypt(data as String, privateKey, "");
+      var syncDataMap = jsonDecode(decryptedMsg);
+      var sd = SyncDataWrapper.fromMap(syncDataMap);
+
+      // if (sd.generatedNonce == sd.receivedNonce) {}
+      switch (sd.type) {
+        case SyncType.VaultAdd:
+          var svaData = sd.data as SyncVaultAdd;
+          if (svaData.accessLevel != DeviceAccess.None) {
+            var ds = DeviceSync(
+                deviceID: senderID,
+                vaultID: svaData.vaultId,
+                vaultName: svaData.vaultName,
+                vaultAccess: svaData.accessLevel,
+                syncFromInternal: svaData.accessLevel == DeviceAccess.Manage,
+                status: SyncStatus.Active);
+            await NullPassDB.instance.insertSync(ds);
+            await NullPassDB.instance.insertVault(Vault(
+              uid: svaData.vaultId,
+              nickname: svaData.vaultName,
+              manager: VaultManager.External,
+              managerId: senderID,
+              isDefault: false,
+              createdAt: DateTime.now(),
+              modifiedAt: DateTime.now(),
+            ));
+            await NullPassDB.instance.bulkInsertSecrets(svaData.secrets);
+          }
+          break;
+        case SyncType.VaultRemove:
+          var svrData = sd.data as SyncVaultRemove;
+          await NullPassDB.instance
+              .deleteSyncOfVaultToDevice(senderID, svrData.vaultId);
+          await NullPassDB.instance.deleteVault(svrData.vaultId);
+          break;
+        default:
+          Log.debug(decryptedMsg);
+          Log.debug(sd.toString());
+          break;
+      }
+    } catch (e) {
+      Log.debug(
+        "an error occurred while trying to handle the sync data request ${e.toString()}",
+      );
+    }
   }
 }
