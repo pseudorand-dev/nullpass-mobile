@@ -7,6 +7,8 @@ import 'package:nullpass/common.dart';
 import 'package:nullpass/models/device.dart';
 import 'package:nullpass/models/deviceSync.dart';
 import 'package:nullpass/models/notification.dart' as np;
+import 'package:nullpass/models/secret.dart';
+import 'package:nullpass/models/syncData.dart';
 import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/devices/manageDevices.dart';
 import 'package:nullpass/services/datastore.dart';
@@ -105,6 +107,23 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
         // add access
         if (await NullPassDB.instance.insertSync(ds)) {
           // start sync
+          var secretsList =
+              (await NullPassDB.instance.getAllSecretsInVault(vid)) ??
+                  <Secret>[];
+          secretsList.forEach((s) {
+            (s).vaults = <String>[vid];
+          });
+
+          tmpNotificationType = np.NotificationType.SyncUpdate;
+          tmpNotificationData = SyncDataWrapper(
+            type: SyncType.VaultAdd,
+            data: SyncVaultAdd(
+              vaultId: vid,
+              vaultName: ds.vaultName,
+              accessLevel: ds.vaultAccess,
+              secrets: secretsList,
+            ),
+          );
         }
       } else if (ods != null &&
           _vaultMap[vid].manager == VaultManager.Internal &&
