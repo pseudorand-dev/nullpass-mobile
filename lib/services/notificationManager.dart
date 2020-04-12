@@ -167,7 +167,7 @@ class OneSignalNotificationManager implements NotificationManager {
         // convert notificationDataString to map
         // var notificationData = jsonDecode(notificationDataString);
 
-        Log.debug(tmpNotification.data);
+        Log.debug(notificationDataString);
         switch (tmpNotification.notificationType) {
           case NotificationType.SyncInitStepOne:
             receivedDataChunks = null;
