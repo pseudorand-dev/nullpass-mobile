@@ -82,14 +82,48 @@ class _SecretViewState extends State<SecretView> {
         title: Text(secret.nickname),
         actions: <Widget>[
           IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () async {
-                NullPassDB npDB = NullPassDB.instance;
-                bool success = await npDB.deleteSecret(secret.uuid);
-                Log.debug(success.toString());
-                // await showSnackBar(context, 'Deleted!');
+            icon: Icon(Icons.delete),
+            onPressed: () async {
+              var deleted = await showDialog<bool>(
+                    context: context,
+                    // uncomment below to force user to tap button and not just tap outside the alert!
+                    // barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Delete Secret'),
+                        content: Text(
+                          'Are you sure you want to delete "${this.secret.nickname}"?\nPlease be sure before proceeding as you will not be able to undo this.',
+                        ),
+                        actions: <Widget>[
+                          FlatButton(
+                            child: Text('Cancel'),
+                            onPressed: () {
+                              Navigator.of(context).pop(false);
+                            },
+                          ),
+                          FlatButton(
+                            child: Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                            onPressed: () async {
+                              NullPassDB npDB = NullPassDB.instance;
+                              bool success =
+                                  await npDB.deleteSecret(secret.uuid);
+                              Log.debug(success.toString());
+                              Navigator.of(context).pop(true);
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ) ??
+                  false;
+              if (deleted) {
                 Navigator.pop(context, 'true');
-              }),
+              }
+            },
+          ),
           IconButton(
               icon: Icon(Icons.edit),
               onPressed: () async {
