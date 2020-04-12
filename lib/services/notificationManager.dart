@@ -196,9 +196,9 @@ class OneSignalNotificationManager implements NotificationManager {
             receivedDataChunks = null;
             syncDataHandler(tmpNotification.deviceID, notificationDataString);
             break;
-          case NotificationType.SyncUpdateReceived:
+          case NotificationType.SyncUpdateResponse:
             receivedDataChunks = null;
-            syncDataResponseHandler(tmpNotification.data);
+            syncDataResponseHandler(notificationDataString);
             break;
           default:
             break;
