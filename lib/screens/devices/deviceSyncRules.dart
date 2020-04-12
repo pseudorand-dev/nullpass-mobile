@@ -3,13 +3,17 @@
  * Copyright (c) 2020 Pseudorand Development. All rights reserved.
  */
 import 'package:flutter/material.dart';
+import 'package:nullpass/common.dart';
 import 'package:nullpass/models/device.dart';
 import 'package:nullpass/models/deviceSync.dart';
+import 'package:nullpass/models/notification.dart' as np;
 import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/devices/manageDevices.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';
+import 'package:openpgp/openpgp.dart';
+import 'package:uuid/uuid.dart';
 
 class DeviceSyncRules extends StatefulWidget {
   final Device device;
@@ -72,6 +76,9 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
   Future<void> _storeSyncs() async {
     _deviceSyncMap.forEach((vid, ds) async {
       var ods = _originalSyncMap[vid];
+      // np.Notification tmpNotification;
+      np.NotificationType tmpNotificationType;
+      dynamic tmpNotificationData;
 
       // if the vault doesnt have a sync for this device already and the
       // vault access is set to none for this device then no action is needed
@@ -111,6 +118,28 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
         if (await NullPassDB.instance.deleteSync(ds.id)) {
           // remove sync
         }
+      }
+
+      // Send Notification
+      if (tmpNotificationType != null && tmpNotificationData != null) {
+        if (_device.encryptionKey != null && _device.encryptionKey.isNotEmpty) {
+          var encryptedMsg = await OpenPGP.encrypt(
+              tmpNotificationData.toString(), _device.encryptionKey);
+
+          var tmpNotification = np.Notification(
+            tmpNotificationType,
+            data: encryptedMsg,
+            deviceID: notify.deviceId,
+            notificationID: Uuid().v4(),
+          );
+
+          await notify.sendMessageToAnotherDevice(
+              deviceIDs: <String>[ds.deviceID], message: tmpNotification);
+        }
+      } else {
+        Log.debug(
+          "there was an error while trying to encrypt the synce data message: the remote device public key couldn't be found",
+        );
       }
     });
   }
