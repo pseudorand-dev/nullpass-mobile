@@ -7,9 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/secret.dart';
+import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/secrets/secretEdit.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
+import 'package:nullpass/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SecretView extends StatefulWidget {
@@ -18,23 +20,62 @@ class SecretView extends StatefulWidget {
   SecretView({Key key, @required this.secret}) : super(key: key);
 
   @override
-  _SecretViewState createState() => _SecretViewState(secret: this.secret);
+  _SecretViewState createState() => _SecretViewState();
 }
 
 class _SecretViewState extends State<SecretView> {
   // TODO: evaluate replacing this expensive scaffold key with a better more efficient method - examples https://medium.com/@ksheremet/flutter-showing-snackbar-within-the-widget-that-builds-a-scaffold-3a817635aeb2
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   Secret secret;
+  bool _loading = true;
+  Map<String, Vault> selectedVaults;
 
-  _SecretViewState({@required secret}) {
-    if (secret == null) {
-      secret = new Secret(nickname: '', website: '', username: '', message: '');
+  @override
+  void initState() {
+    super.initState();
+    this.secret = this.widget.secret ??
+        Secret(nickname: '', website: '', username: '', message: '');
+
+    selectedVaults = <String, Vault>{};
+    _getSecretsVault().then((vaultsList) {
+      setState(() {
+        _loading = false;
+      });
+    });
+  }
+
+  Future<void> _getSecretsVault() async {
+    for (var vid in this.secret.vaults) {
+      var v = await NullPassDB.instance.getVaultByID(vid);
+      selectedVaults[vid] = v;
     }
-    this.secret = secret;
+  }
+
+  List<Widget> _generateChips(BuildContext context) {
+    var widgetList = <Widget>[];
+
+    this.secret.vaults.forEach((vid) {
+      widgetList.add(NullPassFilterChip(
+        label: this.selectedVaults[vid].nickname,
+        isSelected: true,
+        onSelected: (isSelected) {},
+      ));
+    });
+    return widgetList;
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: Text(secret.nickname),
+        ),
+        body: CenterLoader(),
+      );
+    }
+
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -69,10 +110,17 @@ class _SecretViewState extends State<SecretView> {
                               uuid: secret.uuid))),
                 );
                 if (isTrue(result)) {
-                  NullPassDB npDB = NullPassDB.instance;
-                  Secret s = await npDB.getSecretByID(secret.uuid);
+                  setState(() {
+                    _loading = true;
+                  });
+                  Secret s =
+                      await NullPassDB.instance.getSecretByID(secret.uuid);
                   setState(() {
                     secret = s;
+                  });
+                  await _getSecretsVault();
+                  setState(() {
+                    _loading = false;
                   });
                 }
               }),
@@ -159,6 +207,22 @@ class _SecretViewState extends State<SecretView> {
                   }),
             ),
             ListTile(
+              contentPadding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+              title: Text(
+                "Vaults",
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  // fontSize: 12.5,
+                ),
+              ),
+              subtitle: Wrap(
+                children: _generateChips(context),
+                spacing: 5.0,
+                runSpacing: 5.0,
+              ),
+            ),
+            if (isDebug)
+              ListTile(
                 title: Text('Thumbnail'),
                 subtitle: Text(secret.thumbnailURI ?? ''),
                 onLongPress: () async {
@@ -166,7 +230,8 @@ class _SecretViewState extends State<SecretView> {
                       ClipboardData(text: secret.thumbnailURI));
                   _scaffoldKey.currentState.showSnackBar(
                       SnackBar(content: Text('Copied the Thumbnail URL')));
-                }),
+                },
+              ),
             /*
             ListTile(
               title: CachedNetworkImage(
