@@ -602,6 +602,20 @@ class NullPassDB {
     }
   }
 
+  Future<DeviceSync> getSyncByDeviceAndVault(
+      String deviceId, String vaultId) async {
+    try {
+      var syncsWithDevice = await getAllSyncsWithADevice(deviceId);
+      return syncsWithDevice.firstWhere((ds) => ds.vaultID == vaultId);
+      // syncsWithDevice.retainWhere((ds) => ds.vaultID == vaultId);
+      // return await _syncDeviceDB.getAllSyncsWithADeviceByID(deviceId);
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to get the sync to a device for a vault from the db: $e");
+      return null;
+    }
+  }
+
   Future<List<DeviceSync>> getAllSyncs() async {
     try {
       return await _syncDeviceDB.getAllSyncs();
