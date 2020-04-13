@@ -143,3 +143,31 @@ class SyncVaultRemove extends NullPassSync {
     vaultId = map["vault_id"];
   }
 }
+
+class SyncVaultUpdate extends NullPassSync {
+  DeviceAccess accessLevel;
+  String vaultName;
+  String vaultId;
+
+  SyncVaultUpdate({
+    @required String vaultId,
+    @required String vaultName,
+    @required DeviceAccess accessLevel,
+  }) {
+    this.vaultId = vaultId;
+    this.vaultName = vaultName;
+    this.accessLevel = accessLevel ?? DeviceAccess.None;
+  }
+
+  Map<String, dynamic> toJson() => {
+        "vault_id": this.vaultId,
+        "vault_name": this.vaultName,
+        "access_level": deviceAccessToString(this.accessLevel),
+      };
+
+  SyncVaultUpdate.fromMap(Map map) {
+    vaultId = map["vault_id"];
+    vaultName = map["vault_name"];
+    accessLevel = parseDeviceAccessFromString(map["access_level"]);
+  }
+}
