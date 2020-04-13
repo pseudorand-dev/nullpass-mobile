@@ -572,6 +572,29 @@ class NullPassDB {
   static final _NullPassSyncDevicesDB _syncDeviceDB =
       _NullPassSyncDevicesDB.instance;
 
+  Future<bool> storeSyncDataBackup(String id, String backupData) async {
+    try {
+      await _nullpassSecureStorage.write(key: id, value: backupData);
+      return true;
+    } catch (e) {
+      Log.debug(
+        "there was an error trying to store the backup data from the sync: ${e.toString()}",
+      );
+    }
+    return false;
+  }
+
+  Future<String> fetchSyncDataBackup(String id) async {
+    try {
+      return await _nullpassSecureStorage.read(key: id);
+    } catch (e) {
+      Log.debug(
+        "there was an error trying to store the backup data from the sync: ${e.toString()}",
+      );
+    }
+    return null;
+  }
+
   Future<bool> insertSync(DeviceSync d) async {
     try {
       await _syncDeviceDB.insert(d);
