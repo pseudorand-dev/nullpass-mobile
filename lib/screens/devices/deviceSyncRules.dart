@@ -129,8 +129,17 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
           _vaultMap[vid].manager == VaultManager.Internal &&
           ds.vaultAccess != DeviceAccess.None) {
         // update access
-        if (await NullPassDB.instance.insertSync(ds)) {
+        if (await NullPassDB.instance.updateSync(ds)) {
           // update sync
+          tmpNotificationType = np.NotificationType.SyncUpdate;
+          tmpNotificationData = SyncDataWrapper(
+            type: SyncType.VaultUpdate,
+            data: SyncVaultUpdate(
+              vaultId: vid,
+              vaultName: ds.vaultName,
+              accessLevel: ds.vaultAccess,
+            ),
+          );
         }
       } else if (ods != null && ds.vaultAccess == DeviceAccess.None) {
         // remove access
