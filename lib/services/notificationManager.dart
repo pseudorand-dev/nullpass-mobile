@@ -237,8 +237,10 @@ class OneSignalNotificationManager implements NotificationManager {
     Log.debug("in init sync data handler");
     Log.debug("recieved: $data");
     try {
-      var privateKey = await NullPassDB.instance.getEncryptionPrivateKey();
-      var decryptedMsg = await OpenPGP.decrypt(data as String, privateKey, "");
+      var db = NullPassDB.instance;
+      var kp = await db.getEncryptionKeyPair();
+      var decryptedMsg =
+          await OpenPGP.decrypt(data as String, kp.privateKey, "");
       var syncDataMap = jsonDecode(decryptedMsg);
       var sd = SyncDataWrapper.fromMap(syncDataMap);
 
@@ -254,24 +256,91 @@ class OneSignalNotificationManager implements NotificationManager {
                 vaultAccess: svaData.accessLevel,
                 syncFromInternal: svaData.accessLevel == DeviceAccess.Manage,
                 status: SyncStatus.Active);
-            await NullPassDB.instance.insertSync(ds);
-            await NullPassDB.instance.insertVault(Vault(
-              uid: svaData.vaultId,
-              nickname: svaData.vaultName,
-              manager: VaultManager.External,
-              managerId: senderID,
-              isDefault: false,
-              createdAt: DateTime.now(),
-              modifiedAt: DateTime.now(),
-            ));
-            await NullPassDB.instance.bulkInsertSecrets(svaData.secrets);
+            await db.insertSync(ds);
+
+            if (svaData.accessLevel == DeviceAccess.ReadOnly ||
+                svaData.accessLevel == DeviceAccess.Manage) {
+              await db.insertVault(Vault(
+                uid: svaData.vaultId,
+                nickname: svaData.vaultName,
+                manager: (svaData.accessLevel == DeviceAccess.Manage)
+                    ? VaultManager.Internal
+                    : VaultManager.External,
+                managerId: senderID,
+                isDefault: false,
+                createdAt: DateTime.now(),
+                modifiedAt: DateTime.now(),
+              ));
+              await db.bulkInsertSecrets(svaData.secrets);
+            } else if (svaData.accessLevel == DeviceAccess.Backup) {
+              var jsonSecretsStr = jsonEncode(svaData.secrets);
+              var encryptedSecretData =
+                  await OpenPGP.encrypt(jsonSecretsStr, kp.publicKey);
+              await db.storeSyncDataBackup(
+                  ds.id, base64EncodeString(encryptedSecretData));
+            }
+          }
+          break;
+        case SyncType.VaultUpdate:
+          // TODO: add update if it's just the nickname that's being updated
+
+          var svuData = sd.data as SyncVaultUpdate;
+          var ds = await db.getSyncByDeviceAndVault(senderID, svuData.vaultId);
+          if (ds.vaultAccess == svuData.accessLevel) return;
+          if (svuData.accessLevel == DeviceAccess.None) {
+            // delete the sync
+            await db.deleteSyncOfVaultToDevice(senderID, svuData.vaultId);
+            await db.deleteVault(svuData.vaultId);
+          }
+
+          if (ds.vaultAccess == DeviceAccess.Manage ||
+              ds.vaultAccess == DeviceAccess.ReadOnly) {
+            // update the sync access
+            ds.syncFromInternal =
+                (svuData.accessLevel == DeviceAccess.Manage) ?? false;
+            ds.vaultAccess = svuData.accessLevel;
+            ds.vaultName = svuData.vaultName;
+            await db.updateSync(ds);
+
+            // update the vault access
+            var v = await db.getVaultByID(ds.vaultID);
+            v.manager = (svuData.accessLevel == DeviceAccess.Manage)
+                ? VaultManager.Internal
+                : VaultManager.External;
+            v.managerId = (svuData.accessLevel == DeviceAccess.Manage)
+                ? Vault.InternalSourceID
+                : senderID;
+            v.nickname = svuData.vaultName;
+            await db.updateVault(v);
+          } else if (ds.vaultAccess == DeviceAccess.Backup) {
+            var encodedSyncDataBackup = await db.fetchSyncDataBackup(ds.id);
+            var decryptedSecretData = await OpenPGP.decrypt(
+              base64DecodeString(encodedSyncDataBackup),
+              kp.privateKey,
+              "",
+            );
+
+            var sva = SyncVaultAdd.fromMap(jsonDecode(decryptedSecretData));
+            await db.insertVault(
+              Vault(
+                uid: sva.vaultId,
+                nickname: sva.vaultName,
+                manager: (svuData.accessLevel == DeviceAccess.Manage)
+                    ? VaultManager.Internal
+                    : VaultManager.External,
+                managerId: senderID,
+                isDefault: false,
+                createdAt: DateTime.now(),
+                modifiedAt: DateTime.now(),
+              ),
+            );
+            await db.bulkInsertSecrets(sva.secrets);
           }
           break;
         case SyncType.VaultRemove:
           var svrData = sd.data as SyncVaultRemove;
-          await NullPassDB.instance
-              .deleteSyncOfVaultToDevice(senderID, svrData.vaultId);
-          await NullPassDB.instance.deleteVault(svrData.vaultId);
+          await db.deleteSyncOfVaultToDevice(senderID, svrData.vaultId);
+          await db.deleteVault(svrData.vaultId);
           break;
         default:
           Log.debug(decryptedMsg);
