@@ -29,6 +29,7 @@ class _SecretViewState extends State<SecretView> {
   Secret secret;
   bool _loading = true;
   Map<String, Vault> selectedVaults;
+  bool _editable = false;
 
   @override
   void initState() {
@@ -48,6 +49,14 @@ class _SecretViewState extends State<SecretView> {
     for (var vid in this.secret.vaults) {
       var v = await NullPassDB.instance.getVaultByID(vid);
       selectedVaults[vid] = v;
+
+      // FIXME: need a better way to determine if editing is allowed on a secret
+      // If the secret is in any vaults that are managed internally than It can be edited
+      if (v.manager == VaultManager.Internal) {
+        setState(() {
+          _editable = true;
+        });
+      }
     }
   }
 
@@ -81,67 +90,71 @@ class _SecretViewState extends State<SecretView> {
       appBar: AppBar(
         title: Text(secret.nickname),
         actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () async {
-              var deleted = await showDialog<bool>(
-                    context: context,
-                    // uncomment below to force user to tap button and not just tap outside the alert!
-                    // barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Delete Secret'),
-                        content: Text(
-                          'Are you sure you want to delete "${this.secret.nickname}"?\nPlease be sure before proceeding as you will not be able to undo this.',
-                        ),
-                        actions: <Widget>[
-                          FlatButton(
-                            child: Text('Cancel'),
-                            onPressed: () {
-                              Navigator.of(context).pop(false);
-                            },
+          if (_editable)
+            IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () async {
+                var deleted = await showDialog<bool>(
+                      context: context,
+                      // uncomment below to force user to tap button and not just tap outside the alert!
+                      // barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Delete Secret'),
+                          content: Text(
+                            'Are you sure you want to delete "${this.secret.nickname}"?\nPlease be sure before proceeding as you will not be able to undo this.',
                           ),
-                          FlatButton(
-                            child: Text(
-                              'Delete',
-                              style: TextStyle(color: Colors.red),
+                          actions: <Widget>[
+                            FlatButton(
+                              child: Text('Cancel'),
+                              onPressed: () {
+                                Navigator.of(context).pop(false);
+                              },
                             ),
-                            onPressed: () async {
-                              NullPassDB npDB = NullPassDB.instance;
-                              bool success =
-                                  await npDB.deleteSecret(secret.uuid);
-                              Log.debug(success.toString());
-                              Navigator.of(context).pop(true);
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  ) ??
-                  false;
-              if (deleted) {
-                Navigator.pop(context, 'true');
-              }
-            },
-          ),
-          IconButton(
+                            FlatButton(
+                              child: Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              onPressed: () async {
+                                NullPassDB npDB = NullPassDB.instance;
+                                bool success =
+                                    await npDB.deleteSecret(secret.uuid);
+                                Log.debug(success.toString());
+                                Navigator.of(context).pop(true);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ) ??
+                    false;
+                if (deleted) {
+                  Navigator.pop(context, 'true');
+                }
+              },
+            ),
+          if (_editable)
+            IconButton(
               icon: Icon(Icons.edit),
               onPressed: () async {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => SecretEdit(
-                          edit: SecretEditType.Update,
-                          secret: new Secret(
-                              nickname: secret.nickname,
-                              website: secret.website,
-                              username: secret.username,
-                              message: secret.message,
-                              notes: secret.notes,
-                              thumbnailURI: secret.thumbnailURI,
-                              vaults: secret.vaults,
-                              tags: secret.tags,
-                              uuid: secret.uuid))),
+                    builder: (context) => SecretEdit(
+                      edit: SecretEditType.Update,
+                      secret: new Secret(
+                          nickname: secret.nickname,
+                          website: secret.website,
+                          username: secret.username,
+                          message: secret.message,
+                          notes: secret.notes,
+                          thumbnailURI: secret.thumbnailURI,
+                          vaults: secret.vaults,
+                          tags: secret.tags,
+                          uuid: secret.uuid),
+                    ),
+                  ),
                 );
                 if (isTrue(result)) {
                   setState(() {
@@ -157,7 +170,8 @@ class _SecretViewState extends State<SecretView> {
                     _loading = false;
                   });
                 }
-              }),
+              },
+            ),
         ],
       ),
       body: Center(
