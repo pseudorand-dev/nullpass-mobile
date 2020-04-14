@@ -595,6 +595,18 @@ class NullPassDB {
     return null;
   }
 
+  Future<bool> deleteSyncDataBackup(String id) async {
+    try {
+      await _nullpassSecureStorage.delete(key: id);
+      return true;
+    } catch (e) {
+      Log.debug(
+        "there was an error trying to store the backup data from the sync: ${e.toString()}",
+      );
+      return false;
+    }
+  }
+
   Future<bool> insertSync(DeviceSync d) async {
     try {
       await _syncDeviceDB.insert(d);
