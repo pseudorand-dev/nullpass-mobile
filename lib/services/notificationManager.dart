@@ -327,16 +327,28 @@ class OneSignalNotificationManager implements NotificationManager {
       ds.vaultName = svuData.vaultName;
       await db.updateSync(ds);
 
-      // update the vault access
-      var v = await db.getVaultByID(ds.vaultID);
-      v.manager = (svuData.accessLevel == DeviceAccess.Manage)
-          ? VaultManager.Internal
-          : VaultManager.External;
-      v.managerId = (svuData.accessLevel == DeviceAccess.Manage)
-          ? Vault.InternalSourceID
-          : senderID;
-      v.nickname = svuData.vaultName;
-      await db.updateVault(v);
+      // update the vault access if the new access is Manage or ReadOnly
+      if (svuData.accessLevel == DeviceAccess.Manage ||
+          svuData.accessLevel == DeviceAccess.ReadOnly) {
+        var v = await db.getVaultByID(ds.vaultID);
+        v.manager = (svuData.accessLevel == DeviceAccess.Manage)
+            ? VaultManager.Internal
+            : VaultManager.External;
+        v.managerId = (svuData.accessLevel == DeviceAccess.Manage)
+            ? Vault.InternalSourceID
+            : senderID;
+        v.nickname = svuData.vaultName;
+        await db.updateVault(v);
+      } else if (svuData.accessLevel == DeviceAccess.Backup) {
+        // update the vault access if the new access is Backup
+        var secrets = await db.getAllSecretsInVault(ds.vaultID);
+        var jsonSecretsStr = jsonEncode(secrets);
+        var encryptedSecretData = await OpenPGP.encrypt(
+            jsonSecretsStr, await db.getEncryptionPublicKey());
+        await db.storeSyncDataBackup(
+            ds.id, base64EncodeString(encryptedSecretData));
+        await db.deleteVault(ds.vaultID);
+      }
     } else if (ds.vaultAccess == DeviceAccess.Backup) {
       var encodedSyncDataBackup = await db.fetchSyncDataBackup(ds.id);
       var decryptedSecretData = await OpenPGP.decrypt(
