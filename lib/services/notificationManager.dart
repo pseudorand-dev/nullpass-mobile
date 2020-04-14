@@ -349,8 +349,9 @@ class OneSignalNotificationManager implements NotificationManager {
           break;
         case SyncType.VaultRemove:
           var svrData = sd.data as SyncVaultRemove;
-          await db.deleteSyncOfVaultToDevice(senderID, svrData.vaultId);
+          await db.deleteSyncDataBackup((await db.getSyncByDeviceAndVault(senderID, svrData.vaultId)).id);
           await db.deleteVault(svrData.vaultId);
+          await db.deleteSyncOfVaultToDevice(senderID, svrData.vaultId);
           break;
         default:
           Log.debug(decryptedMsg);
