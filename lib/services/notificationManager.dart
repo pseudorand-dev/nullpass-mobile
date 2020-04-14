@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/deviceSync.dart';
 import 'package:nullpass/models/notification.dart';
+import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/models/syncData.dart';
 import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/services/datastore.dart';
