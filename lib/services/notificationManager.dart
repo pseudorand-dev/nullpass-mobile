@@ -286,7 +286,9 @@ class OneSignalNotificationManager implements NotificationManager {
 
           var svuData = sd.data as SyncVaultUpdate;
           var ds = await db.getSyncByDeviceAndVault(senderID, svuData.vaultId);
-          if (ds.vaultAccess == svuData.accessLevel) return;
+          if (ds.vaultAccess == svuData.accessLevel &&
+              ds.vaultName == svuData.vaultName) return;
+          // TODO: handle name change only as well
           if (svuData.accessLevel == DeviceAccess.None) {
             // delete the sync
             await db.deleteSyncOfVaultToDevice(senderID, svuData.vaultId);
@@ -320,11 +322,17 @@ class OneSignalNotificationManager implements NotificationManager {
               "",
             );
 
-            var sva = SyncVaultAdd.fromMap(jsonDecode(decryptedSecretData));
+            ds.vaultName = svuData.vaultName;
+            ds.vaultAccess = svuData.accessLevel;
+
+            var tmpList = jsonDecode(decryptedSecretData) ?? <Secret>[];
+            var secretList = <Secret>[];
+            (tmpList as List).forEach((i) => secretList.add(Secret.fromMap(i)));
+
             await db.insertVault(
               Vault(
-                uid: sva.vaultId,
-                nickname: sva.vaultName,
+                uid: svuData.vaultId,
+                nickname: svuData.vaultName,
                 manager: (svuData.accessLevel == DeviceAccess.Manage)
                     ? VaultManager.Internal
                     : VaultManager.External,
@@ -334,7 +342,9 @@ class OneSignalNotificationManager implements NotificationManager {
                 modifiedAt: DateTime.now(),
               ),
             );
-            await db.bulkInsertSecrets(sva.secrets);
+            await db.bulkInsertSecrets(secretList);
+            await db.updateSync(ds);
+            await db.deleteSyncDataBackup(ds.id);
           }
           break;
         case SyncType.VaultRemove:
