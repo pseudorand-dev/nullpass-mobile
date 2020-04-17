@@ -79,6 +79,15 @@ class SyncDataWrapper {
       case SyncType.VaultRemove:
         data = SyncVaultRemove.fromMap(map[_SYNC_DATA_KEY]);
         break;
+      case SyncType.DataAdd:
+        data = SyncDataAdd.fromMap(map[_SYNC_DATA_KEY]);
+        break;
+      case SyncType.DataUpdate:
+        data = SyncDataUpdate.fromMap(map[_SYNC_DATA_KEY]);
+        break;
+      case SyncType.DataRemove:
+        data = SyncDataRemove.fromMap(map[_SYNC_DATA_KEY]);
+        break;
       default:
         Log.debug(syncTypeToString(type));
         break;
@@ -173,5 +182,59 @@ class SyncVaultRemove extends NullPassSync {
 
   SyncVaultRemove.fromMap(Map map) {
     vaultId = map["vault_id"];
+  }
+}
+
+class SyncDataAdd extends NullPassSync {
+  String vaultId;
+  List<Secret> secrets;
+
+  SyncDataAdd({@required this.vaultId, @required this.secrets});
+
+  Map<String, dynamic> toJson() => {
+        "vault_id": vaultId,
+        "secrets": this.secrets,
+      };
+
+  SyncDataAdd.fromMap(Map map) {
+    vaultId = map["vault_id"];
+    secrets = <Secret>[];
+    (map["secrets"] as List).forEach((s) => secrets.add(Secret.fromMap(s)));
+  }
+}
+
+class SyncDataUpdate extends NullPassSync {
+  String vaultId;
+  List<Secret> secrets;
+
+  SyncDataUpdate({@required this.vaultId, @required this.secrets});
+
+  Map<String, dynamic> toJson() => {
+        "vault_id": vaultId,
+        "secrets": this.secrets,
+      };
+
+  SyncDataUpdate.fromMap(Map map) {
+    vaultId = map["vault_id"];
+    secrets = <Secret>[];
+    (map["secrets"] as List).forEach((s) => secrets.add(Secret.fromMap(s)));
+  }
+}
+
+class SyncDataRemove extends NullPassSync {
+  String vaultId;
+  List<String> secretIDs;
+
+  SyncDataRemove({@required this.vaultId, @required this.secretIDs});
+
+  Map<String, dynamic> toJson() => {
+        "vault_id": vaultId,
+        "secret_ids": secretIDs,
+      };
+
+  SyncDataRemove.fromMap(Map map) {
+    vaultId = map["vault_id"];
+    secretIDs = <String>[];
+    (map["secret_ids"] as List).forEach((s) => secretIDs.add(s as String));
   }
 }
