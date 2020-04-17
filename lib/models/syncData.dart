@@ -73,10 +73,14 @@ class SyncDataWrapper {
       case SyncType.VaultAdd:
         data = SyncVaultAdd.fromMap(map[_SYNC_DATA_KEY]);
         break;
+      case SyncType.VaultUpdate:
+        data = SyncVaultUpdate.fromMap(map[_SYNC_DATA_KEY]);
+        break;
       case SyncType.VaultRemove:
         data = SyncVaultRemove.fromMap(map[_SYNC_DATA_KEY]);
         break;
       default:
+        Log.debug(syncTypeToString(type));
         break;
     }
   }
@@ -132,18 +136,6 @@ class SyncVaultAdd extends NullPassSync {
   }
 }
 
-class SyncVaultRemove extends NullPassSync {
-  String vaultId;
-
-  SyncVaultRemove(this.vaultId);
-
-  Map<String, dynamic> toJson() => {"vault_id": this.vaultId};
-
-  SyncVaultRemove.fromMap(Map map) {
-    vaultId = map["vault_id"];
-  }
-}
-
 class SyncVaultUpdate extends NullPassSync {
   DeviceAccess accessLevel;
   String vaultName;
@@ -169,5 +161,17 @@ class SyncVaultUpdate extends NullPassSync {
     vaultId = map["vault_id"];
     vaultName = map["vault_name"];
     accessLevel = parseDeviceAccessFromString(map["access_level"]);
+  }
+}
+
+class SyncVaultRemove extends NullPassSync {
+  String vaultId;
+
+  SyncVaultRemove(this.vaultId);
+
+  Map<String, dynamic> toJson() => {"vault_id": this.vaultId};
+
+  SyncVaultRemove.fromMap(Map map) {
+    vaultId = map["vault_id"];
   }
 }
