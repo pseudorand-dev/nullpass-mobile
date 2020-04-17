@@ -247,14 +247,16 @@ class OneSignalNotificationManager implements NotificationManager {
       // if (sd.generatedNonce == sd.receivedNonce) {}
       switch (sd.type) {
         case SyncType.VaultAdd:
-          await _defaultSyncAddHandler(senderID, sd.data as SyncVaultAdd);
+          await _defaultVaultSyncAddHandler(senderID, sd.data as SyncVaultAdd);
           break;
         case SyncType.VaultUpdate:
           // TODO: add update if it's just the nickname that's being updated
-          await _defaultSyncUpdateHandler(senderID, sd.data as SyncVaultUpdate);
+          await _defaultVaultSyncUpdateHandler(
+              senderID, sd.data as SyncVaultUpdate);
           break;
         case SyncType.VaultRemove:
-          await _defaultSyncRemoveHandler(senderID, sd.data as SyncVaultRemove);
+          await _defaultVaultSyncRemoveHandler(
+              senderID, sd.data as SyncVaultRemove);
           break;
         default:
           Log.debug(decryptedMsg);
@@ -268,7 +270,7 @@ class OneSignalNotificationManager implements NotificationManager {
     }
   }
 
-  Future<void> _defaultSyncAddHandler(
+  Future<void> _defaultVaultSyncAddHandler(
       String senderID, SyncVaultAdd svaData) async {
     var db = NullPassDB.instance;
     if (svaData.accessLevel != DeviceAccess.None) {
@@ -305,7 +307,7 @@ class OneSignalNotificationManager implements NotificationManager {
     }
   }
 
-  Future<void> _defaultSyncUpdateHandler(
+  Future<void> _defaultVaultSyncUpdateHandler(
       String senderID, SyncVaultUpdate svuData) async {
     var db = NullPassDB.instance;
     var ds = await db.getSyncByDeviceAndVault(senderID, svuData.vaultId);
@@ -383,7 +385,7 @@ class OneSignalNotificationManager implements NotificationManager {
     }
   }
 
-  Future<void> _defaultSyncRemoveHandler(
+  Future<void> _defaultVaultSyncRemoveHandler(
       String senderID, SyncVaultRemove svrData) async {
     var db = NullPassDB.instance;
     await db.deleteSyncDataBackup(
