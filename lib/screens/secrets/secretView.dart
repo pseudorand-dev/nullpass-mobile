@@ -11,6 +11,7 @@ import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/secrets/secretEdit.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
+import 'package:nullpass/services/sync.dart';
 import 'package:nullpass/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -120,6 +121,9 @@ class _SecretViewState extends State<SecretView> {
                                 NullPassDB npDB = NullPassDB.instance;
                                 bool success =
                                     await npDB.deleteSecret(secret.uuid);
+                                if (success) {
+                                  Sync.instance.sendSecretDeleted(this.secret);
+                                }
                                 Log.debug(success.toString());
                                 Navigator.of(context).pop(true);
                               },
