@@ -258,6 +258,17 @@ class OneSignalNotificationManager implements NotificationManager {
           await _defaultVaultSyncRemoveHandler(
               senderID, sd.data as SyncVaultRemove);
           break;
+        case SyncType.DataAdd:
+          await _defaultDataSyncAddHandler(senderID, sd.data as SyncDataAdd);
+          break;
+        case SyncType.DataUpdate:
+          await _defaultDataSyncUpdateHandler(
+              senderID, sd.data as SyncDataUpdate);
+          break;
+        case SyncType.DataRemove:
+          await _defaultDataSyncRemoveHandler(
+              senderID, sd.data as SyncDataRemove);
+          break;
         default:
           Log.debug(decryptedMsg);
           Log.debug(sd.toString());
@@ -392,5 +403,168 @@ class OneSignalNotificationManager implements NotificationManager {
         (await db.getSyncByDeviceAndVault(senderID, svrData.vaultId)).id);
     await db.deleteVault(svrData.vaultId);
     await db.deleteSyncOfVaultToDevice(senderID, svrData.vaultId);
+  }
+
+  Future<void> _defaultDataSyncAddHandler(
+      String senderID, SyncDataAdd svaData) async {
+    var db = NullPassDB.instance;
+    // make sure that the sync exists
+    var ds = await db.getSyncByDeviceAndVault(senderID, svaData.vaultId);
+    if (ds == null) {
+      Log.debug(
+        "The device sync did not exist implying that add data sync attempt should not proceed further",
+      );
+      return;
+    }
+
+    if (ds.vaultAccess != DeviceAccess.Backup) {
+      await db.bulkInsertSecrets(svaData.secrets);
+    } else {
+      // Otherwise get the backup data and update the data accordingly
+
+      // Get Backup data
+      var kp = await db.getEncryptionKeyPair();
+      var encodedSyncDataBackup = await db.fetchSyncDataBackup(ds.id);
+      var decryptedSecretData = await OpenPGP.decrypt(
+        base64DecodeString(encodedSyncDataBackup),
+        kp.privateKey,
+        "",
+      );
+
+      // Parse Data
+      var tmpList = jsonDecode(decryptedSecretData) ?? <Secret>[];
+      var secretList = <Secret>[];
+
+      // Update Secret
+      (tmpList as List).forEach((i) => secretList.add(Secret.fromMap(i)));
+
+      // add all secrets who are in the data body
+      for (var s in svaData.secrets) {
+        secretList.add(s);
+      }
+
+      // rewrite data
+      var jsonSecretsStr = jsonEncode(secretList);
+      var encryptedSecretData =
+          await OpenPGP.encrypt(jsonSecretsStr, kp.publicKey);
+      await db.storeSyncDataBackup(
+          ds.id, base64EncodeString(encryptedSecretData));
+    }
+  }
+
+  Future<void> _defaultDataSyncUpdateHandler(
+      String senderID, SyncDataUpdate svuData) async {
+    var db = NullPassDB.instance;
+    // make sure that the sync exists
+    var ds = await db.getSyncByDeviceAndVault(senderID, svuData.vaultId);
+    if (ds == null) {
+      Log.debug(
+        "The device sync did not exist implying that update data sync attempt should not proceed further",
+      );
+      return;
+    }
+
+    // if the access is not backup then just add the secret
+    if (ds.vaultAccess != DeviceAccess.Backup) {
+      for (var s in svuData.secrets) {
+        await db.updateSecret(s);
+      }
+    } else {
+      // Otherwise get the backup data and update the data accordingly
+
+      // Setup map for easier updating of secret
+      var secretMap = <String, Secret>{};
+      for (var s in svuData.secrets) {
+        secretMap[s.uuid] = s;
+      }
+
+      // Get Backup data
+      var kp = await db.getEncryptionKeyPair();
+      var encodedSyncDataBackup = await db.fetchSyncDataBackup(ds.id);
+      var decryptedSecretData = await OpenPGP.decrypt(
+        base64DecodeString(encodedSyncDataBackup),
+        kp.privateKey,
+        "",
+      );
+
+      // Parse Data
+      var tmpList = jsonDecode(decryptedSecretData) ?? <Secret>[];
+      var secretList = <Secret>[];
+
+      // Update Secret
+      (tmpList as List).forEach((i) {
+        var s = Secret.fromMap(i);
+        // if a secret is in the secretMap use that secret instead of the stored secret (i.e. update)
+        if (secretMap.containsKey(s.uuid)) {
+          secretList.add(secretMap[s.uuid]);
+        } else {
+          secretList.add(s);
+        }
+      });
+
+      // rewrite data
+      var jsonSecretsStr = jsonEncode(secretList);
+      var encryptedSecretData =
+          await OpenPGP.encrypt(jsonSecretsStr, kp.publicKey);
+      await db.storeSyncDataBackup(
+          ds.id, base64EncodeString(encryptedSecretData));
+    }
+  }
+
+  Future<void> _defaultDataSyncRemoveHandler(
+      String senderID, SyncDataRemove svrData) async {
+    var db = NullPassDB.instance;
+    // make sure that the sync exists
+    var ds = await db.getSyncByDeviceAndVault(senderID, svrData.vaultId);
+    if (ds == null) {
+      Log.debug(
+        "The device sync did not exist implying that delete data sync attempt should not proceed further",
+      );
+      return;
+    }
+
+    if (ds.vaultAccess != DeviceAccess.Backup) {
+      for (var sID in svrData.secretIDs) {
+        await db.deleteSecret(sID);
+      }
+    } else {
+      // Otherwise get the backup data and update the data accordingly
+
+      // Setup map for easier updating of secret
+      var secretMap = <String, bool>{};
+      for (var s in svrData.secretIDs) {
+        secretMap[s] = true;
+      }
+
+      // Get Backup data
+      var kp = await db.getEncryptionKeyPair();
+      var encodedSyncDataBackup = await db.fetchSyncDataBackup(ds.id);
+      var decryptedSecretData = await OpenPGP.decrypt(
+        base64DecodeString(encodedSyncDataBackup),
+        kp.privateKey,
+        "",
+      );
+
+      // Parse Data
+      var tmpList = jsonDecode(decryptedSecretData) ?? <Secret>[];
+      var secretList = <Secret>[];
+
+      // Update Secret
+      (tmpList as List).forEach((i) {
+        var s = Secret.fromMap(i);
+
+        // ignore any secrets who are in the secretMap (i.e. to be deleted)
+        if (!secretMap.containsKey(s.uuid)) {
+          secretList.add(s);
+        }
+      });
+
+      // rewrite data
+      var jsonSecretsStr = jsonEncode(secretList);
+      var encryptedSecretData =
+          await OpenPGP.encrypt(jsonSecretsStr, kp.publicKey);
+      await db.storeSyncDataBackup(
+          ds.id, base64EncodeString(encryptedSecretData));
+    }
   }
 }
