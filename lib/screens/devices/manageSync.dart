@@ -17,19 +17,19 @@ import 'package:nullpass/widgets.dart';
 import 'package:openpgp/openpgp.dart';
 import 'package:uuid/uuid.dart';
 
-class DeviceSyncRules extends StatefulWidget {
+class ManageSync extends StatefulWidget {
   final Device device;
   final bool inSetup;
 
-  DeviceSyncRules(this.device, {Key key, inSetup})
+  ManageSync(this.device, {Key key, inSetup})
       : this.inSetup = inSetup ?? false,
         super(key: key);
 
   @override
-  _DeviceSyncRulesState createState() => _DeviceSyncRulesState();
+  _ManageSyncState createState() => _ManageSyncState();
 }
 
-class _DeviceSyncRulesState extends State<DeviceSyncRules> {
+class _ManageSyncState extends State<ManageSync> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   bool _loading = true;
   String _title;
