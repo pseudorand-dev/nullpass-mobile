@@ -366,6 +366,15 @@ class _ManageSyncState extends State<ManageSync> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(_title),
+        ),
+        body: CenterLoader(),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_title),
