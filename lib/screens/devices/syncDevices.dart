@@ -6,7 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/device.dart';
-import 'package:nullpass/screens/devices/deviceSyncRules.dart';
+import 'package:nullpass/screens/devices/manageSync.dart';
 import 'package:nullpass/screens/devices/scanQrCode.dart';
 import 'package:nullpass/screens/loading.dart';
 
@@ -43,7 +43,7 @@ class _SyncDevicesState extends State<SyncDevices> {
     await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => DeviceSyncRules(newDevice, inSetup: true)));
+            builder: (context) => ManageSync(newDevice, inSetup: true)));
   }
 
   void setDevice(Device d) {
@@ -84,7 +84,7 @@ class _SyncDevicesState extends State<SyncDevices> {
           // return LoadingPage(
           //     title: "Setup Sync", route: NullPassRoute.ManageDevices);
           return MaterialApp(
-            home: DeviceSyncRules(newDevice, inSetup: true),
+            home: ManageSync(newDevice, inSetup: true),
           );
         }
         break;

@@ -8,7 +8,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/device.dart';
 import 'package:nullpass/screens/appDrawer.dart';
-import 'package:nullpass/screens/devices/deviceSyncRules.dart';
+import 'package:nullpass/screens/devices/manageSync.dart';
 import 'package:nullpass/screens/devices/syncDevices.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
@@ -124,7 +124,7 @@ class _DeviesList extends StatelessWidget {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DeviceSyncRules(this.devices[index]),
+                  builder: (context) => ManageSync(this.devices[index]),
                 ),
               );
               await reloadDevicesListFunction();
