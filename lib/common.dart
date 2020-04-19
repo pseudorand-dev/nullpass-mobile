@@ -7,13 +7,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:nullpass/models/secret.dart';
-import 'package:nullpass/services/datastore.dart';
-import 'package:nullpass/services/encryption.dart';
 import 'package:nullpass/services/notificationManager.dart' as np;
-import 'package:nullpass/services/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:vibration/vibration.dart';
 
+/* VARIABLES */
 // TODO: Determine a better way to handle the OneSignal Key
 const String OneSignalKey = "<THIS_NEEDS_TO_BE_ADDED_BEFORE_COMPILATION>";
 
@@ -31,72 +29,7 @@ const String VaultsSetupPrefKey = 'VaultsSetup';
 const String SharedPrefSetupKey = 'SpSetup';
 const String InAppWebpagesPrefKey = 'InAppWebpages';
 
-void setupSharedPreferences({Function encryptionKeyCallback}) {
-  if (!sharedPrefs.containsKey(EncryptionKeyPairSetupPrefKey)) {
-    Crypto.instance.then((instance) {
-      if (instance.hasKeyPair) {
-        sharedPrefs.setBool(EncryptionKeyPairSetupPrefKey, true).then((worked) {
-          if (worked) {
-            Log.debug('Added $EncryptionKeyPairSetupPrefKey');
-            encryptionKeyCallback();
-          }
-        });
-      }
-    });
-  } else {
-    encryptionKeyCallback();
-  }
-
-  if (!sharedPrefs.containsKey(VaultsSetupPrefKey) ||
-      !sharedPrefs.getBool(VaultsSetupPrefKey)) {
-    NullPassDB.instance.createDefaultVault().then((newV) {
-      if (newV != null) {
-        sharedPrefs.setString(DefaultVaultIDPrefKey, newV.uid).then((worked) {
-          if (worked)
-            Log.debug('Default Vault ID Added Complete - ${newV.uid}');
-        });
-        sharedPrefs.setBool(VaultsSetupPrefKey, true).then((worked) {
-          if (worked) Log.debug('Default Vault Setup Complete');
-        });
-      }
-    }).catchError((e) {
-      sharedPrefs.setBool(VaultsSetupPrefKey, false).then((worked) {
-        if (worked)
-          Log.debug('There was a problem setting up the default Vault');
-      });
-    });
-  }
-  if (!sharedPrefs.containsKey(SecretLengthPrefKey))
-    sharedPrefs.setInt(SecretLengthPrefKey, 512).then((worked) {
-      if (worked) Log.debug('Added $SecretLengthPrefKey');
-    });
-
-  if (!sharedPrefs.containsKey(AlphaCharactersPrefKey))
-    sharedPrefs.setBool(AlphaCharactersPrefKey, true).then((worked) {
-      if (worked) Log.debug('Added $AlphaCharactersPrefKey');
-    });
-
-  if (!sharedPrefs.containsKey(NumericCharactersPrefKey))
-    sharedPrefs.setBool(NumericCharactersPrefKey, true).then((worked) {
-      if (worked) Log.debug('Added $NumericCharactersPrefKey');
-    });
-
-  if (!sharedPrefs.containsKey(SymbolCharactersPrefKey))
-    sharedPrefs.setBool(SymbolCharactersPrefKey, true).then((worked) {
-      if (worked) Log.debug('Added $SymbolCharactersPrefKey');
-    });
-
-  if (!sharedPrefs.containsKey(InAppWebpagesPrefKey))
-    sharedPrefs.setBool(InAppWebpagesPrefKey, true).then((worked) {
-      if (worked) Log.debug('Added $InAppWebpagesPrefKey');
-    });
-
-  if (!sharedPrefs.containsKey(SharedPrefSetupKey))
-    sharedPrefs.setBool(SharedPrefSetupKey, true).then((worked) {
-      if (worked) Log.debug('Shared Preference Setup Complete');
-    });
-}
-
+/* FUNCTIONS */
 bool isTrue(dynamic value) {
   bool b = false;
 
@@ -153,24 +86,6 @@ void showSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String text,
   */
 }
 
-enum NullPassRoute {
-  ViewSecretsList,
-  FindSecret,
-  NewSecret,
-  GenerateSecret,
-  ManageVault,
-  QrCode,
-  QrScanner,
-  ManageDevices,
-  Settings,
-  HelpAndFeedback
-}
-
-Future<void> setupNotifications() async {
-  notify = np.OneSignalNotificationManager(key: OneSignalKey);
-  await notify.initialize();
-}
-
 String base64EncodeString(String input) => base64.encode(utf8.encode(input));
 
 String base64DecodeString(String input) => utf8.decode(base64.decode(input));
@@ -191,3 +106,5 @@ String stringListToString(List<String> stringList) {
   str = "$str]";
   return str;
 }
+
+/* TYPES */

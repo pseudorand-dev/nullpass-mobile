@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/secrets/secretEdit.dart';
+import 'package:nullpass/setup.dart';
 
 class SecretGenerate extends StatefulWidget {
   final bool inEditor;

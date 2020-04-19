@@ -3,7 +3,6 @@
  * Copyright (c) 2020 Pseudorand Development. All rights reserved.
  */
 import 'package:flutter/material.dart';
-import 'package:nullpass/common.dart';
 import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/widgets.dart';
 

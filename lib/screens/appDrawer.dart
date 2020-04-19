@@ -5,7 +5,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:nullpass/common.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/app.dart';
 import 'package:nullpass/screens/devices/manageDevices.dart';
@@ -17,7 +16,20 @@ import 'package:nullpass/screens/settings.dart';
 import 'package:nullpass/screens/vaults/manageVaults.dart';
 import 'package:nullpass/widgets.dart';
 
-class AppDrawer extends StatelessWidget {
+enum NullPassRoute {
+  ViewSecretsList,
+  FindSecret,
+  NewSecret,
+  GenerateSecret,
+  ManageVault,
+  QrCode,
+  QrScanner,
+  ManageDevices,
+  Settings,
+  HelpAndFeedback
+}
+
+class AppDrawer extends StatefulWidget {
   final NullPassRoute currentPage;
   final Function reloadSecretList;
 

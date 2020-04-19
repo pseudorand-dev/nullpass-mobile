@@ -13,6 +13,7 @@ import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/services/datastore.dart';
+import 'package:nullpass/setup.dart';
 
 class Settings extends StatefulWidget {
   _SettingsState createState() => _SettingsState();

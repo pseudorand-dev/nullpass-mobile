@@ -9,6 +9,7 @@ import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/secrets/secretList.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
+import 'package:nullpass/setup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NullPassApp extends StatefulWidget {

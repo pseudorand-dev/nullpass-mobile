@@ -4,8 +4,8 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:nullpass/common.dart';
 import 'package:nullpass/models/device.dart';
+import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/screens/devices/manageSync.dart';
 import 'package:nullpass/screens/devices/scanQrCode.dart';
 import 'package:nullpass/screens/loading.dart';
