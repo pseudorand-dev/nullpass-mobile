@@ -385,4 +385,27 @@ class Secret {
 
     return sec;
   }
+
+  Secret clone() {
+    var s = Secret(
+      uuid: this.uuid,
+      nickname: this.nickname,
+      username: this.username,
+      type: this.type,
+      website: this.website,
+      appName: this.appName,
+      genericEndpoint: this.genericEndpoint,
+      message: this.message,
+      notes: this.notes,
+      tags: <String>[],
+      vaults: <String>[],
+      created: this.created,
+      lastModified: this.lastModified,
+    );
+
+    this.tags.forEach((t) => s.tags.add(t));
+    this.vaults.forEach((v) => s.vaults.add(v));
+
+    return s;
+  }
 }

@@ -110,9 +110,6 @@ class _DeviceSyncRulesState extends State<DeviceSyncRules> {
           var secretsList =
               (await NullPassDB.instance.getAllSecretsInVault(vid)) ??
                   <Secret>[];
-          secretsList.forEach((s) {
-            (s).vaults = <String>[vid];
-          });
 
           tmpNotificationType = np.NotificationType.SyncUpdate;
           tmpNotificationData = SyncDataWrapper(
