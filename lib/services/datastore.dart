@@ -661,6 +661,18 @@ class NullPassDB {
     }
   }
 
+  Future<List<DeviceSync>> getAllSyncsForAVault(String vaultId) async {
+    try {
+      var dsl = await _syncDeviceDB.getAllSyncs() ?? <DeviceSync>[];
+      dsl.retainWhere((ds) => ds.vaultID == vaultId);
+      return dsl;
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to update the device sync record to the db: $e");
+      return <DeviceSync>[];
+    }
+  }
+
   Future<List<DeviceSync>> getAllSyncsWithADevice(String deviceId) async {
     try {
       return await _syncDeviceDB.getAllSyncsWithADeviceByID(deviceId);
