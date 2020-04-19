@@ -11,6 +11,7 @@ import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/secrets/secretGenerate.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
+import 'package:nullpass/services/sync.dart';
 import 'package:nullpass/widgets.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
@@ -63,11 +64,21 @@ class _CreateSecretState extends State<SecretEdit> {
         success = await helper.insertSecret(_secret);
         Log.debug('inserted row(s) - $success');
         // await showSnackBar(context, 'Created!');
+
+        if (success) {
+          // Sync changes to appropriate parties
+          Sync.instance.sendSecretAdded(_secret);
+        }
       } else if (widget.edit == SecretEditType.Update) {
         _secret.lastModified = DateTime.now().toUtc();
         success = await helper.updateSecret(_secret);
         Log.debug('updated row(s) - $success');
         // await showSnackBar(context, 'Updated!');
+
+        if (success) {
+          // Sync changes to appropriate parties
+          Sync.instance.sendSecretUpdated(_secret);
+        }
       }
 
       Navigator.pop(context, 'true');
