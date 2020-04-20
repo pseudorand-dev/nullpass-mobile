@@ -29,7 +29,7 @@ enum NullPassRoute {
   HelpAndFeedback
 }
 
-class AppDrawer extends StatefulWidget {
+class AppDrawer extends StatelessWidget {
   final NullPassRoute currentPage;
   final Function reloadSecretList;
 
