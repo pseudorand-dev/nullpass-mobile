@@ -123,16 +123,14 @@ class OneSignalNotificationManager implements NotificationManager {
     osInstance.setInFocusDisplayType(OSNotificationDisplayType.notification);
 
     if (Platform.isIOS) {
-      osInstance.promptUserForPushNotificationPermission().then((accepted) {
-        Log.debug('Accepted permission: $accepted');
-      });
+      var iosPermission =
+          await osInstance.promptUserForPushNotificationPermission();
+      Log.debug('Accepted permission: $iosPermission');
     }
 
-    osInstance.getPermissionSubscriptionState().then((status) {
-      var playerId = status.subscriptionStatus.userId;
-      deviceId = playerId;
-      Log.debug('device id: $playerId\n');
-    });
+    var subscription = await osInstance.getPermissionSubscriptionState();
+    this.deviceId = subscription.subscriptionStatus.userId;
+    Log.debug('device id: $deviceId\n');
 
     if (syncInitHandshakeStepOneHandler == null ||
         syncInitHandshakeStepTwoHandler == null ||
