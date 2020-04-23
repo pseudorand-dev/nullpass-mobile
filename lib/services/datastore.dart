@@ -6,6 +6,7 @@
 import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/models/device.dart';
 import 'package:nullpass/models/deviceSync.dart';
 import 'package:nullpass/models/secret.dart';
@@ -45,6 +46,7 @@ Future _onCreate(Database db, int version) async {
   await db.execute("${_NullPassSyncDevicesDB.createTable}");
   await db.execute("${_NullPassDevicesDB.createTable}");
   await db.execute("${_NullPassVaultsDB.createTable}");
+  await db.execute("${_NullPassAuditDB.createTable}");
 }
 
 const String _encryptionStorePubKeyID = "encPubKey";
@@ -1402,6 +1404,65 @@ class _NullPassSyncDevicesDB {
   Future<int> deleteAll() async {
     Database db = await _database;
     int id = await db.delete(syncTableName);
+    return id;
+  }
+}
+
+/* Audit */
+class _NullPassAuditDB {
+  _NullPassAuditDB._privateConstructor();
+  static final _NullPassAuditDB instance =
+      _NullPassAuditDB._privateConstructor();
+
+  static final createTable = '''
+              CREATE TABLE $auditTableName (
+                $columnAuditId TEXT PRIMARY KEY,
+                $columnAuditType TEXT NOT NULL,
+                $columnAuditMessage TEXT NOT NULL,
+                $columnAuditDevicesReferenceId TEXT,
+                $columnAuditSecretsReferenceId TEXT,
+                $columnAuditSyncsReferenceId TEXT,
+                $columnAuditVaultsReferenceId TEXT,
+                $columnAuditDate TEXT NOT NULL
+              )
+              ''';
+
+  static final List<String> _auditTableColumns = [
+    columnAuditId,
+    columnAuditType,
+    columnAuditMessage,
+    columnAuditDevicesReferenceId,
+    columnAuditSecretsReferenceId,
+    columnAuditSyncsReferenceId,
+    columnAuditVaultsReferenceId,
+    columnAuditDate,
+  ];
+
+  Future<int> insert(AuditRecord ar) async {
+    Database db = await _database;
+    if (ar.date == null) {
+      ar.date = DateTime.now().toUtc();
+    }
+    Log.debug(ar.toMap());
+    int id = await db.insert(auditTableName, ar.toMap());
+    return id;
+  }
+
+  Future<List<AuditRecord>> getAll() async {
+    Database db = await _database;
+    List<Map> maps = await db.query(auditTableName,
+        columns: _auditTableColumns, orderBy: columnAuditDate);
+    if (maps.length > 0) {
+      List<AuditRecord> auditLog = <AuditRecord>[];
+      maps.forEach((m) => auditLog.add(AuditRecord.fromMap(m)));
+      return auditLog;
+    }
+    return null;
+  }
+
+  Future<int> deleteAll() async {
+    Database db = await _database;
+    int id = await db.delete(auditTableName);
     return id;
   }
 }
