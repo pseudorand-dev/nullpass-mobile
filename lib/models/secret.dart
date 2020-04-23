@@ -233,9 +233,9 @@ class Secret {
       (map[columnSecretVaults] as List).forEach((v) => vaults.add(v as String));
     }
 
-    created = DateTime.tryParse(columnSecretCreated) ?? DateTime.now();
+    created = DateTime.tryParse(map[columnSecretCreated]) ?? DateTime.now();
     lastModified =
-        DateTime.tryParse(columnSecretLastModified) ?? DateTime.now();
+        DateTime.tryParse(map[columnSecretLastModified]) ?? DateTime.now();
   }
 
   // convenience method to create a Map from this Secret object
