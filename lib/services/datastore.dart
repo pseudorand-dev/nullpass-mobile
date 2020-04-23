@@ -758,6 +758,32 @@ class NullPassDB {
       return false;
     }
   }
+
+  /* Audit Log */
+  static final _NullPassAuditDB _auditDB = _NullPassAuditDB.instance;
+
+  Future<bool> addAuditRecord(AuditRecord ar) async {
+    try {
+      await _auditDB.insert(ar);
+      return true;
+    } catch (e) {
+      Log.debug(
+        "an error occurred while trying to add an audit record to the db: ${e.toString()}",
+      );
+      return false;
+    }
+  }
+
+  Future<List<AuditRecord>> getAllAuditRecords() async {
+    try {
+      return await _auditDB.getAll();
+    } catch (e) {
+      Log.debug(
+        "an error occured while trying to insert audit record to the db: ${e.toString()}",
+      );
+      return null;
+    }
+  }
 }
 
 /* Secrets */
