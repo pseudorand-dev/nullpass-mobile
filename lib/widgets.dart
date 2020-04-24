@@ -36,6 +36,24 @@ class CenterLoader extends StatelessWidget {
   }
 }
 
+class CenterText extends StatelessWidget {
+  final String _text;
+
+  CenterText(this._text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(this._text),
+        ],
+      ),
+    );
+  }
+}
+
 class NullPassFilterChip extends StatelessWidget {
   final String label;
   final bool isSelected;
