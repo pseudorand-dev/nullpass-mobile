@@ -103,20 +103,20 @@ class AuditRecord {
   String id;
   AuditType type;
   String message;
-  List<String> devicesReferenceId;
-  List<String> secretsReferenceId;
-  List<String> syncsReferenceId;
-  List<String> vaultsReferenceId;
+  Set<String> devicesReferenceId;
+  Set<String> secretsReferenceId;
+  Set<String> syncsReferenceId;
+  Set<String> vaultsReferenceId;
   DateTime date;
 
   AuditRecord({
     String id,
     @required AuditType type,
     @required String message,
-    List<String> devicesReferenceId,
-    List<String> secretsReferenceId,
-    List<String> syncsReferenceId,
-    List<String> vaultsReferenceId,
+    Set<String> devicesReferenceId,
+    Set<String> secretsReferenceId,
+    Set<String> syncsReferenceId,
+    Set<String> vaultsReferenceId,
     DateTime date,
   }) {
     if (id == null || id.trim() == '' || !isUUID(id, 4)) {
@@ -162,12 +162,16 @@ class AuditRecord {
     message = map[columnAuditMessage];
     date = DateTime.tryParse(map[columnAuditDate]) ?? DateTime.now();
     devicesReferenceId =
-        (map[columnAuditDevicesReferenceId] as String).split(",") ?? <String>[];
+        (map[columnAuditDevicesReferenceId] as String).split(",").toSet() ??
+            <String>{};
     secretsReferenceId =
-        (map[columnAuditSecretsReferenceId] as String).split(",") ?? <String>[];
+        (map[columnAuditSecretsReferenceId] as String).split(",").toSet() ??
+            <String>{};
     syncsReferenceId =
-        (map[columnAuditSyncsReferenceId] as String).split(",") ?? <String>[];
+        (map[columnAuditSyncsReferenceId] as String).split(",").toSet() ??
+            <String>{};
     vaultsReferenceId =
-        (map[columnAuditVaultsReferenceId] as String).split(",") ?? <String>[];
+        (map[columnAuditVaultsReferenceId] as String).split(",").toSet() ??
+            <String>{};
   }
 }
