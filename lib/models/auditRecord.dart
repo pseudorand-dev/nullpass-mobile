@@ -127,10 +127,10 @@ class AuditRecord {
     this.id = id;
     this.type = type;
     this.message = message;
-    this.devicesReferenceId = devicesReferenceId ?? <String>[];
-    this.secretsReferenceId = secretsReferenceId ?? <String>[];
-    this.syncsReferenceId = syncsReferenceId ?? <String>[];
-    this.vaultsReferenceId = vaultsReferenceId ?? <String>[];
+    this.devicesReferenceId = devicesReferenceId ?? <String>{};
+    this.secretsReferenceId = secretsReferenceId ?? <String>{};
+    this.syncsReferenceId = syncsReferenceId ?? <String>{};
+    this.vaultsReferenceId = vaultsReferenceId ?? <String>{};
     this.date = date ?? now;
   }
 
