@@ -431,6 +431,13 @@ class NullPassDB {
         // Update the vault we want to be marked as default to be default
         if (!newDefaultVault.isDefault) {
           newDefaultVault.isDefault = true;
+          await addAuditRecord(AuditRecord(
+            type: AuditType.VaultNewDefault,
+            message:
+                'The "${newDefaultVault.nickname}" vault was made the default.',
+            vaultsReferenceId: <String>{newDefaultVault.uid},
+            date: DateTime.now().toUtc(),
+          ));
           await _vaultDB.update(newDefaultVault);
         }
         return newDefaultVault;

@@ -6,6 +6,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/widgets.dart';
@@ -107,6 +108,16 @@ class ManageVaultState extends State<ManageVault> {
                                     // TODO: await npDB.deleteAllSecrets(); that only live in that vault and remove the vault from all secrets
                                     await npDB
                                         .deleteVault(this._vaults[index].uid);
+                                    await NullPassDB.instance
+                                        .addAuditRecord(AuditRecord(
+                                      type: AuditType.VaultDeleted,
+                                      message:
+                                          'The "${this._vaults[index].nickname}" vault was deleted.',
+                                      vaultsReferenceId: <String>{
+                                        this._vaults[index].uid
+                                      },
+                                      date: DateTime.now().toUtc(),
+                                    ));
                                     var lv = await NullPassDB.instance
                                         .getAllVaults();
                                     setState(() {
@@ -177,6 +188,12 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
       managerId: Vault.InternalSourceID,
     );
     if (await NullPassDB.instance.insertVault(v)) {
+      await NullPassDB.instance.addAuditRecord(AuditRecord(
+        type: AuditType.VaultCreated,
+        message: 'The "${v.nickname}" vault was created.',
+        vaultsReferenceId: <String>{v.uid},
+        date: DateTime.now().toUtc(),
+      ));
       if (v.isDefault) {
         await setVaultAsDefault(v.uid);
       }
@@ -195,6 +212,12 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
       modifiedAt: this.widget.vault.modifiedAt,
     );
     if (await NullPassDB.instance.updateVault(v)) {
+      await NullPassDB.instance.addAuditRecord(AuditRecord(
+        type: AuditType.VaultUpdated,
+        message: 'The "${v.nickname}" vault was updated.',
+        vaultsReferenceId: <String>{v.uid},
+        date: DateTime.now().toUtc(),
+      ));
       if (v.isDefault && !this.widget.vault.isDefault) {
         await setVaultAsDefault(v.uid);
       }

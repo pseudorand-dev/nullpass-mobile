@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/secrets/secretEdit.dart';
@@ -121,6 +122,15 @@ class _SecretViewState extends State<SecretView> {
                                 NullPassDB npDB = NullPassDB.instance;
                                 bool success =
                                     await npDB.deleteSecret(secret.uuid);
+                                await NullPassDB.instance
+                                    .addAuditRecord(AuditRecord(
+                                  type: AuditType.SecretDeleted,
+                                  message:
+                                      'The "${secret.nickname}" secret was deleted.',
+                                  secretsReferenceId: <String>{secret.uuid},
+                                  vaultsReferenceId: secret.vaults.toSet(),
+                                  date: DateTime.now().toUtc(),
+                                ));
                                 if (success) {
                                   Sync.instance.sendSecretDeleted(this.secret);
                                 }
@@ -187,6 +197,15 @@ class _SecretViewState extends State<SecretView> {
                 trailing: IconButton(
                     icon: Icon(Icons.launch),
                     onPressed: () async {
+                      await NullPassDB.instance.addAuditRecord(AuditRecord(
+                        type: AuditType.SecretUrlOpened,
+                        message:
+                            'The "${secret.nickname}" secret\'s website was launched.',
+                        secretsReferenceId: <String>{secret.uuid},
+                        vaultsReferenceId: secret.vaults.toSet(),
+                        date: DateTime.now().toUtc(),
+                      ));
+
                       bool openWebpagesInApp =
                           sharedPrefs.getBool(InAppWebpagesPrefKey);
                       var webpage = secret.website;
@@ -204,6 +223,14 @@ class _SecretViewState extends State<SecretView> {
                     }),
                 onLongPress: () async {
                   await Clipboard.setData(ClipboardData(text: secret.website));
+                  await NullPassDB.instance.addAuditRecord(AuditRecord(
+                    type: AuditType.SecretUrlCopied,
+                    message:
+                        'The "${secret.nickname}" secret\'s website url was copied.',
+                    secretsReferenceId: <String>{secret.uuid},
+                    vaultsReferenceId: secret.vaults.toSet(),
+                    date: DateTime.now().toUtc(),
+                  ));
                   showSnackBar(_scaffoldKey, 'Website Copied');
                 }),
             ListTile(
@@ -214,6 +241,14 @@ class _SecretViewState extends State<SecretView> {
                   onPressed: () async {
                     await Clipboard.setData(
                         ClipboardData(text: secret.username));
+                    await NullPassDB.instance.addAuditRecord(AuditRecord(
+                      type: AuditType.SecretUsernameCopied,
+                      message:
+                          'The "${secret.nickname}" secret\'s username was copied.',
+                      secretsReferenceId: <String>{secret.uuid},
+                      vaultsReferenceId: secret.vaults.toSet(),
+                      date: DateTime.now().toUtc(),
+                    ));
                     showSnackBar(_scaffoldKey, 'Username Copied');
                   }),
             ),
@@ -225,9 +260,25 @@ class _SecretViewState extends State<SecretView> {
                   onPressed: () async {
                     await Clipboard.setData(
                         ClipboardData(text: secret.message));
+                    await NullPassDB.instance.addAuditRecord(AuditRecord(
+                      type: AuditType.SecretPasswordCopied,
+                      message:
+                          'The "${secret.nickname}" secret\'s password was copied.',
+                      secretsReferenceId: <String>{secret.uuid},
+                      vaultsReferenceId: secret.vaults.toSet(),
+                      date: DateTime.now().toUtc(),
+                    ));
                     showSnackBar(_scaffoldKey, 'Password Copied');
                   }),
               onLongPress: () async {
+                await NullPassDB.instance.addAuditRecord(AuditRecord(
+                  type: AuditType.SecretPasswordViewed,
+                  message:
+                      'The "${secret.nickname}" secret\'s password was viewed.',
+                  secretsReferenceId: <String>{secret.uuid},
+                  vaultsReferenceId: secret.vaults.toSet(),
+                  date: DateTime.now().toUtc(),
+                ));
                 await showDialog(
                     context: context,
                     builder: (BuildContext context) {
@@ -255,6 +306,14 @@ class _SecretViewState extends State<SecretView> {
                   icon: Icon(Icons.content_copy),
                   onPressed: () async {
                     await Clipboard.setData(ClipboardData(text: secret.notes));
+                    await NullPassDB.instance.addAuditRecord(AuditRecord(
+                      type: AuditType.SecretNotesCopied,
+                      message:
+                          'The "${secret.nickname}" secret\'s notes was copied.',
+                      secretsReferenceId: <String>{secret.uuid},
+                      vaultsReferenceId: secret.vaults.toSet(),
+                      date: DateTime.now().toUtc(),
+                    ));
                     showSnackBar(_scaffoldKey, 'Notes Copied');
                   }),
             ),
@@ -280,6 +339,14 @@ class _SecretViewState extends State<SecretView> {
                 onLongPress: () async {
                   await Clipboard.setData(
                       ClipboardData(text: secret.thumbnailURI));
+                  await NullPassDB.instance.addAuditRecord(AuditRecord(
+                    type: AuditType.SecretUrlCopied,
+                    message:
+                        'The "${secret.nickname}" secret\'s thumbnail url was copied.',
+                    secretsReferenceId: <String>{secret.uuid},
+                    vaultsReferenceId: secret.vaults.toSet(),
+                    date: DateTime.now().toUtc(),
+                  ));
                   _scaffoldKey.currentState.showSnackBar(
                       SnackBar(content: Text('Copied the Thumbnail URL')));
                 },

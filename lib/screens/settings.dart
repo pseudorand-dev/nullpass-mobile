@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/appDrawer.dart';
@@ -347,17 +348,34 @@ Future<void> exportSecretsAndVaults() async {
   List<Secret> secretsList = await npDB.getAllSecrets() ?? <Secret>[];
   List<Vault> vaultsList = await npDB.getAllVaults() ?? <Vault>[];
 
+  Set<String> sids = <String>{};
+  Set<String> vids = <String>{};
+
   List<Map<String, dynamic>> secretsJsonList = <Map<String, dynamic>>[];
-  secretsList.forEach((s) => secretsJsonList.add(s.toJson()));
+  secretsList.forEach((s) {
+    secretsJsonList.add(s.toJson());
+    sids.add(s.uuid);
+  });
 
   List<Map<String, dynamic>> vaultsJsonList = <Map<String, dynamic>>[];
-  vaultsList.forEach((v) => vaultsJsonList.add(v.toJson()));
+  vaultsList.forEach((v) {
+    vaultsJsonList.add(v.toJson());
+    vids.add(v.uid);
+  });
 
   await Clipboard.setData(ClipboardData(
     text: jsonEncode(<String, dynamic>{
       "secrets": secretsJsonList,
       "vaults": vaultsJsonList
     }),
+  ));
+
+  await NullPassDB.instance.addAuditRecord(AuditRecord(
+    type: AuditType.AppDataExported,
+    message: 'All Secret and Vault data was exported.',
+    secretsReferenceId: sids,
+    vaultsReferenceId: vids,
+    date: DateTime.now().toUtc(),
   ));
 }
 
@@ -371,12 +389,28 @@ Future<void> importSecretsAndVaults(String input) async {
   var secretsList = <Secret>[];
   var vaultsList = <Vault>[];
 
-  (decodedInput["secrets"] as List)
-      .forEach((sMap) => secretsList.add(Secret.fromJson(sMap)));
-  (decodedInput["vaults"] as List)
-      .forEach((vMap) => vaultsList.add(Vault.fromMap(vMap)));
+  Set<String> sids = <String>{};
+  Set<String> vids = <String>{};
+
+  (decodedInput["secrets"] as List).forEach((sMap) {
+    var s = Secret.fromJson(sMap);
+    secretsList.add(s);
+    sids.add(s.uuid);
+  });
+  (decodedInput["vaults"] as List).forEach((vMap) {
+    var v = Vault.fromMap(vMap);
+    vaultsList.add(v);
+    vids.add(v.uid);
+  });
 
   // await npDB.bulkInsertSecrets(secretsListFromJsonString(input));
   await npDB.bulkInsertVaults(vaultsList);
   await npDB.bulkInsertSecrets(secretsList);
+  await NullPassDB.instance.addAuditRecord(AuditRecord(
+    type: AuditType.AppDataImported,
+    message: 'Secret and Vault data was imported.',
+    secretsReferenceId: sids,
+    vaultsReferenceId: vids,
+    date: DateTime.now().toUtc(),
+  ));
 }
