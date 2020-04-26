@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/app.dart';
+import 'package:nullpass/screens/audit/auditLog.dart';
 import 'package:nullpass/screens/devices/manageDevices.dart';
 import 'package:nullpass/screens/devices/syncDevices.dart';
 import 'package:nullpass/screens/secrets/secretEdit.dart';
@@ -26,6 +27,7 @@ enum NullPassRoute {
   QrScanner,
   ManageDevices,
   Settings,
+  AuditLog,
   HelpAndFeedback
 }
 
@@ -235,6 +237,22 @@ class AppDrawer extends StatelessWidget {
                   Navigator.pushReplacement(context,
                       MaterialPageRoute(builder: (context) => Settings()));
                   // Navigator.push(context, MaterialPageRoute(builder: (context) => Settings()));
+                }
+              },
+            ),
+            ListTile(
+              selected: (currentPage == NullPassRoute.AuditLog),
+              leading: Icon(Icons.dehaze),
+              title: Text('Audit Log',
+                  style: TextStyle(
+                      color: (currentPage == NullPassRoute.AuditLog)
+                          ? ThemeData.light().accentColor
+                          : ThemeData.light().unselectedWidgetColor)),
+              onTap: () {
+                Navigator.pop(context);
+                if (currentPage != NullPassRoute.AuditLog) {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => AuditLog()));
                 }
               },
             ),

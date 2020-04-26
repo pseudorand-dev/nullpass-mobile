@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/secrets/secretGenerate.dart';
@@ -66,6 +67,14 @@ class _CreateSecretState extends State<SecretEdit> {
         // await showSnackBar(context, 'Created!');
 
         if (success) {
+          await NullPassDB.instance.addAuditRecord(AuditRecord(
+            type: AuditType.SecretCreated,
+            message: 'The "${_secret.nickname}" secret was created.',
+            secretsReferenceId: <String>{_secret.uuid},
+            vaultsReferenceId: _secret.vaults.toSet(),
+            date: _secret.created,
+          ));
+
           // Sync changes to appropriate parties
           Sync.instance.sendSecretAdded(_secret);
         }
@@ -76,6 +85,14 @@ class _CreateSecretState extends State<SecretEdit> {
         // await showSnackBar(context, 'Updated!');
 
         if (success) {
+          await NullPassDB.instance.addAuditRecord(AuditRecord(
+            type: AuditType.SecretUpdated,
+            message: 'The "${_secret.nickname}" secret was updated.',
+            secretsReferenceId: <String>{_secret.uuid},
+            vaultsReferenceId: _secret.vaults.toSet(),
+            date: _secret.lastModified,
+          ));
+
           // Sync changes to appropriate parties
           Sync.instance.sendSecretUpdated(_secret);
         }
@@ -185,6 +202,12 @@ class _CreateSecretState extends State<SecretEdit> {
                       var added = await NullPassDB.instance.insertVault(v);
                       newVaultName = "";
                       if (added) {
+                        await NullPassDB.instance.addAuditRecord(AuditRecord(
+                          type: AuditType.VaultCreated,
+                          message: 'The "${v.nickname}" vault was added.',
+                          vaultsReferenceId: <String>{v.uid},
+                          date: DateTime.now().toUtc(),
+                        ));
                         setState(() {
                           this.vaults[v.uid] = v;
                           this.selectedVaults[v.uid] = true;

@@ -4,6 +4,7 @@
  */
 import 'package:flutter/material.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/models/device.dart';
 import 'package:nullpass/models/deviceSync.dart';
 import 'package:nullpass/models/notification.dart' as np;
@@ -53,11 +54,23 @@ class _ManageSyncState extends State<ManageSync> {
         _device.created = now;
         _device.lastModified = now;
         success = await helper.insertDevice(_device);
+        await NullPassDB.instance.addAuditRecord(AuditRecord(
+          type: AuditType.DeviceCreated,
+          message: 'The "${_device.nickname}" device was created.',
+          devicesReferenceId: <String>{_device.id},
+          date: DateTime.now().toUtc(),
+        ));
         Log.debug('inserted row(s) - $success');
         // await showSnackBar(context, 'Created!');
       } else {
         _device.lastModified = DateTime.now().toUtc();
         success = await helper.updateDevice(_device);
+        await NullPassDB.instance.addAuditRecord(AuditRecord(
+          type: AuditType.DeviceUpdated,
+          message: 'The "${_device.nickname}" device was updated.',
+          devicesReferenceId: <String>{_device.id},
+          date: DateTime.now().toUtc(),
+        ));
         Log.debug('updated row(s) - $success');
         // await showSnackBar(context, 'Updated!');
       }
@@ -106,6 +119,14 @@ class _ManageSyncState extends State<ManageSync> {
       if (ods == null && ds.vaultAccess != DeviceAccess.None) {
         // add access
         if (await NullPassDB.instance.insertSync(ds)) {
+          await NullPassDB.instance.addAuditRecord(AuditRecord(
+            type: AuditType.SyncCreated,
+            message: 'A new sync was setup for "${_device.nickname}".',
+            devicesReferenceId: <String>{_device.id},
+            syncsReferenceId: <String>{ds.id},
+            vaultsReferenceId: <String>{ds.vaultID},
+            date: DateTime.now().toUtc(),
+          ));
           // start sync
           var secretsList =
               (await NullPassDB.instance.getAllSecretsInVault(vid)) ??
@@ -127,6 +148,14 @@ class _ManageSyncState extends State<ManageSync> {
           ds.vaultAccess != DeviceAccess.None) {
         // update access
         if (await NullPassDB.instance.updateSync(ds)) {
+          await NullPassDB.instance.addAuditRecord(AuditRecord(
+            type: AuditType.SyncUpdated,
+            message: 'A sync was updated for "${_device.nickname}".',
+            devicesReferenceId: <String>{_device.id},
+            syncsReferenceId: <String>{ds.id},
+            vaultsReferenceId: <String>{ds.vaultID},
+            date: DateTime.now().toUtc(),
+          ));
           // update sync
           tmpNotificationType = np.NotificationType.SyncUpdate;
           tmpNotificationData = SyncDataWrapper(
@@ -141,6 +170,14 @@ class _ManageSyncState extends State<ManageSync> {
       } else if (ods != null && ds.vaultAccess == DeviceAccess.None) {
         // remove access
         if (await NullPassDB.instance.deleteSync(ds.id)) {
+          await NullPassDB.instance.addAuditRecord(AuditRecord(
+            type: AuditType.SyncDeleted,
+            message: 'A sync was removed for "${_device.nickname}".',
+            devicesReferenceId: <String>{_device.id},
+            syncsReferenceId: <String>{ds.id},
+            vaultsReferenceId: <String>{ds.vaultID},
+            date: DateTime.now().toUtc(),
+          ));
           // remove sync
           tmpNotificationType = np.NotificationType.SyncUpdate;
           tmpNotificationData = SyncDataWrapper(
@@ -386,7 +423,31 @@ class _ManageSyncState extends State<ManageSync> {
                 // TODO: ensure delete of device and all connected syncs removes vault data and sends notifications to sync devices
                 await NullPassDB.instance
                     .deleteAllSyncsToDevice(this._device.deviceID);
+
+                Set<String> vids = <String>{};
+                Set<String> sids = <String>{};
+                _originalSyncMap.forEach((id, ds) {
+                  vids.add(ds.vaultID);
+                  sids.add(id);
+                });
+                await NullPassDB.instance.addAuditRecord(AuditRecord(
+                  type: AuditType.SyncDeleted,
+                  message: 'All syncs were deleted for "${_device.nickname}".',
+                  devicesReferenceId: <String>{_device.id},
+                  syncsReferenceId: sids,
+                  vaultsReferenceId: vids,
+                  date: DateTime.now().toUtc(),
+                ));
+
                 await NullPassDB.instance.deleteDevice(this._device.id);
+                await NullPassDB.instance.addAuditRecord(AuditRecord(
+                  type: AuditType.DeviceDeleted,
+                  message:
+                      'The "${_device.nickname}" device connection was removed.',
+                  devicesReferenceId: <String>{_device.id},
+                  date: DateTime.now().toUtc(),
+                ));
+
                 Navigator.pop(context);
               },
             ),
