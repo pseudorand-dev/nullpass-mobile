@@ -52,7 +52,23 @@ class _AuditLogState extends State<AuditLog> {
                   final AuditRecord ar = _auditRecords[index];
                   return TimelineModel(
                       Card(
-                        child: Text(ar.message),
+                        margin: EdgeInsets.symmetric(vertical: 16.0),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0)),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 5.0,
+                            horizontal: 12.0,
+                          ),
+                          title: Text(
+                            ar.message,
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          subtitle: Text(
+                            ar.date.toString().split(".")[0],
+                            style: TextStyle(fontSize: 8),
+                          ),
+                        ),
                       ),
                       position: index % 2 == 0
                           ? TimelineItemPosition.right
