@@ -132,12 +132,13 @@ class _SettingsState extends State<Settings> {
                 contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
               ),
               Container(
-                  color: Colors.blueGrey[100],
-                  child: Text(
-                    'Default Password Generation',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
-                  padding: new EdgeInsets.fromLTRB(10, 20, 20, 20)),
+                color: Colors.blueGrey[100],
+                child: Text(
+                  'App Specifics',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                padding: new EdgeInsets.fromLTRB(10, 20, 20, 20),
+              ),
               ListTile(
                 title: Text('Open websites in app'),
                 subtitle: Text(
