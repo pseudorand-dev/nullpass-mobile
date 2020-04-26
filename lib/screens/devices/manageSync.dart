@@ -376,14 +376,24 @@ class _ManageSyncState extends State<ManageSync> {
 
       if (v.manager == VaultManager.External && ds != null) {
         trailingWidget = FlatButton(
-          child: Text(deviceAccessToString(ds.vaultAccess)),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textTheme: ButtonTextTheme.primary,
+          child: Text(
+            deviceAccessToString(ds.vaultAccess),
+            textAlign: TextAlign.end,
+          ),
           onPressed: null,
           textColor: Colors.blue,
           disabledTextColor: Colors.grey,
         );
       } else if (v.manager == VaultManager.Internal && ds != null) {
         trailingWidget = FlatButton(
-          child: Text(deviceAccessToString(ds.vaultAccess)),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textTheme: ButtonTextTheme.primary,
+          child: Text(
+            deviceAccessToString(ds.vaultAccess),
+            textAlign: TextAlign.end,
+          ),
           onPressed: () async {
             await updateVaultAccessDialog(v.uid, vaultAccess: ds.vaultAccess);
           },
@@ -392,7 +402,12 @@ class _ManageSyncState extends State<ManageSync> {
         );
       } else if (v.manager == VaultManager.Internal) {
         trailingWidget = trailingWidget = FlatButton(
-          child: Text(deviceAccessToString(DeviceAccess.None)),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textTheme: ButtonTextTheme.primary,
+          child: Text(
+            deviceAccessToString(DeviceAccess.None),
+            textAlign: TextAlign.end,
+          ),
           onPressed: () async {
             await updateVaultAccessDialog(v.uid);
           },
