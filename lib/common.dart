@@ -28,6 +28,7 @@ const String DefaultVaultIDPrefKey = 'DefaultVaultID';
 const String VaultsSetupPrefKey = 'VaultsSetup';
 const String SharedPrefSetupKey = 'SpSetup';
 const String InAppWebpagesPrefKey = 'InAppWebpages';
+const String SyncdDataNotificationsPrefKey = 'SyncedDataAccessedNotification';
 
 /* FUNCTIONS */
 bool isTrue(dynamic value) {

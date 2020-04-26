@@ -73,6 +73,11 @@ void setupSharedPreferences({Function encryptionKeyCallback}) {
       if (worked) Log.debug('Added $InAppWebpagesPrefKey');
     });
 
+  if (!sharedPrefs.containsKey(SyncdDataNotificationsPrefKey))
+    sharedPrefs.setBool(SyncdDataNotificationsPrefKey, true).then((worked) {
+      if (worked) Log.debug('Added $SyncdDataNotificationsPrefKey');
+    });
+
   if (!sharedPrefs.containsKey(SharedPrefSetupKey))
     sharedPrefs.setBool(SharedPrefSetupKey, true).then((worked) {
       if (worked) Log.debug('Shared Preference Setup Complete');

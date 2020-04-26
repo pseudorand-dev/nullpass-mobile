@@ -27,6 +27,7 @@ class _SettingsState extends State<Settings> {
   bool _numericCharacters = true;
   bool _symbolCharacters = true;
   bool _inAppWebpages = true;
+  bool _syncAccessNotifications = true;
 
   String _importText = '';
 
@@ -42,6 +43,8 @@ class _SettingsState extends State<Settings> {
     _numericCharacters = sharedPrefs.getBool(NumericCharactersPrefKey);
     _symbolCharacters = sharedPrefs.getBool(SymbolCharactersPrefKey);
     _inAppWebpages = sharedPrefs.getBool(InAppWebpagesPrefKey);
+    _syncAccessNotifications =
+        sharedPrefs.getBool(SyncdDataNotificationsPrefKey);
   }
 
   @override
@@ -156,18 +159,26 @@ class _SettingsState extends State<Settings> {
                     }),
                 contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
               ),
+              Container(
+                color: Colors.blueGrey[100],
+                child: Text(
+                  'Device Syncing',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                padding: new EdgeInsets.fromLTRB(10, 20, 20, 20),
+              ),
               ListTile(
-                title: Text('Logging'),
+                title: Text('Notifications'),
                 subtitle: Text(
-                    'If on, launching websites will be opened in the app, otherwise they will be opened externally.'),
+                    "Show me a notification everytime a password I have shared with another device is accessed. (Notes: This is when the password is edited, copied, or viewed; This occurs for vaults that are set to be 'Manage' or 'Read-Only')"),
                 trailing: Switch(
-                    value: _inAppWebpages,
+                    value: _syncAccessNotifications,
                     onChanged: (value) {
                       sharedPrefs
-                          .setBool(InAppWebpagesPrefKey, value)
+                          .setBool(SyncdDataNotificationsPrefKey, value)
                           .then((worked) {
                         setState(() {
-                          this._inAppWebpages = value;
+                          this._syncAccessNotifications = value;
                         });
                       });
                     }),
