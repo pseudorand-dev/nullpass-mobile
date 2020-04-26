@@ -4,6 +4,7 @@
  */
 
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/encryption.dart';
 import 'package:nullpass/services/logging.dart';
@@ -16,6 +17,7 @@ void setupSharedPreferences({Function encryptionKeyCallback}) {
         sharedPrefs.setBool(EncryptionKeyPairSetupPrefKey, true).then((worked) {
           if (worked) {
             Log.debug('Added $EncryptionKeyPairSetupPrefKey');
+            _logSetup("The device encryption key was setup");
             encryptionKeyCallback();
           }
         });
@@ -35,6 +37,7 @@ void setupSharedPreferences({Function encryptionKeyCallback}) {
         });
         sharedPrefs.setBool(VaultsSetupPrefKey, true).then((worked) {
           if (worked) Log.debug('Default Vault Setup Complete');
+          _logSetup("The device default vault was setup");
         });
       }
     }).catchError((e) {
@@ -73,11 +76,23 @@ void setupSharedPreferences({Function encryptionKeyCallback}) {
   if (!sharedPrefs.containsKey(SharedPrefSetupKey))
     sharedPrefs.setBool(SharedPrefSetupKey, true).then((worked) {
       if (worked) Log.debug('Shared Preference Setup Complete');
+      _logSetup("The device setup was completed");
     });
 }
 
 Future<String> setupNotifications() async {
   notify = np.OneSignalNotificationManager(key: OneSignalKey);
   await notify.initialize();
+  _logSetup("The device notification management was setup");
   return notify.deviceId;
+}
+
+Future<void> _logSetup(String msg) async {
+  await NullPassDB.instance.addAuditRecord(
+    AuditRecord(
+      type: AuditType.AppSetup,
+      message: msg,
+      date: DateTime.now().toUtc(),
+    ),
+  );
 }
