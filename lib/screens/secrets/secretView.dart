@@ -215,7 +215,13 @@ class _SecretViewState extends State<SecretView> {
                       if (await canLaunch(webpage)) {
                         await Clipboard.setData(
                             ClipboardData(text: secret.message));
-                        await launch(webpage, forceWebView: openWebpagesInApp);
+                        await launch(
+                          webpage,
+                          forceSafariVC: openWebpagesInApp,
+                          forceWebView: openWebpagesInApp,
+                          enableJavaScript: true,
+                          enableDomStorage: true,
+                        );
                       } else {
                         _scaffoldKey.currentState.showSnackBar(SnackBar(
                             content: Text('Can\'t launch this website')));
