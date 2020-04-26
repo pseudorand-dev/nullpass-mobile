@@ -284,68 +284,80 @@ class _ManageSyncState extends State<ManageSync> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Container(
-                child: Row(
-                  children: <Widget>[
-                    Radio(
-                      activeColor: Colors.blue,
-                      value: DeviceAccess.None,
-                      groupValue: _radioGroup,
-                      onChanged: (newVal) async {
-                        changeVaultAccess(vid, newVal);
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    Text("None"),
-                  ],
+              ListTile(
+                onTap: () {
+                  changeVaultAccess(vid, DeviceAccess.None);
+                  Navigator.of(context).pop();
+                },
+                leading: Radio(
+                  activeColor: Colors.blue,
+                  value: DeviceAccess.None,
+                  groupValue: _radioGroup,
+                  onChanged: (newVal) async {
+                    changeVaultAccess(vid, newVal);
+                    Navigator.of(context).pop();
+                  },
+                ),
+                title: Text(
+                  "None",
+                  textAlign: TextAlign.start,
                 ),
               ),
-              Container(
-                child: Row(
-                  children: <Widget>[
-                    Radio(
-                      activeColor: Colors.blue,
-                      value: DeviceAccess.Backup,
-                      groupValue: _radioGroup,
-                      onChanged: (newVal) async {
-                        changeVaultAccess(vid, newVal);
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    Text("Backup"),
-                  ],
+              ListTile(
+                onTap: () {
+                  changeVaultAccess(vid, DeviceAccess.Backup);
+                  Navigator.of(context).pop();
+                },
+                leading: Radio(
+                  activeColor: Colors.blue,
+                  value: DeviceAccess.Backup,
+                  groupValue: _radioGroup,
+                  onChanged: (newVal) async {
+                    changeVaultAccess(vid, newVal);
+                    Navigator.of(context).pop();
+                  },
+                ),
+                title: Text(
+                  "Backup",
+                  textAlign: TextAlign.start,
                 ),
               ),
-              Container(
-                child: Row(
-                  children: <Widget>[
-                    Radio(
-                      activeColor: Colors.blue,
-                      value: DeviceAccess.ReadOnly,
-                      groupValue: _radioGroup,
-                      onChanged: (newVal) async {
-                        changeVaultAccess(vid, newVal);
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    Text("Read-Only"),
-                  ],
+              ListTile(
+                onTap: () {
+                  changeVaultAccess(vid, DeviceAccess.ReadOnly);
+                  Navigator.of(context).pop();
+                },
+                leading: Radio(
+                  activeColor: Colors.blue,
+                  value: DeviceAccess.ReadOnly,
+                  groupValue: _radioGroup,
+                  onChanged: (newVal) async {
+                    changeVaultAccess(vid, newVal);
+                    Navigator.of(context).pop();
+                  },
+                ),
+                title: Text(
+                  "Read-Only",
+                  textAlign: TextAlign.start,
                 ),
               ),
-              Container(
-                child: Row(
-                  children: <Widget>[
-                    Radio(
-                      activeColor: Colors.blue,
-                      value: DeviceAccess.Manage,
-                      groupValue: _radioGroup,
-                      onChanged: (newVal) async {
-                        changeVaultAccess(vid, newVal);
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    Text("Manage"),
-                  ],
+              ListTile(
+                onTap: () {
+                  changeVaultAccess(vid, DeviceAccess.Manage);
+                  Navigator.of(context).pop();
+                },
+                leading: Radio(
+                  activeColor: Colors.blue,
+                  value: DeviceAccess.Manage,
+                  groupValue: _radioGroup,
+                  onChanged: (newVal) async {
+                    changeVaultAccess(vid, newVal);
+                    Navigator.of(context).pop();
+                  },
+                ),
+                title: Text(
+                  "Manage",
+                  textAlign: TextAlign.start,
                 ),
               ),
             ],
