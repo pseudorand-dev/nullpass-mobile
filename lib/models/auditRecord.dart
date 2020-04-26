@@ -24,6 +24,7 @@ class AuditType {
   static const AuditType AppDataExported = AuditType._("AppDataExported");
   static const AuditType AppDataImported = AuditType._("AppDataImported");
   static const AuditType AppDataDeleted = AuditType._("AppDataDeleted");
+  static const AuditType AppSetup = AuditType._("AppSetup");
 
   // Device Actions
   static const AuditType DeviceCreated = AuditType._("DeviceCreated");
@@ -64,6 +65,7 @@ class AuditType {
     "AppDataExported",
     "AppDataImported",
     "AppDataDeleted",
+    "AppSetup",
     "DeviceCreated",
     "DeviceUpdated",
     "DeviceDeleted",
