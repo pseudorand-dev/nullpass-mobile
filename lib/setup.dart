@@ -78,6 +78,11 @@ void setupSharedPreferences({Function encryptionKeyCallback}) {
       if (worked) Log.debug('Added $SyncdDataNotificationsPrefKey');
     });
 
+  if (!sharedPrefs.containsKey(PasswordPreviewSizePrefKey))
+    sharedPrefs.setInt(PasswordPreviewSizePrefKey, 20).then((worked) {
+      if (worked) Log.debug('Added $PasswordPreviewSizePrefKey');
+    });
+
   if (!sharedPrefs.containsKey(SharedPrefSetupKey))
     sharedPrefs.setBool(SharedPrefSetupKey, true).then((worked) {
       if (worked) Log.debug('Shared Preference Setup Complete');

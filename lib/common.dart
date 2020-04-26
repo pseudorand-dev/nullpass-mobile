@@ -29,6 +29,7 @@ const String VaultsSetupPrefKey = 'VaultsSetup';
 const String SharedPrefSetupKey = 'SpSetup';
 const String InAppWebpagesPrefKey = 'InAppWebpages';
 const String SyncdDataNotificationsPrefKey = 'SyncedDataAccessedNotification';
+const String PasswordPreviewSizePrefKey = 'PasswordPreviewSize';
 
 /* FUNCTIONS */
 bool isTrue(dynamic value) {

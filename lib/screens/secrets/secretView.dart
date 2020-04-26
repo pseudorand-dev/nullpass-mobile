@@ -391,7 +391,10 @@ class SecretPreview extends StatelessWidget {
       sList.add(new TextSpan(
         text: character,
         style: TextStyle(
-            fontWeight: FontWeight.bold, color: textColor, fontSize: 20),
+          fontWeight: FontWeight.bold,
+          color: textColor,
+          fontSize: sharedPrefs.getInt(PasswordPreviewSizePrefKey).toDouble(),
+        ),
       ));
     });
     return sList;

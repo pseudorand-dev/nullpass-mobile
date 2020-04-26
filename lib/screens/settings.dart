@@ -23,6 +23,7 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings> {
   final _title = 'Settings';
   int _secretLength = 512;
+  int _passwordPreviewFontSize = 20;
   bool _alphaCharacters = true;
   bool _numericCharacters = true;
   bool _symbolCharacters = true;
@@ -38,13 +39,15 @@ class _SettingsState extends State<Settings> {
     bool spSet = sharedPrefs.getBool(SharedPrefSetupKey);
     if (spSet == null || !spSet) setupSharedPreferences();
 
-    _secretLength = sharedPrefs.getInt(SecretLengthPrefKey);
-    _alphaCharacters = sharedPrefs.getBool(AlphaCharactersPrefKey);
-    _numericCharacters = sharedPrefs.getBool(NumericCharactersPrefKey);
-    _symbolCharacters = sharedPrefs.getBool(SymbolCharactersPrefKey);
-    _inAppWebpages = sharedPrefs.getBool(InAppWebpagesPrefKey);
+    _secretLength = sharedPrefs.getInt(SecretLengthPrefKey) ?? 512;
+    _alphaCharacters = sharedPrefs.getBool(AlphaCharactersPrefKey) ?? true;
+    _numericCharacters = sharedPrefs.getBool(NumericCharactersPrefKey) ?? true;
+    _symbolCharacters = sharedPrefs.getBool(SymbolCharactersPrefKey) ?? true;
+    _inAppWebpages = sharedPrefs.getBool(InAppWebpagesPrefKey) ?? true;
     _syncAccessNotifications =
-        sharedPrefs.getBool(SyncdDataNotificationsPrefKey);
+        sharedPrefs.getBool(SyncdDataNotificationsPrefKey) ?? true;
+    _passwordPreviewFontSize =
+        sharedPrefs.getInt(PasswordPreviewSizePrefKey) ?? 20;
   }
 
   @override
@@ -74,22 +77,23 @@ class _SettingsState extends State<Settings> {
                 trailing: Container(
                   width: 50,
                   child: TextFormField(
-                      textAlign: TextAlign.end,
-                      keyboardType: TextInputType.number,
-                      initialValue: _secretLength.toString(),
-                      autocorrect: true,
-                      onChanged: (value) async {
-                        int tempVal = -1;
-                        try {
-                          tempVal = int.parse(value);
-                        } catch (e) {}
-                        if (tempVal < 1) tempVal = _secretLength;
-                        sharedPrefs.setInt(SecretLengthPrefKey, tempVal);
-                        setState(() {
-                          _secretLength = tempVal;
-                        });
-                      },
-                      decoration: InputDecoration(border: InputBorder.none)),
+                    textAlign: TextAlign.end,
+                    keyboardType: TextInputType.number,
+                    initialValue: _secretLength.toString(),
+                    autocorrect: true,
+                    onChanged: (value) async {
+                      int tempVal = -1;
+                      try {
+                        tempVal = int.parse(value);
+                      } catch (e) {}
+                      if (tempVal < 1) tempVal = _secretLength;
+                      sharedPrefs.setInt(SecretLengthPrefKey, tempVal);
+                      setState(() {
+                        _secretLength = tempVal;
+                      });
+                    },
+                    decoration: InputDecoration(border: InputBorder.none),
+                  ),
                 ),
                 contentPadding: new EdgeInsets.fromLTRB(15, 10, 20, 10),
               ),
@@ -142,6 +146,33 @@ class _SettingsState extends State<Settings> {
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                 ),
                 padding: new EdgeInsets.fromLTRB(10, 20, 20, 20),
+              ),
+              ListTile(
+                title: Text('Password Font Size'),
+                subtitle: Text(
+                  'This will be the font size when password preview (the popup from long pressing on the password item in the details screens)',
+                ),
+                trailing: Container(
+                  width: 50,
+                  child: TextFormField(
+                      textAlign: TextAlign.end,
+                      keyboardType: TextInputType.number,
+                      initialValue: _passwordPreviewFontSize.toString(),
+                      autocorrect: true,
+                      onChanged: (value) async {
+                        int tempVal = -1;
+                        try {
+                          tempVal = int.parse(value);
+                        } catch (e) {}
+                        if (tempVal < 1) tempVal = _passwordPreviewFontSize;
+                        sharedPrefs.setInt(PasswordPreviewSizePrefKey, tempVal);
+                        setState(() {
+                          _passwordPreviewFontSize = tempVal;
+                        });
+                      },
+                      decoration: InputDecoration(border: InputBorder.none)),
+                ),
+                contentPadding: new EdgeInsets.fromLTRB(15, 5, 20, 10),
               ),
               ListTile(
                 title: Text('Open websites in app'),
