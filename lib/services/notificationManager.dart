@@ -115,6 +115,7 @@ class OneSignalNotificationManager implements NotificationManager {
     }
 
     osInstance = OneSignal.shared;
+    if (isDebug) osInstance.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
 
     osInstance.init(_onesignalKey, iOSSettings: {
       OSiOSSettings.autoPrompt: false,
