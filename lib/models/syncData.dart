@@ -132,14 +132,14 @@ class SyncVaultAdd extends NullPassSync {
   Map<String, dynamic> toJson() => {
         "vault_id": this.vaultId,
         "vault_name": this.vaultName,
-        "access_level": deviceAccessToString(this.accessLevel),
+        "access_level": this.accessLevel.toString(),
         "secrets": this.secrets,
       };
 
   SyncVaultAdd.fromMap(Map map) {
     vaultId = map["vault_id"];
     vaultName = map["vault_name"];
-    accessLevel = parseDeviceAccessFromString(map["access_level"]);
+    accessLevel = DeviceAccess.fromString(map["access_level"]);
     secrets = <Secret>[];
     (map["secrets"] as List).forEach((s) => secrets.add(Secret.fromMap(s)));
   }
@@ -163,13 +163,13 @@ class SyncVaultUpdate extends NullPassSync {
   Map<String, dynamic> toJson() => {
         "vault_id": this.vaultId,
         "vault_name": this.vaultName,
-        "access_level": deviceAccessToString(this.accessLevel),
+        "access_level": this.accessLevel.toString(),
       };
 
   SyncVaultUpdate.fromMap(Map map) {
     vaultId = map["vault_id"];
     vaultName = map["vault_name"];
-    accessLevel = parseDeviceAccessFromString(map["access_level"]);
+    accessLevel = DeviceAccess.fromString(map["access_level"]);
   }
 }
 

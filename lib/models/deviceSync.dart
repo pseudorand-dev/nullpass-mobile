@@ -25,32 +25,42 @@ final String columnSyncCreated = "created_at";
 final String columnSyncModified = "modified_at";
 final String columnSyncLastPerformed = "last_synced";
 
-enum DeviceAccess { None, Backup, ReadOnly, Manage }
+class DeviceAccess {
+  static const DeviceAccess None = DeviceAccess._("None");
+  static const DeviceAccess Backup = DeviceAccess._("Backup");
+  static const DeviceAccess ReadOnly = DeviceAccess._("Read-Only");
+  static const DeviceAccess Manage = DeviceAccess._("Manage");
 
-String deviceAccessToString(DeviceAccess da) =>
-    da.toString().substring(da.toString().lastIndexOf(".") + 1);
+  static const List<String> values = <String>[
+    "None",
+    "Backup",
+    "Read-Only",
+    "Manage"
+  ];
 
-DeviceAccess parseDeviceAccessFromString(String dAccess) {
-  var ret = DeviceAccess.None;
-  try {
-    ret = DeviceAccess.values.firstWhere((da) =>
-        da
-            .toString()
-            .toLowerCase()
-            .substring(da.toString().lastIndexOf(".") + 1) ==
-        dAccess.toLowerCase());
-  } catch (e) {
-    Log.debug(
-        "An error occurred while trying to translate string to NotificationType: ${e.toString()}");
-    // throw new Exception("Unknown DeviceAccess");
+  final String _name;
+  const DeviceAccess._(this._name);
+
+  static dynamic fromString(String deviceAccess) {
+    if (values.contains(deviceAccess) ||
+        values.contains(deviceAccess.replaceAll("-", "")))
+      return DeviceAccess._(deviceAccess);
+    else
+      return DeviceAccess.None;
   }
-  return ret;
-}
 
-List<String> deviceAccessStringList() {
-  var daList = <String>[];
-  DeviceAccess.values.forEach((da) => daList.add(deviceAccessToString(da)));
-  return daList;
+  @override
+  String toString() {
+    return _name;
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    if (other is DeviceAccess && this._name == other._name) {
+      return true;
+    }
+    return false;
+  }
 }
 
 enum SyncStatus { Unknown, Creating, Active, Syncing, Deleting }
@@ -135,7 +145,7 @@ class DeviceSync {
         columnSyncFromInternal: this.syncFromInternal,
         columnSyncVaultId: this.vaultID,
         columnSyncVaultName: this.vaultName,
-        columnSyncVaultAccess: deviceAccessToString(this.vaultAccess),
+        columnSyncVaultAccess: this.vaultAccess.toString(),
         columnSyncStatus: syncStatusToString(this.status),
         columnSyncNotes: this.notes,
         columnSyncCreated: (this.created != null)
@@ -158,7 +168,7 @@ class DeviceSync {
         syncFromInternal: isTrue(input[columnSyncFromInternal]),
         vaultID: input[columnSyncVaultId],
         vaultName: input[columnSyncVaultName],
-        vaultAccess: parseDeviceAccessFromString(input[columnSyncVaultAccess]),
+        vaultAccess: DeviceAccess.fromString(input[columnSyncVaultAccess]),
         status: parseSyncStatusFromString(input[columnSyncStatus]),
         notes: input[columnSyncNotes],
         created: DateTime.tryParse(input[columnSyncCreated]),
@@ -179,7 +189,7 @@ class DeviceSync {
         columnSyncFromInternal: this.syncFromInternal,
         columnSyncVaultId: this.vaultID,
         columnSyncVaultName: this.vaultName,
-        columnSyncVaultAccess: deviceAccessToString(this.vaultAccess),
+        columnSyncVaultAccess: this.vaultAccess.toString(),
         columnSyncStatus: syncStatusToString(this.status),
         columnSyncNotes: this.notes,
         columnSyncCreated: (this.created != null)
@@ -202,8 +212,7 @@ class DeviceSync {
         syncFromInternal: isTrue(jsonBlob[columnSyncFromInternal]),
         vaultID: jsonBlob[columnSyncVaultId],
         vaultName: jsonBlob[columnSyncVaultName],
-        vaultAccess:
-            parseDeviceAccessFromString(jsonBlob[columnSyncVaultAccess]),
+        vaultAccess: DeviceAccess.fromString(jsonBlob[columnSyncVaultAccess]),
         status: parseSyncStatusFromString(jsonBlob[columnSyncStatus]),
         notes: jsonBlob[columnSyncNotes],
         created: DateTime.tryParse(jsonBlob[columnSyncCreated]),

@@ -379,7 +379,7 @@ class _ManageSyncState extends State<ManageSync> {
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           textTheme: ButtonTextTheme.primary,
           child: Text(
-            deviceAccessToString(ds.vaultAccess),
+            ds.vaultAccess.toString(),
             textAlign: TextAlign.end,
           ),
           onPressed: null,
@@ -391,7 +391,7 @@ class _ManageSyncState extends State<ManageSync> {
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           textTheme: ButtonTextTheme.primary,
           child: Text(
-            deviceAccessToString(ds.vaultAccess),
+            ds.vaultAccess.toString(),
             textAlign: TextAlign.end,
           ),
           onPressed: () async {
@@ -405,7 +405,7 @@ class _ManageSyncState extends State<ManageSync> {
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           textTheme: ButtonTextTheme.primary,
           child: Text(
-            deviceAccessToString(DeviceAccess.None),
+            DeviceAccess.None.toString(),
             textAlign: TextAlign.end,
           ),
           onPressed: () async {
