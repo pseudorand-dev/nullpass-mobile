@@ -196,7 +196,7 @@ class _ManageSyncState extends State<ManageSync> {
           var tmpNotification = np.Notification(
             tmpNotificationType,
             data: encryptedMsg,
-            deviceID: notify.deviceId,
+            deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey),
             notificationID: Uuid().v4(),
           );
 

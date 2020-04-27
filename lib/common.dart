@@ -30,6 +30,7 @@ const String SharedPrefSetupKey = 'SpSetup';
 const String InAppWebpagesPrefKey = 'InAppWebpages';
 const String SyncdDataNotificationsPrefKey = 'SyncedDataAccessedNotification';
 const String PasswordPreviewSizePrefKey = 'PasswordPreviewSize';
+const String DeviceNotificationIdPrefKey = 'DeviceNotificationIdPrefKey';
 
 /* FUNCTIONS */
 bool isTrue(dynamic value) {

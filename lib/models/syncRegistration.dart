@@ -25,7 +25,7 @@ class SyncRegistration {
       {this.deviceId, this.pgpPubKey, this.generatedNonce, this.receivedNonce});
 
   static Future<SyncRegistration> generate({String receivedNonce}) async {
-    var dID = notify.deviceId;
+    var dID = sharedPrefs.getString(DeviceNotificationIdPrefKey);
     var pubKey = await NullPassDB.instance.getEncryptionPublicKey();
     var genNonce = Uuid().v4();
     return SyncRegistration(

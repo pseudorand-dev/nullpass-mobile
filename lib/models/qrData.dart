@@ -15,7 +15,7 @@ class QrData {
   QrData({this.deviceId, this.generatedNonce});
 
   static QrData generate() {
-    var dID = notify.deviceId;
+    var dID = sharedPrefs.getString(DeviceNotificationIdPrefKey);
     var genNonce = Uuid().v4();
     return QrData(deviceId: dID, generatedNonce: genNonce);
   }

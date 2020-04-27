@@ -74,7 +74,7 @@ class _QrScannerState extends State<QrScanner> {
       var receivedNonce = _scannedQrData.generatedNonce;
 
       var sd = SyncRegistration(
-        deviceId: notify.deviceId,
+        deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
         pgpPubKey: _encryptionKeyPair.publicKey,
         generatedNonce: _responseNonce,
         receivedNonce: receivedNonce,
@@ -123,7 +123,7 @@ class _QrScannerState extends State<QrScanner> {
         });
 
         var sd = SyncRegistration(
-          deviceId: notify.deviceId,
+          deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
           receivedNonce: scannedResp.generatedNonce,
           generatedNonce: _responseNonce,
         );

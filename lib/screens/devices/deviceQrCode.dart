@@ -75,7 +75,7 @@ class _QrCodeState extends State<QrCode> {
         }
 
         var sd = SyncRegistration(
-          deviceId: notify.deviceId,
+          deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
           pgpPubKey: _encryptionKeyPair.publicKey,
           generatedNonce: _responseNonce,
           receivedNonce: scannerInfo.generatedNonce,
@@ -116,7 +116,7 @@ class _QrCodeState extends State<QrCode> {
 
       if (_responseNonce == scannerInfo.receivedNonce) {
         var sd = SyncRegistration(
-          deviceId: notify.deviceId,
+          deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
           receivedNonce: scannerInfo.generatedNonce,
         );
 

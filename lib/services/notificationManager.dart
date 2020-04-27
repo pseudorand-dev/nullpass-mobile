@@ -48,7 +48,10 @@ void defaultSyncDataResponseHandler(dynamic str) {
 }
 
 class NotificationManager {
-  String deviceId;
+  Future<String> get deviceId async {
+    return null;
+  }
+
   Function(dynamic) syncInitHandshakeStepOneHandler;
   Function(dynamic) syncInitHandshakeStepTwoHandler;
   Function(dynamic) syncInitHandshakeStepThreeHandler;
@@ -71,7 +74,23 @@ class OneSignalNotificationManager implements NotificationManager {
   static String _onesignalKey;
   static OneSignal osInstance;
   static bool _initialized = false;
-  String deviceId;
+  String _deviceId;
+  Future<String> get deviceId async {
+    if (this._deviceId == null) {
+      setDeviceId((await osInstance.getPermissionSubscriptionState())
+          .subscriptionStatus
+          .userId);
+      Log.debug('device id: ${this._deviceId}\n');
+    }
+    return this._deviceId;
+  }
+
+  setDeviceId(String newDeviceId) {
+    if (this._deviceId != null && newDeviceId == null) return;
+
+    this._deviceId = newDeviceId;
+    sharedPrefs.setString(DeviceNotificationIdPrefKey, newDeviceId);
+  }
 
   List<String> receivedDataChunks;
 
@@ -129,9 +148,18 @@ class OneSignalNotificationManager implements NotificationManager {
       Log.debug('Accepted permission: $iosPermission');
     }
 
+    osInstance.setSubscriptionObserver((osSubscriptionState) {
+      if (osSubscriptionState.to.userId != null) {
+        setDeviceId(osSubscriptionState.to.userId);
+        Log.debug('subscription state changed - id: ${this._deviceId}\n');
+      }
+    });
+
     var subscription = await osInstance.getPermissionSubscriptionState();
-    this.deviceId = subscription.subscriptionStatus.userId;
-    Log.debug('device id: $deviceId\n');
+    if (subscription.subscriptionStatus.userId != null) {
+      this._deviceId = subscription.subscriptionStatus.userId;
+      Log.debug('device id: ${this._deviceId}\n');
+    }
 
     if (syncInitHandshakeStepOneHandler == null ||
         syncInitHandshakeStepTwoHandler == null ||

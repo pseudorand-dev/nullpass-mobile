@@ -25,7 +25,7 @@ class Sync {
       return Notification(
         nt,
         data: encryptedMsg,
-        deviceID: notify.deviceId,
+        deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey),
         notificationID: Uuid().v4(),
       );
     }
