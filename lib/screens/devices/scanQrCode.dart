@@ -341,7 +341,32 @@ class _QrScannerState extends State<QrScanner> {
   Future<void> scan() async {
     try {
       _initiated = false;
-      String barcode = await BarcodeScanner.scan();
+      var scanResult = await BarcodeScanner.scan();
+      if (scanResult.type != ResultType.Barcode) {
+        if (scanResult.type == ResultType.Error) {
+          throw Exception("The barcode scan returned an error:\n" +
+              "Raw Content - ${scanResult.rawContent}" +
+              "Scan Result - $scanResult");
+        }
+        if (scanResult.type == ResultType.Cancelled) {
+          throw FormatException("The scan was cancelled:\n" +
+              "Raw Content - ${scanResult.rawContent}" +
+              "Scan Result - $scanResult");
+        }
+        throw Exception("The barcode was not scanned:\n" +
+            "Raw Content - ${scanResult.rawContent}" +
+            "Scan Result - $scanResult");
+      }
+
+      if (scanResult.format != BarcodeFormat.qr) {
+        throw BarcodeFormatError("The barcode scanned was invalid:\n" +
+            "Format Type - ${scanResult.format.name}\n" +
+            "Format Note - ${scanResult.formatNote}\n" +
+            "Raw Content - ${scanResult.rawContent}" +
+            "Scan Result - $scanResult");
+      }
+
+      String barcode = scanResult.rawContent;
       Log.debug(barcode);
       var qrd = jsonDecode(barcode);
       var tmpData = QrData.fromMap(qrd);
@@ -365,7 +390,7 @@ class _QrScannerState extends State<QrScanner> {
         this._barcodeData = "";
       });
     } on PlatformException catch (e) {
-      if (e.code == BarcodeScanner.CameraAccessDenied) {
+      if (e.code == BarcodeScanner.cameraAccessDenied) {
         setState(() {
           this._errorText = "The user did not grant the camera permission!";
           this._barcodeData = "";
@@ -390,5 +415,19 @@ class _QrScannerState extends State<QrScanner> {
         this._barcodeData = "";
       });
     }
+  }
+}
+
+class BarcodeFormatError implements Exception {
+  final dynamic message;
+
+  BarcodeFormatError([this.message]);
+
+  String toString() {
+    if (this.message == null ||
+        (this.message is String && this.message.trim().isEmpty)) {
+      return "BarcodeFormatError";
+    }
+    return "BarcodeFormatError: ${this.message}";
   }
 }
