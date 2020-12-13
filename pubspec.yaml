@@ -54,7 +54,8 @@ flutter_icons:
   image_path_android: "assets/images/null_iosScaledDown_1500_Transparent.png"
 
 flutter:
-
+  assets:
+    - assets/images/
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
