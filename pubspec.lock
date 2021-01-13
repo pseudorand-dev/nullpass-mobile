@@ -429,6 +429,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.24.1"
+  secure_screen_switcher:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: main
+      resolved-ref: e9c58adebb2f43a77ad442e24f56b263b4dd27ca
+      url: "git@github.com:pseudorand-dev/secure_screen_switcher.git"
+    source: git
+    version: "0.0.1+1"
   shared_preferences:
     dependency: "direct main"
     description:

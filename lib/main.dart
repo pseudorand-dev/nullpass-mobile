@@ -5,6 +5,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:nullpass/screens/app.dart';
+import 'package:secure_screen_switcher/secure_screen_switcher.dart';
 
-
-void main() => runApp(NullPassApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SecureScreenSwitcher.secureApp();
+  runApp(NullPassApp());
+}
