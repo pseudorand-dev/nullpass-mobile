@@ -295,7 +295,7 @@ packages:
       name: onesignal_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.6.1"
+    version: "2.6.2"
   openpgp:
     dependency: "direct main"
     description:

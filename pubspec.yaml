@@ -26,7 +26,7 @@ dependencies:
   font_awesome_flutter: ^8.10.0
   google_fonts: ^1.1.1
   material_design_icons_flutter: ^4.0.5755
-  onesignal_flutter: ^2.6.1
+  onesignal_flutter: ^2.6.2
   openpgp: ^0.9.9
   path_provider: ^1.6.24
   qr_flutter: ^3.2.0
