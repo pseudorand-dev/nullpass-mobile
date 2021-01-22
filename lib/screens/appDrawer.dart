@@ -4,15 +4,32 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:nullpass/common.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/app.dart';
-import 'package:nullpass/screens/secretEdit.dart';
-import 'package:nullpass/screens/secretGenerate.dart';
-import 'package:nullpass/screens/secretSearch.dart';
+import 'package:nullpass/screens/audit/auditLog.dart';
+import 'package:nullpass/screens/devices/manageDevices.dart';
+import 'package:nullpass/screens/devices/syncDevices.dart';
+import 'package:nullpass/screens/secrets/secretEdit.dart';
+import 'package:nullpass/screens/secrets/secretGenerate.dart';
+import 'package:nullpass/screens/secrets/secretSearch.dart';
 import 'package:nullpass/screens/settings.dart';
-import 'package:nullpass/secret.dart';
+import 'package:nullpass/screens/vaults/manageVaults.dart';
 import 'package:nullpass/widgets.dart';
+
+enum NullPassRoute {
+  ViewSecretsList,
+  FindSecret,
+  NewSecret,
+  GenerateSecret,
+  ManageVault,
+  QrCode,
+  QrScanner,
+  ManageDevices,
+  Settings,
+  AuditLog,
+  HelpAndFeedback
+}
 
 class AppDrawer extends StatelessWidget {
   final NullPassRoute currentPage;
@@ -92,7 +109,10 @@ class AppDrawer extends StatelessWidget {
                           builder: (context) => SecretEdit(
                               edit: SecretEditType.Create,
                               secret: new Secret(
-                                  nickname: '', website: '', username: ''))));
+                                  nickname: '',
+                                  website: '',
+                                  username: '',
+                                  message: ''))));
                   this.reloadSecretList('true');
                 }
               },
@@ -128,20 +148,62 @@ class AppDrawer extends StatelessWidget {
                 // this.reloadSecretList('true');
               },
             ),
+            ListTile(
+              selected: (currentPage == NullPassRoute.ManageVault),
+              leading: Icon(MdiIcons.safeSquareOutline),
+              title: Text('Manage Vault',
+                  style: TextStyle(
+                      color: (currentPage == NullPassRoute.ManageVault)
+                          ? ThemeData.light().accentColor
+                          : ThemeData.light().unselectedWidgetColor)),
+              onTap: () async {
+                Navigator.pop(context);
+                if (currentPage != NullPassRoute.ManageVault) {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ManageVault()),
+                  );
+                  this.reloadSecretList('true');
+                }
+              },
+            ),
             FormDivider(),
             ListTile(
-              selected: (currentPage == NullPassRoute.RegisterDevice),
-              leading: new Icon(FontAwesomeIcons.qrcode),
-              title: Text('Register Device',
+              selected: (currentPage == NullPassRoute.QrCode),
+              leading: new Icon(MdiIcons.qrcodeEdit),
+              title: Text('Sync To This Device',
                   style: TextStyle(
-                      color: (currentPage == NullPassRoute.RegisterDevice)
+                      color: (currentPage == NullPassRoute.QrCode)
                           ? ThemeData.light().accentColor
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
-                // if (currentPage != NullPassRoute.RegisterDevice) {
-                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NullPassApp()));
-                // }
+                if (currentPage != NullPassRoute.QrCode) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              SyncDevices(syncState: SyncState.qrcode)));
+                }
+              },
+            ),
+            ListTile(
+              selected: (currentPage == NullPassRoute.QrScanner),
+              leading: new Icon(MdiIcons.qrcodeScan),
+              title: Text('Sync To New Device',
+                  style: TextStyle(
+                      color: (currentPage == NullPassRoute.QrScanner)
+                          ? ThemeData.light().accentColor
+                          : ThemeData.light().unselectedWidgetColor)),
+              onTap: () {
+                Navigator.pop(context);
+                if (currentPage != NullPassRoute.QrScanner) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              SyncDevices(syncState: SyncState.scan)));
+                }
               },
             ),
             ListTile(
@@ -154,9 +216,10 @@ class AppDrawer extends StatelessWidget {
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
-                // if (currentPage != NullPassRoute.ManageDevices) {
-                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NullPassApp()));
-                // }
+                if (currentPage != NullPassRoute.ManageDevices) {
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => ManageDevices()));
+                }
               },
             ),
             FormDivider(),
@@ -174,6 +237,22 @@ class AppDrawer extends StatelessWidget {
                   Navigator.pushReplacement(context,
                       MaterialPageRoute(builder: (context) => Settings()));
                   // Navigator.push(context, MaterialPageRoute(builder: (context) => Settings()));
+                }
+              },
+            ),
+            ListTile(
+              selected: (currentPage == NullPassRoute.AuditLog),
+              leading: Icon(Icons.dehaze),
+              title: Text('Audit Log',
+                  style: TextStyle(
+                      color: (currentPage == NullPassRoute.AuditLog)
+                          ? ThemeData.light().accentColor
+                          : ThemeData.light().unselectedWidgetColor)),
+              onTap: () {
+                Navigator.pop(context);
+                if (currentPage != NullPassRoute.AuditLog) {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => AuditLog()));
                 }
               },
             ),

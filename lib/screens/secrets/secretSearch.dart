@@ -5,15 +5,17 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:nullpass/screens/secretView.dart';
-import 'package:nullpass/secret.dart';
+import 'package:nullpass/models/secret.dart';
+import 'package:nullpass/screens/secrets/secretView.dart';
+import 'package:nullpass/services/datastore.dart';
+import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';
 
 class SecretSearch extends StatefulWidget {
-  _secretSearchState createState() => _secretSearchState();
+  _SecretSearchState createState() => _SecretSearchState();
 }
 
-class _secretSearchState extends State<SecretSearch> {
+class _SecretSearchState extends State<SecretSearch> {
   TextEditingController _tec;
   String _searchText;
   List<Secret> _secrets;
@@ -31,8 +33,8 @@ class _secretSearchState extends State<SecretSearch> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: // _searchField(_searchText, (value) {
-            _searchField(_tec, (value) async {
+        title: // _SearchField(_searchText, (value) {
+            _SearchField(_tec, (value) async {
           setState(() {
             _searchText = value;
             // _tec.text = value;
@@ -40,7 +42,7 @@ class _secretSearchState extends State<SecretSearch> {
           List<Secret> tempSecrets = <Secret>[];
           if ((value as String).trim().isNotEmpty) {
             NullPassDB npDB = NullPassDB.instance;
-            tempSecrets = await npDB.find(value);
+            tempSecrets = await npDB.findSecret(value);
           }
           setState(() {
             _secrets = tempSecrets;
@@ -51,7 +53,7 @@ class _secretSearchState extends State<SecretSearch> {
           IconButton(
             icon: Icon(Icons.clear),
             onPressed: () {
-              print("clear");
+              Log.debug("clear");
               setState(() {
                 _tec.clear();
                 // _searchText = '';
@@ -68,13 +70,13 @@ class _secretSearchState extends State<SecretSearch> {
           ),
         ],
       ),
-      body: _secretListWidget(
+      body: _SecretListWidget(
           items: _secrets,
           reloadSecretList: (str) async {
             List<Secret> tempSecrets = <Secret>[];
-            if ((_searchText as String).trim().isNotEmpty) {
+            if ((_searchText).trim().isNotEmpty) {
               NullPassDB npDB = NullPassDB.instance;
-              tempSecrets = await npDB.find(_searchText);
+              tempSecrets = await npDB.findSecret(_searchText);
             }
             setState(() {
               _secrets = tempSecrets;
@@ -85,13 +87,13 @@ class _secretSearchState extends State<SecretSearch> {
   }
 }
 
-class _searchField extends StatelessWidget {
-  Function _onChanged;
+class _SearchField extends StatelessWidget {
+  final Function _onChanged;
   // String _searchText;
-  TextEditingController _tec;
+  final TextEditingController _tec;
 
-  // _searchField(this._searchText, this._onChanged, {Key key}) : super(key: key);
-  _searchField(this._tec, this._onChanged, {Key key}) : super(key: key);
+  // _SearchField(this._searchText, this._onChanged, {Key key}) : super(key: key);
+  _SearchField(this._tec, this._onChanged, {Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -108,11 +110,11 @@ class _searchField extends StatelessWidget {
   }
 }
 
-class _secretListWidget extends StatelessWidget {
+class _SecretListWidget extends StatelessWidget {
   final List<Secret> items;
   final Function reloadSecretList;
 
-  _secretListWidget(
+  _SecretListWidget(
       {Key key, @required this.items, @required this.reloadSecretList})
       : super(key: key);
 

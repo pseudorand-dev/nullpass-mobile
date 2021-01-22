@@ -7,17 +7,19 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/models/auditRecord.dart';
+import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/appDrawer.dart';
-import 'package:nullpass/screens/secretEdit.dart';
-import 'package:nullpass/screens/secretSearch.dart';
-import 'package:nullpass/screens/secretView.dart';
-import 'package:nullpass/secret.dart';
+import 'package:nullpass/screens/secrets/secretEdit.dart';
+import 'package:nullpass/screens/secrets/secretSearch.dart';
+import 'package:nullpass/screens/secrets/secretView.dart';
+import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/widgets.dart';
 import 'package:flutter_widgets/src/visibility_detector/visibility_detector.dart';
 
 class SecretList extends StatelessWidget {
   final List<Secret> items;
-  bool loading = true;
+  final bool loading;
   final Function reloadSecretList;
 
   SecretList(
@@ -31,7 +33,7 @@ class SecretList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (loading) {
       return _SecretListContainer(
-          bodyWidget: _SecretLoading(), reloadSecretList: () {});
+          bodyWidget: _SecretLoading(), reloadSecretList: (dynamic d) {});
     } else if (items != null && items.length > 0) {
       return _SecretListContainer(
           bodyWidget: SecretListWidget(
@@ -140,6 +142,13 @@ class SecretListWidget extends StatelessWidget {
           subtitle: Text(items[index].username),
           trailing: Icon(Icons.arrow_forward_ios),
           onTap: () async {
+            await NullPassDB.instance.addAuditRecord(AuditRecord(
+              type: AuditType.SecretViewed,
+              message: 'The "${items[index].nickname}" secret was viewed.',
+              secretsReferenceId: <String>{items[index].uuid},
+              vaultsReferenceId: items[index].vaults.toSet(),
+              date: DateTime.now().toUtc(),
+            ));
             await Navigator.push(
               context,
               MaterialPageRoute(

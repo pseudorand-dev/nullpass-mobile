@@ -26,3 +26,60 @@ class FormDivider extends StatelessWidget {
     );
   }
 }
+
+class CenterLoader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+}
+
+class CenterText extends StatelessWidget {
+  final String _text;
+
+  CenterText(this._text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(this._text),
+        ],
+      ),
+    );
+  }
+}
+
+class NullPassFilterChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final Function(bool) onSelected;
+
+  NullPassFilterChip(
+      {@required this.label,
+      @required this.isSelected,
+      @required this.onSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    return FilterChip(
+      label: Text(
+        this.label,
+        style: TextStyle(color: this.isSelected ? Colors.white : Colors.black),
+      ),
+      onSelected: this.onSelected,
+      selected: this.isSelected,
+      backgroundColor: Colors.white,
+      checkmarkColor: Colors.white,
+      shape: StadiumBorder(
+          side: this.isSelected
+              ? BorderSide(color: Colors.white)
+              : BorderSide(color: Colors.blue)),
+      selectedColor: Colors.blue,
+    );
+  }
+}

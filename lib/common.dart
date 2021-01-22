@@ -6,61 +6,50 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:nullpass/secret.dart';
+import 'package:nullpass/models/secret.dart';
+import 'package:nullpass/services/notificationManager.dart' as np;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
+
+/* VARIABLES */
+// TODO: Determine a better way to handle the OneSignal Key
+const String OneSignalKey = "<THIS_NEEDS_TO_BE_ADDED_BEFORE_COMPILATION>";
+
+// A common variable for the internal notification system
+np.NotificationManager notify;
 
 SharedPreferences sharedPrefs;
 const String SecretLengthPrefKey = 'SecretLength';
 const String AlphaCharactersPrefKey = 'AlphaCharacters';
 const String NumericCharactersPrefKey = 'NumericCharacters';
 const String SymbolCharactersPrefKey = 'SymbolCharacters';
+const String EncryptionKeyPairSetupPrefKey = 'EncryptionKeyPairSetup';
+const String DefaultVaultIDPrefKey = 'DefaultVaultID';
+const String VaultsSetupPrefKey = 'VaultsSetup';
 const String SharedPrefSetupKey = 'SpSetup';
 const String InAppWebpagesPrefKey = 'InAppWebpages';
+const String SyncdDataNotificationsPrefKey = 'SyncedDataAccessedNotification';
+const String PasswordPreviewSizePrefKey = 'PasswordPreviewSize';
+const String DeviceNotificationIdPrefKey = 'DeviceNotificationIdPrefKey';
 
-void setupSharedPreferences() {
-  if (!sharedPrefs.containsKey(SecretLengthPrefKey))
-    sharedPrefs.setInt(SecretLengthPrefKey, 512).then((worked) {
-      if (worked) print('Added $SecretLengthPrefKey');
-    });
-
-  if (!sharedPrefs.containsKey(AlphaCharactersPrefKey))
-    sharedPrefs.setBool(AlphaCharactersPrefKey, true).then((worked) {
-      if (worked) print('Added $AlphaCharactersPrefKey');
-    });
-
-  if (!sharedPrefs.containsKey(NumericCharactersPrefKey))
-    sharedPrefs.setBool(NumericCharactersPrefKey, true).then((worked) {
-      if (worked) print('Added $NumericCharactersPrefKey');
-    });
-
-  if (!sharedPrefs.containsKey(SymbolCharactersPrefKey))
-    sharedPrefs.setBool(SymbolCharactersPrefKey, true).then((worked) {
-      if (worked) print('Added $SymbolCharactersPrefKey');
-    });
-
-  if (!sharedPrefs.containsKey(InAppWebpagesPrefKey))
-    sharedPrefs.setBool(InAppWebpagesPrefKey, true).then((worked) {
-      if (worked) print('Added $InAppWebpagesPrefKey');
-    });
-
-  if (!sharedPrefs.containsKey(SharedPrefSetupKey))
-    sharedPrefs.setBool(SharedPrefSetupKey, true).then((worked) {
-      if (worked) print('Shared Preference Setup Complete');
-    });
-}
-
+/* FUNCTIONS */
 bool isTrue(dynamic value) {
   bool b = false;
 
   if (value != null) {
-    b = value.toString().toLowerCase() == 'true';
+    if (value is bool) {
+      b = value;
+    } else if (value is String) {
+      b = value.toString().toLowerCase() == 'true';
+    } else if (value is int) {
+      b = (value == 1);
+    }
   }
 
   return b;
 }
 
-List<Secret> SecretsListFromJsonString(String jsonBlob) {
+List<Secret> secretsListFromJsonString(String jsonBlob) {
   List<Secret> secretList;
   var decoded = jsonDecode(jsonBlob);
 
@@ -98,13 +87,24 @@ void showSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String text,
   }
 }
 
-enum NullPassRoute {
-  ViewSecretsList,
-  FindSecret,
-  NewSecret,
-  GenerateSecret,
-  RegisterDevice,
-  ManageDevices,
-  Settings,
-  HelpAndFeedback
+String base64EncodeString(String input) => base64.encode(utf8.encode(input));
+
+String base64DecodeString(String input) => utf8.decode(base64.decode(input));
+
+String stringListToString(List<String> stringList) {
+  var str = "[";
+
+  stringList.forEach((s) {
+    str = "$str\"$s\",";
+  });
+
+  if (stringList.length > 0) {
+    str = str.substring(0, str.length - 1);
+  }
+
+  str = "$str]";
+  return str;
 }
+
+/* TYPES */
+typedef AsyncBoolCallback = Future<bool> Function();
