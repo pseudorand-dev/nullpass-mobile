@@ -6,6 +6,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_widgets/flutter_widgets.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/models/secret.dart';
@@ -15,7 +16,6 @@ import 'package:nullpass/screens/secrets/secretSearch.dart';
 import 'package:nullpass/screens/secrets/secretView.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/widgets.dart';
-import 'package:flutter_widgets/src/visibility_detector/visibility_detector.dart';
 import 'package:provider/provider.dart';
 
 class SecretSet with ChangeNotifier {
