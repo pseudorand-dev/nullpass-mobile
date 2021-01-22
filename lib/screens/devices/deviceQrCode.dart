@@ -182,7 +182,8 @@ class _QrCodeState extends State<QrCode> {
           title: Text(_title),
         ),
         drawer: AppDrawer(
-            currentPage: NullPassRoute.QrCode, reloadSecretList: (dynamic) {}),
+          currentPage: NullPassRoute.QrCode,
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

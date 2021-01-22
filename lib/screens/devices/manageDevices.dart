@@ -61,8 +61,8 @@ class _ManageDevicesState extends State<ManageDevices> {
             title: Text(_title),
           ),
           drawer: AppDrawer(
-              currentPage: NullPassRoute.ManageDevices,
-              reloadSecretList: (dynamic) {}),
+            currentPage: NullPassRoute.ManageDevices,
+          ),
           body: CenterLoader(),
         ),
       );
@@ -74,8 +74,8 @@ class _ManageDevicesState extends State<ManageDevices> {
             title: Text(_title),
           ),
           drawer: AppDrawer(
-              currentPage: NullPassRoute.ManageDevices,
-              reloadSecretList: (dynamic) {}),
+            currentPage: NullPassRoute.ManageDevices,
+          ),
           body: _DeviesList(
             devices: _devices,
             reloadDevicesListFunction: _reloadDeviceList,

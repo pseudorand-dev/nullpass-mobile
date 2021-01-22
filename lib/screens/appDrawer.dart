@@ -28,16 +28,13 @@ enum NullPassRoute {
   ManageDevices,
   Settings,
   AuditLog,
-  HelpAndFeedback
+  HelpAndFeedback,
 }
 
 class AppDrawer extends StatelessWidget {
   final NullPassRoute currentPage;
-  final Function reloadSecretList;
 
-  AppDrawer(
-      {Key key, @required this.currentPage, @required this.reloadSecretList})
-      : super(key: key);
+  AppDrawer({Key key, @required this.currentPage}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -103,17 +100,19 @@ class AppDrawer extends StatelessWidget {
                 Navigator.pop(context);
                 if (currentPage != NullPassRoute.NewSecret) {
                   await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          // builder: (context) => SecretEdit(edit: SecretEditType.Create, // SecretNew(
-                          builder: (context) => SecretEdit(
-                              edit: SecretEditType.Create,
-                              secret: new Secret(
-                                  nickname: '',
-                                  website: '',
-                                  username: '',
-                                  message: ''))));
-                  this.reloadSecretList('true');
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SecretEdit(
+                        edit: SecretEditType.Create,
+                        secret: new Secret(
+                          nickname: '',
+                          website: '',
+                          username: '',
+                          message: '',
+                        ),
+                      ),
+                    ),
+                  );
                 }
               },
             ),
@@ -163,7 +162,6 @@ class AppDrawer extends StatelessWidget {
                     context,
                     MaterialPageRoute(builder: (context) => ManageVault()),
                   );
-                  this.reloadSecretList('true');
                 }
               },
             ),

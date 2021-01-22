@@ -31,6 +31,7 @@ dependencies:
   onesignal_flutter: ^2.6.2
   openpgp: ^0.9.9
   path_provider: ^1.6.24
+  provider: ^4.0.5+1
   qr_flutter: ^3.2.0
   secure_screen_switcher:
     git:

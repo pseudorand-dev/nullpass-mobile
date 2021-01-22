@@ -20,7 +20,9 @@ class LoadingPage extends StatelessWidget {
         appBar: AppBar(
           title: Text(title),
         ),
-        drawer: AppDrawer(currentPage: route, reloadSecretList: (dynamic) {}),
+        drawer: AppDrawer(
+          currentPage: route,
+        ),
         body: Container(
           child: CenterLoader(),
         ),

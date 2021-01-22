@@ -16,56 +16,67 @@ import 'package:nullpass/screens/secrets/secretView.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/widgets.dart';
 import 'package:flutter_widgets/src/visibility_detector/visibility_detector.dart';
+import 'package:provider/provider.dart';
+
+class SecretSet with ChangeNotifier {
+  List<Secret> data;
+  String vaultId;
+
+  SecretChangeNotifier _secretEventListener;
+
+  SecretSet({List<Secret> data, String vaultId}) {
+    this.data = data ?? <Secret>[];
+    this.vaultId = vaultId;
+    _secretEventListener = NullPassDB.instance.secretEvents;
+    _secretEventListener.addListener(_update);
+    _update();
+  }
+
+  void _update() async {
+    var tmpSecretList = <Secret>[];
+    if (vaultId == null) {
+      tmpSecretList = await NullPassDB.instance.getAllSecrets();
+    } else {
+      tmpSecretList = await NullPassDB.instance.getAllSecretsInVault(vaultId);
+    }
+    data = tmpSecretList ?? <Secret>[];
+    notifyListeners();
+  }
+}
 
 class SecretList extends StatelessWidget {
-  final List<Secret> items;
   final bool loading;
-  final Function reloadSecretList;
 
-  SecretList(
-      {Key key,
-      @required this.items,
-      @required this.loading,
-      @required this.reloadSecretList})
-      : super(key: key);
+  SecretList({Key key, @required this.loading}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<SecretSet>(context, listen: false);
+
     if (loading) {
       return _SecretListContainer(
-          bodyWidget: _SecretLoading(), reloadSecretList: (dynamic d) {});
-    } else if (items != null && items.length > 0) {
-      return _SecretListContainer(
-          bodyWidget: SecretListWidget(
-              items: items, reloadSecretList: reloadSecretList),
-          reloadSecretList: reloadSecretList);
-    } else {
-      return _SecretListContainer(
-          bodyWidget: _SecretEmptyListView(),
-          reloadSecretList: reloadSecretList);
+        bodyWidget: _SecretLoading(),
+      );
     }
+    return _SecretListContainer(
+      bodyWidget: Consumer<SecretSet>(
+        builder: (context, secretSet, child) => SecretListWidget(
+          items: secretSet.data,
+        ),
+      ),
+    );
   }
 }
 
 class _SecretListContainer extends StatelessWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final Widget bodyWidget;
-  final Function reloadSecretList;
   static Size screenSize;
   static Rect screenRect;
 
-  _SecretListContainer(
-      {Key key, @required this.bodyWidget, @required this.reloadSecretList})
-      : super(key: key);
+  _SecretListContainer({Key key, @required this.bodyWidget}) : super(key: key);
 
   void visibilityHasChanged(VisibilityInfo info) {
-    if (info.size != Size.zero &&
-        info.size != screenSize &&
-        info.visibleBounds != Rect.zero &&
-        info.visibleBounds != screenRect &&
-        reloadSecretList != null) {
-      reloadSecretList('true');
-    }
     if (screenSize == null) screenSize = info.size;
     if (screenRect == null) screenRect = info.visibleBounds;
   }
@@ -90,29 +101,29 @@ class _SecretListContainer extends StatelessWidget {
                       context,
                       MaterialPageRoute(builder: (context) => SecretSearch()),
                     );
-                    await this.reloadSecretList('true');
                   }),
             ],
           ),
           drawer: AppDrawer(
-              currentPage: NullPassRoute.ViewSecretsList,
-              reloadSecretList: reloadSecretList),
+            currentPage: NullPassRoute.ViewSecretsList,
+          ),
           body: bodyWidget,
           floatingActionButton: FloatingActionButton(
             onPressed: () async {
-              final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      // builder: (context) => SecretEdit(edit: SecretEditType.Create, // SecretNew(
-                      builder: (context) => SecretEdit(
-                          edit: SecretEditType.Create, // SecretNew(
-                          secret: new Secret(
-                            nickname: '',
-                            website: '',
-                            username: '',
-                            message: '',
-                          ))));
-              await this.reloadSecretList(result);
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SecretEdit(
+                    edit: SecretEditType.Create,
+                    secret: new Secret(
+                      nickname: '',
+                      website: '',
+                      username: '',
+                      message: '',
+                    ),
+                  ),
+                ),
+              );
             },
             tooltip: 'Increment',
             child: Icon(Icons.add),
@@ -125,14 +136,14 @@ class _SecretListContainer extends StatelessWidget {
 
 class SecretListWidget extends StatelessWidget {
   final List<Secret> items;
-  final Function reloadSecretList;
 
-  SecretListWidget(
-      {Key key, @required this.items, @required this.reloadSecretList})
-      : super(key: key);
+  SecretListWidget({Key key, @required this.items}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    if (items == null || items.length < 1) {
+      return _SecretEmptyListView();
+    }
     return ListView.builder(
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -152,9 +163,9 @@ class SecretListWidget extends StatelessWidget {
             await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => SecretView(secret: items[index])),
+                builder: (context) => SecretView(secret: items[index]),
+              ),
             );
-            await this.reloadSecretList('true');
           },
         );
       },

@@ -221,8 +221,8 @@ class _QrScannerState extends State<QrScanner> {
             title: Text(_title),
           ),
           drawer: AppDrawer(
-              currentPage: NullPassRoute.QrScanner,
-              reloadSecretList: (dynamic) {}),
+            currentPage: NullPassRoute.QrScanner,
+          ),
           body: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -261,8 +261,8 @@ class _QrScannerState extends State<QrScanner> {
             title: Text(_title),
           ),
           drawer: AppDrawer(
-              currentPage: NullPassRoute.QrScanner,
-              reloadSecretList: (dynamic) {}),
+            currentPage: NullPassRoute.QrScanner,
+          ),
           body: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -298,8 +298,8 @@ class _QrScannerState extends State<QrScanner> {
             title: Text(_title),
           ),
           drawer: AppDrawer(
-              currentPage: NullPassRoute.QrScanner,
-              reloadSecretList: (dynamic) {}),
+            currentPage: NullPassRoute.QrScanner,
+          ),
           body: Center(
             child: RepaintBoundary(
               child: Container(
