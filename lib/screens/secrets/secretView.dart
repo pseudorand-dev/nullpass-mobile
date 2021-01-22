@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/models/secret.dart';
@@ -396,7 +397,7 @@ class SecretPreview extends StatelessWidget {
 
       sList.add(new TextSpan(
         text: character,
-        style: TextStyle(
+        style: GoogleFonts.robotoMono(
           fontWeight: FontWeight.bold,
           color: textColor,
           fontSize: sharedPrefs.getInt(PasswordPreviewSizePrefKey).toDouble(),

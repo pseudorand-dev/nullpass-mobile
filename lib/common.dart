@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/services/notificationManager.dart' as np;
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:vibration/vibration.dart';
+import 'package:vibration/vibration.dart';
 
 /* VARIABLES */
 // TODO: Determine a better way to handle the OneSignal Key
@@ -80,13 +80,11 @@ void showSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String text,
     {bool vibrate = true, int vibrateDuration = 5}) async {
   scaffoldKey.currentState.showSnackBar(
       SnackBar(content: Text(text), duration: Duration(milliseconds: 1000)));
-  /*
   var hasVibrator = await Vibration.hasVibrator();
   if (vibrate && hasVibrator) {
     // if (Vibration.hasVibrator())
     Vibration.vibrate(duration: vibrateDuration);
   }
-  */
 }
 
 String base64EncodeString(String input) => base64.encode(utf8.encode(input));

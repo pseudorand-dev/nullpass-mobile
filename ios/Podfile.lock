@@ -2,6 +2,7 @@ PODS:
   - barcode_scan (0.0.1):
     - Flutter
     - MTBBarcodeScanner
+    - SwiftProtobuf
   - Flutter (1.0.0)
   - flutter_secure_storage (3.3.1):
     - Flutter
@@ -9,30 +10,25 @@ PODS:
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
   - MTBBarcodeScanner (5.0.11)
-  - OneSignal (2.12.6)
-  - onesignal_flutter (2.3.4):
+  - OneSignal (2.16.1)
+  - onesignal_flutter (2.6.2):
     - Flutter
-    - OneSignal (= 2.12.6)
-  - openpgp (0.0.1):
+    - OneSignal (= 2.16.1)
+  - openpgp (0.1.0):
     - Flutter
   - path_provider (0.0.1):
     - Flutter
-  - path_provider_macos (0.0.1):
+  - secure_screen_switcher (0.0.1):
     - Flutter
   - shared_preferences (0.0.1):
     - Flutter
-  - shared_preferences_macos (0.0.1):
+  - sqflite (0.0.2):
     - Flutter
-  - shared_preferences_web (0.0.1):
-    - Flutter
-  - sqflite (0.0.1):
-    - Flutter
-    - FMDB (~> 2.7.2)
+    - FMDB (>= 2.7.5)
+  - SwiftProtobuf (1.12.0)
   - url_launcher (0.0.1):
     - Flutter
-  - url_launcher_macos (0.0.1):
-    - Flutter
-  - url_launcher_web (0.0.1):
+  - vibration (1.7.3):
     - Flutter
 
 DEPENDENCIES:
@@ -43,14 +39,11 @@ DEPENDENCIES:
   - onesignal_flutter (from `.symlinks/plugins/onesignal_flutter/ios`)
   - openpgp (from `.symlinks/plugins/openpgp/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
-  - path_provider_macos (from `.symlinks/plugins/path_provider_macos/ios`)
+  - secure_screen_switcher (from `.symlinks/plugins/secure_screen_switcher/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
-  - shared_preferences_macos (from `.symlinks/plugins/shared_preferences_macos/ios`)
-  - shared_preferences_web (from `.symlinks/plugins/shared_preferences_web/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
-  - url_launcher_macos (from `.symlinks/plugins/url_launcher_macos/ios`)
-  - url_launcher_web (from `.symlinks/plugins/url_launcher_web/ios`)
+  - vibration (from `.symlinks/plugins/vibration/ios`)
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
@@ -58,6 +51,7 @@ SPEC REPOS:
   trunk:
     - MTBBarcodeScanner
     - OneSignal
+    - SwiftProtobuf
 
 EXTERNAL SOURCES:
   barcode_scan:
@@ -72,42 +66,34 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/openpgp/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
-  path_provider_macos:
-    :path: ".symlinks/plugins/path_provider_macos/ios"
+  secure_screen_switcher:
+    :path: ".symlinks/plugins/secure_screen_switcher/ios"
   shared_preferences:
     :path: ".symlinks/plugins/shared_preferences/ios"
-  shared_preferences_macos:
-    :path: ".symlinks/plugins/shared_preferences_macos/ios"
-  shared_preferences_web:
-    :path: ".symlinks/plugins/shared_preferences_web/ios"
   sqflite:
     :path: ".symlinks/plugins/sqflite/ios"
   url_launcher:
     :path: ".symlinks/plugins/url_launcher/ios"
-  url_launcher_macos:
-    :path: ".symlinks/plugins/url_launcher_macos/ios"
-  url_launcher_web:
-    :path: ".symlinks/plugins/url_launcher_web/ios"
+  vibration:
+    :path: ".symlinks/plugins/vibration/ios"
 
 SPEC CHECKSUMS:
-  barcode_scan: 33f586d02270046fc6559135038b34b5754eaa4f
-  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  barcode_scan: a5c27959edfafaa0c771905bad0b29d6d39e4479
+  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
   flutter_secure_storage: 7953c38a04c3fdbb00571bcd87d8e3b5ceb9daec
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
-  OneSignal: a6df91542d1cf133b9dd19d89f2b533d8f2d3163
-  onesignal_flutter: c542d9b9aa51c1fdaeeab7f1a2b372bf2f02ab67
-  openpgp: f6c3bb2caf06a2530b62cea349a4f6524303435f
-  path_provider: fb74bd0465e96b594bb3b5088ee4a4e7bb1f2a9d
-  path_provider_macos: f760a3c5b04357c380e2fddb6f9db6f3015897e0
-  shared_preferences: 430726339841afefe5142b9c1f50cb6bd7793e01
-  shared_preferences_macos: f3f29b71ccbb56bf40c9dd6396c9acf15e214087
-  shared_preferences_web: 141cce0c3ed1a1c5bf2a0e44f52d31eeb66e5ea9
-  sqflite: 4001a31ff81d210346b500c55b17f4d6c7589dd0
+  OneSignal: 5f6514ec2b931306eb067acb124afbb2e49970af
+  onesignal_flutter: 260bb95c0a2d791c990c7bd8749525c9834d43fc
+  openpgp: aa75bd9d3c0c06094db757d495db30aa653d53f5
+  path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
+  secure_screen_switcher: 953e65ba86395109208878c31991b75623940eee
+  shared_preferences: af6bfa751691cdc24be3045c43ec037377ada40d
+  sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
+  SwiftProtobuf: 4ef85479c18ca85b5482b343df9c319c62bda699
   url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
-  url_launcher_macos: fd7894421cd39320dce5f292fc99ea9270b2a313
-  url_launcher_web: e5527357f037c87560776e36436bf2b0288b965c
+  vibration: b5a33e764c3f609a975b9dca73dce20fdde627dc
 
-PODFILE CHECKSUM: 2f3234d1d0cc2cad2ae3893465ba3a3e4507f2c3
+PODFILE CHECKSUM: 6ce6557101d113b34e828f8a6eeb1552e5ec02d9
 
-COCOAPODS: 1.9.1
+COCOAPODS: 1.9.3
