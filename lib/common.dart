@@ -108,3 +108,17 @@ String stringListToString(List<String> stringList) {
 
 /* TYPES */
 typedef AsyncBoolCallback = Future<bool> Function();
+
+class NullPassChangeNotifier extends ChangeNotifier {
+  notify() {
+    this.notifyListeners();
+  }
+}
+
+class SecretChangeNotifier extends NullPassChangeNotifier {}
+
+class VaultChangeNotifier extends NullPassChangeNotifier {}
+
+class DeviceChangeNotifier extends NullPassChangeNotifier {}
+
+class DeviceSyncChangeNotifier extends NullPassChangeNotifier {}

@@ -6,6 +6,7 @@
 import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:nullpass/common.dart';
 import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/models/device.dart';
 import 'package:nullpass/models/deviceSync.dart';
@@ -59,6 +60,11 @@ class NullPassDB {
 
   /* Secure Storage for PGP and Secret / Password Storage */
   static final _nullpassSecureStorage = new FlutterSecureStorage();
+
+  final SecretChangeNotifier secretEvents = SecretChangeNotifier();
+  final VaultChangeNotifier vaultEvents = VaultChangeNotifier();
+  final DeviceChangeNotifier deviceEvents = DeviceChangeNotifier();
+  final DeviceSyncChangeNotifier deviceSyncEvents = DeviceSyncChangeNotifier();
 
   /* PGP */
   Future<bool> insertEncryptionKeyPair(KeyPair kp) async {
@@ -141,6 +147,7 @@ class NullPassDB {
       return false;
     }
 
+    secretEvents.notify();
     return true;
   }
 
@@ -149,7 +156,9 @@ class NullPassDB {
       await _secretDetailsDB.insertBulkSecrets(ls);
     } catch (e) {
       Log.debug(
-          "an error occured while trying to bulk insert the secrets into the details db: $e");
+        "an error occured while trying to bulk insert the secrets into the details db: $e",
+      );
+      return;
     }
 
     try {
@@ -157,10 +166,12 @@ class NullPassDB {
           await _nullpassSecureStorage.write(key: s.uuid, value: s.message));
     } catch (e) {
       Log.debug(
-          "an error occured while trying to bulk insert the secrets into the secure storage: $e");
+        "an error occured while trying to bulk insert the secrets into the secure storage: $e",
+      );
+      return;
     }
 
-    // throw new Exception("TBD - not yet implemented");
+    secretEvents.notify();
   }
 
   Future<Secret> getSecretByID(String uuid) async {
@@ -246,6 +257,7 @@ class NullPassDB {
       return false;
     }
 
+    secretEvents.notify();
     return true;
   }
 
@@ -265,6 +277,8 @@ class NullPassDB {
           "an error occured while trying to delete the secret from the details db: $e");
       return false;
     }
+
+    secretEvents.notify();
     return true;
   }
 
@@ -287,6 +301,7 @@ class NullPassDB {
       return false;
     }
 
+    secretEvents.notify();
     return true;
   }
 
@@ -329,6 +344,7 @@ class NullPassDB {
           managerId: Vault.InternalSourceID,
           isDefault: true);
       if (await insertVault(newV)) {
+        vaultEvents.notify();
         return newV;
       }
     } catch (e) {
@@ -341,6 +357,7 @@ class NullPassDB {
   Future<bool> insertVault(Vault v) async {
     try {
       await _vaultDB.insert(v);
+      vaultEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -352,6 +369,7 @@ class NullPassDB {
   Future<void> bulkInsertVaults(List<Vault> lv) async {
     try {
       await _vaultDB.bulkInsert(lv);
+      vaultEvents.notify();
     } catch (e) {
       Log.debug(
           "an error occured while trying to add the list of vault records to the db: $e");
@@ -440,6 +458,8 @@ class NullPassDB {
           ));
           await _vaultDB.update(newDefaultVault);
         }
+
+        vaultEvents.notify();
         return newDefaultVault;
       }
     } catch (e) {
@@ -452,6 +472,7 @@ class NullPassDB {
   Future<bool> updateVault(Vault v) async {
     try {
       await _vaultDB.update(v);
+      vaultEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -472,6 +493,7 @@ class NullPassDB {
         }
       }
       await _vaultDB.delete(vid);
+      vaultEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -483,6 +505,7 @@ class NullPassDB {
   Future<bool> deleteAllVaults() async {
     try {
       await _vaultDB.deleteAll();
+      vaultEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -497,6 +520,7 @@ class NullPassDB {
   Future<bool> insertDevice(Device d) async {
     try {
       await _deviceDB.insert(d);
+      vaultEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -508,6 +532,7 @@ class NullPassDB {
   Future<void> bulkInsertDevices(List<Device> ld) async {
     try {
       await _deviceDB.bulkInsert(ld);
+      vaultEvents.notify();
     } catch (e) {
       Log.debug(
           "an error occured while trying to bulk add device sync records to the db: $e");
@@ -547,6 +572,7 @@ class NullPassDB {
   Future<bool> updateDevice(Device d) async {
     try {
       await _deviceDB.update(d);
+      vaultEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -558,6 +584,7 @@ class NullPassDB {
   Future<bool> deleteDevice(String id) async {
     try {
       await _deviceDB.delete(id);
+      deviceEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -569,6 +596,7 @@ class NullPassDB {
   Future<bool> deleteAllDevices() async {
     try {
       await _deviceDB.deleteAll();
+      deviceEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -584,6 +612,7 @@ class NullPassDB {
   Future<bool> storeSyncDataBackup(String id, String backupData) async {
     try {
       await _nullpassSecureStorage.write(key: id, value: backupData);
+      deviceSyncEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -607,6 +636,7 @@ class NullPassDB {
   Future<bool> deleteSyncDataBackup(String id) async {
     try {
       await _nullpassSecureStorage.delete(key: id);
+      deviceSyncEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -619,6 +649,7 @@ class NullPassDB {
   Future<bool> insertSync(DeviceSync d) async {
     try {
       await _syncDeviceDB.insert(d);
+      deviceSyncEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -630,6 +661,7 @@ class NullPassDB {
   Future<void> bulkInsertSync(List<DeviceSync> ld) async {
     try {
       await _syncDeviceDB.bulkInsert(ld);
+      deviceSyncEvents.notify();
     } catch (e) {
       Log.debug(
           "an error occured while trying to bulk add device sync records to the db: $e");
@@ -706,6 +738,7 @@ class NullPassDB {
   Future<bool> updateSync(DeviceSync d) async {
     try {
       await _syncDeviceDB.update(d);
+      deviceSyncEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -717,6 +750,7 @@ class NullPassDB {
   Future<bool> deleteSync(String id) async {
     try {
       await _syncDeviceDB.delete(id);
+      deviceSyncEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -733,8 +767,14 @@ class NullPassDB {
     try {
       var dsL = await _syncDeviceDB.getAllSyncs();
       var vaultSync = dsL.where((v) => v.vaultID == vaultId);
+      var updated = false;
       for (var vs in vaultSync) {
         await _syncDeviceDB.delete(vs.id);
+        updated = true;
+      }
+
+      if (updated) {
+        deviceSyncEvents.notify();
       }
       return true;
     } catch (e) {
@@ -747,6 +787,7 @@ class NullPassDB {
   Future<bool> deleteAllSyncsToDevice(String deviceId) async {
     try {
       await _syncDeviceDB.deleteAllSyncsToDevice(deviceId);
+      deviceSyncEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
@@ -758,6 +799,7 @@ class NullPassDB {
   Future<bool> deleteAllSyncs() async {
     try {
       await _syncDeviceDB.deleteAll();
+      deviceSyncEvents.notify();
       return true;
     } catch (e) {
       Log.debug(
