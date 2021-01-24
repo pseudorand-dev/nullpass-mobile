@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_lock/flutter_app_lock.dart';
 import 'package:nullpass/screens/app.dart';
 // import 'package:nullpass/screens/lockScreen.dart';
+import 'package:nullpass/services/logging.dart';
 import 'package:secure_screen_switcher/secure_screen_switcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,6 +16,8 @@ import 'common.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SecureScreenSwitcher.secureApp();
+
+  assert((isDebug = true) || true);
 
   // await getAppPreLoadSharedPreferences();
   var sp = await SharedPreferences.getInstance();
