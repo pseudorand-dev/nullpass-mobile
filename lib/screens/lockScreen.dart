@@ -17,11 +17,13 @@ class LockScreen extends StatefulWidget {
 class _LockScreenState extends State<LockScreen> {
   final String _title = "NullPass";
   LocalAuthentication localAuth;
+  bool cancelled;
 
   @override
   void initState() {
     super.initState();
     localAuth = LocalAuthentication();
+    cancelled = false;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await authenticate();
@@ -30,6 +32,9 @@ class _LockScreenState extends State<LockScreen> {
 
   Future<void> authenticate() async {
     try {
+      setState(() {
+        cancelled = false;
+      });
       if (canCheckBiometrics) {
         bool didAuthenticate = await localAuth.authenticateWithBiometrics(
           androidAuthStrings: (Platform.isAndroid)
@@ -45,6 +50,10 @@ class _LockScreenState extends State<LockScreen> {
         );
         if (didAuthenticate) {
           unlock();
+        } else {
+          setState(() {
+            cancelled = true;
+          });
         }
       }
     } on PlatformException catch (e) {
@@ -87,30 +96,31 @@ class _LockScreenState extends State<LockScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Padding(
-                  padding: EdgeInsets.all(24),
-                  child: RaisedButton(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(42.0),
-                      side: BorderSide(color: Theme.of(context).accentColor),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text(
-                        "Unlock NullPass",
-                        style: TextStyle(
-                          backgroundColor: Colors.transparent,
-                          color: Theme.of(context).accentColor,
-                          fontSize: 30,
+                if (cancelled)
+                  Padding(
+                    padding: EdgeInsets.all(24),
+                    child: RaisedButton(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(42.0),
+                        side: BorderSide(color: Theme.of(context).accentColor),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text(
+                          "Unlock NullPass",
+                          style: TextStyle(
+                            backgroundColor: Colors.transparent,
+                            color: Theme.of(context).accentColor,
+                            fontSize: 30,
+                          ),
                         ),
                       ),
+                      color: Colors.white,
+                      onPressed: () async {
+                        await authenticate();
+                      },
                     ),
-                    color: Colors.white,
-                    onPressed: () async {
-                      await authenticate();
-                    },
                   ),
-                ),
               ],
             ),
           ),
