@@ -30,7 +30,7 @@ Future<void> main() async {
   Duration loginTimeout = Duration(
     seconds: ((sp.containsKey(AuthTimeoutSecondsPrefKey))
         ? sp.getDouble(AuthTimeoutSecondsPrefKey).round()
-        : 1),
+        : 300),
   );
 
   runApp(
