@@ -33,7 +33,7 @@ Future<void> main() async {
   runApp(
     AppLock(
       builder: (args) => NullPassApp(),
-      lockScreen: TmpLockScreen(),
+      lockScreen: _TmpLockScreen(),
       // lockScreen: LockScreen(),
       enabled: showLoginScreen,
       backgroundLockLatency: loginTimeout,
@@ -41,12 +41,12 @@ Future<void> main() async {
   );
 }
 
-class TmpLockScreen extends StatefulWidget {
+class _TmpLockScreen extends StatefulWidget {
   @override
   _TmpLockScreenState createState() => _TmpLockScreenState();
 }
 
-class _TmpLockScreenState extends State<TmpLockScreen> {
+class _TmpLockScreenState extends State<_TmpLockScreen> {
   void unlock() {
     AppLock.of(context).didUnlock();
   }
