@@ -3,6 +3,8 @@
  * Copyright (c) 2019 Pseudorand Development. All rights reserved.
  */
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app_lock/flutter_app_lock.dart';
 import 'package:local_auth/local_auth.dart';
@@ -33,13 +35,22 @@ Future<void> main() async {
         : 300),
   );
 
-  runApp(
-    AppLock(
+  await runZonedGuarded(
+    () async => runApp(AppLock(
       builder: (args) => NullPassApp(),
       // lockScreen: _TmpLockScreen(),
       lockScreen: LockScreen(),
       enabled: canCheckBiometrics && showLoginScreen,
       backgroundLockLatency: loginTimeout,
+    )),
+    (error, stackTrace) => Log.debug(error),
+    zoneSpecification: ZoneSpecification(
+      handleUncaughtError: (self, parent, zone, error, stackTrace) =>
+          Log.debug(error),
+      errorCallback: (self, parent, zone, error, stackTrace) {
+        Log.debug(error);
+        return AsyncError(error, stackTrace);
+      },
     ),
   );
 }
