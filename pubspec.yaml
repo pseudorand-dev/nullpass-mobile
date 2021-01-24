@@ -17,6 +17,7 @@ dependencies:
   flutter_widgets: ^0.1.12
   font_awesome_flutter: ^8.10.0
   google_fonts: ^1.1.1
+  local_auth: ^0.6.3+4
   material_design_icons_flutter: ^4.0.5755
   onesignal_flutter: ^2.6.2
   openpgp: ^0.9.9

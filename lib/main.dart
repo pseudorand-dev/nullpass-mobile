@@ -6,7 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_lock/flutter_app_lock.dart';
 import 'package:nullpass/screens/app.dart';
-// import 'package:nullpass/screens/lockScreen.dart';
+import 'package:nullpass/screens/lockScreen.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:secure_screen_switcher/secure_screen_switcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,8 +33,8 @@ Future<void> main() async {
   runApp(
     AppLock(
       builder: (args) => NullPassApp(),
-      lockScreen: _TmpLockScreen(),
-      // lockScreen: LockScreen(),
+      // lockScreen: _TmpLockScreen(),
+      lockScreen: LockScreen(),
       enabled: showLoginScreen,
       backgroundLockLatency: loginTimeout,
     ),
