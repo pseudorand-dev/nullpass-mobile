@@ -7,6 +7,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+// import 'package:flutter_app_lock/flutter_app_lock.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/auditRecord.dart';
@@ -24,6 +25,8 @@ class _SettingsState extends State<Settings> {
   final _title = 'Settings';
   int _secretLength = 512;
   int _passwordPreviewFontSize = 20;
+  double _authTimeoutSeconds = 300;
+  bool _authOnLoad = false;
   bool _alphaCharacters = true;
   bool _numericCharacters = true;
   bool _symbolCharacters = true;
@@ -48,6 +51,24 @@ class _SettingsState extends State<Settings> {
         sharedPrefs.getBool(SyncdDataNotificationsPrefKey) ?? true;
     _passwordPreviewFontSize =
         sharedPrefs.getInt(PasswordPreviewSizePrefKey) ?? 20;
+
+    // Auth Options
+    _authOnLoad = ((sharedPrefs.containsKey(AuthOnLoadPrefKey))
+            ? sharedPrefs.getBool(AuthOnLoadPrefKey)
+            : false) ??
+        false;
+    _authTimeoutSeconds = ((sharedPrefs.containsKey(AuthTimeoutSecondsPrefKey))
+            ? sharedPrefs.getDouble(AuthTimeoutSecondsPrefKey)
+            : 300) ??
+        300;
+  }
+
+  String doubleToString(double input) {
+    var str = _authTimeoutSeconds.toString();
+
+    if (str.endsWith(".0")) str = str.substring(0, str.indexOf(".0"));
+
+    return str;
   }
 
   @override
@@ -138,6 +159,61 @@ class _SettingsState extends State<Settings> {
                       });
                     }),
                 contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
+              ),
+              Container(
+                color: Colors.blueGrey[100],
+                child: Text(
+                  'App Security',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                padding: new EdgeInsets.fromLTRB(10, 20, 20, 20),
+              ),
+              ListTile(
+                title: Text('Lock Screen'),
+                subtitle: Text(
+                    'If on, an auth screen will be prompted everytime you load the app and upon returning from background (tacking into account the Background Lock Timeout), otherwise no authentication will be required to access your secrets.'),
+                trailing: Switch(
+                    value: _authOnLoad,
+                    onChanged: (value) {
+                      sharedPrefs
+                          .setBool(AuthOnLoadPrefKey, value)
+                          .then((worked) {
+                        // TODO: causes a refresh of the screen and therefore requires better routing support to maintain current screen
+                        // AppLock.of(context).setEnabled(value);
+                        setState(() {
+                          this._authOnLoad = value;
+                        });
+                      });
+                    }),
+                contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
+              ),
+              ListTile(
+                title: Text('Background Lock Timeout'),
+                subtitle: Text(
+                  'The number of seconds the app is allowed to be in the background before requiring the lock screen to be shown. (Note: this will take effect on the next launch of the app)',
+                ),
+                trailing: Container(
+                  width: 50,
+                  child: TextFormField(
+                      textAlign: TextAlign.end,
+                      keyboardType: TextInputType.number,
+                      initialValue: doubleToString(_authTimeoutSeconds),
+                      autocorrect: true,
+                      onChanged: (value) async {
+                        double tempVal = -1.0;
+                        try {
+                          tempVal = double.parse(value);
+                        } catch (e) {}
+                        if (tempVal < 1) tempVal = _authTimeoutSeconds;
+                        sharedPrefs.setDouble(
+                            AuthTimeoutSecondsPrefKey, tempVal);
+                        setState(() {
+                          _authTimeoutSeconds = tempVal;
+                        });
+                      },
+                      decoration: InputDecoration(border: InputBorder.none)),
+                ),
+                contentPadding: new EdgeInsets.fromLTRB(15, 5, 20, 10),
               ),
               Container(
                 color: Colors.blueGrey[100],
