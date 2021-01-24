@@ -38,7 +38,7 @@ Future<void> main() async {
       builder: (args) => NullPassApp(),
       // lockScreen: _TmpLockScreen(),
       lockScreen: LockScreen(),
-      enabled: showLoginScreen,
+      enabled: canCheckBiometrics && showLoginScreen,
       backgroundLockLatency: loginTimeout,
     ),
   );
