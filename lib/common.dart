@@ -34,6 +34,8 @@ const String SyncdDataNotificationsPrefKey = 'SyncedDataAccessedNotification';
 const String PasswordPreviewSizePrefKey = 'PasswordPreviewSize';
 const String DeviceNotificationIdPrefKey = 'DeviceNotificationIdPrefKey';
 
+bool canCheckBiometrics = false;
+
 /* FUNCTIONS */
 bool isTrue(dynamic value) {
   bool b = false;

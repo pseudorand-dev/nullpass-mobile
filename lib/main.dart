@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app_lock/flutter_app_lock.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:nullpass/screens/app.dart';
 import 'package:nullpass/screens/lockScreen.dart';
 import 'package:nullpass/services/logging.dart';
@@ -18,6 +19,8 @@ Future<void> main() async {
   await SecureScreenSwitcher.secureApp();
 
   assert((isDebug = true) || true);
+
+  canCheckBiometrics = await LocalAuthentication().canCheckBiometrics;
 
   // await getAppPreLoadSharedPreferences();
   var sp = await SharedPreferences.getInstance();

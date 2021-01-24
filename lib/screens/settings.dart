@@ -169,25 +169,29 @@ class _SettingsState extends State<Settings> {
                 padding: new EdgeInsets.fromLTRB(10, 20, 20, 20),
               ),
               ListTile(
+                enabled: canCheckBiometrics,
                 title: Text('Lock Screen'),
                 subtitle: Text(
                     'If on, an auth screen will be prompted everytime you load the app and upon returning from background (tacking into account the Background Lock Timeout), otherwise no authentication will be required to access your secrets.'),
                 trailing: Switch(
-                    value: _authOnLoad,
-                    onChanged: (value) {
-                      sharedPrefs
-                          .setBool(AuthOnLoadPrefKey, value)
-                          .then((worked) {
-                        // TODO: causes a refresh of the screen and therefore requires better routing support to maintain current screen
-                        // AppLock.of(context).setEnabled(value);
-                        setState(() {
-                          this._authOnLoad = value;
-                        });
-                      });
-                    }),
+                    value: !canCheckBiometrics ? false : _authOnLoad,
+                    onChanged: !canCheckBiometrics
+                        ? null
+                        : (value) {
+                            sharedPrefs
+                                .setBool(AuthOnLoadPrefKey, value)
+                                .then((worked) {
+                              // TODO: causes a refresh of the screen and therefore requires better routing support to maintain current screen
+                              // AppLock.of(context).setEnabled(value);
+                              setState(() {
+                                this._authOnLoad = value;
+                              });
+                            });
+                          }),
                 contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
               ),
               ListTile(
+                enabled: canCheckBiometrics,
                 title: Text('Background Lock Timeout'),
                 subtitle: Text(
                   'The number of seconds the app is allowed to be in the background before requiring the lock screen to be shown. (Note: this will take effect on the next launch of the app)',
@@ -195,9 +199,12 @@ class _SettingsState extends State<Settings> {
                 trailing: Container(
                   width: 50,
                   child: TextFormField(
+                      enabled: canCheckBiometrics,
                       textAlign: TextAlign.end,
                       keyboardType: TextInputType.number,
-                      initialValue: doubleToString(_authTimeoutSeconds),
+                      initialValue: !canCheckBiometrics
+                          ? "--"
+                          : doubleToString(_authTimeoutSeconds),
                       autocorrect: true,
                       onChanged: (value) async {
                         double tempVal = -1.0;

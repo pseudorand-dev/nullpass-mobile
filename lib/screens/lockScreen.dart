@@ -30,7 +30,7 @@ class _LockScreenState extends State<LockScreen> {
 
   Future<void> authenticate() async {
     try {
-      if (await LocalAuthentication().canCheckBiometrics) {
+      if (canCheckBiometrics) {
         bool didAuthenticate = await localAuth.authenticateWithBiometrics(
           androidAuthStrings: (Platform.isAndroid)
               ? AndroidAuthMessages(
