@@ -19,6 +19,8 @@ const String OneSignalKey = "<THIS_NEEDS_TO_BE_ADDED_BEFORE_COMPILATION>";
 np.NotificationManager notify;
 
 SharedPreferences sharedPrefs;
+const String AuthOnLoadPrefKey = 'AuthenticateOnAppLoad';
+const String AuthTimeoutSecondsPrefKey = 'AutenticationTimeoutSeconds';
 const String SecretLengthPrefKey = 'SecretLength';
 const String AlphaCharactersPrefKey = 'AlphaCharacters';
 const String NumericCharactersPrefKey = 'NumericCharacters';
