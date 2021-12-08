@@ -100,26 +100,36 @@ class _LockScreenState extends State<LockScreen> {
                 if (cancelled)
                   Padding(
                     padding: EdgeInsets.all(24),
-                    child: RaisedButton(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(42.0),
-                        side: BorderSide(color: Theme.of(context).accentColor),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text(
-                          "Unlock NullPass",
-                          style: TextStyle(
-                            backgroundColor: Colors.transparent,
-                            color: Theme.of(context).accentColor,
-                            fontSize: 30,
-                          ),
+                    child: ListTile(
+                      title: RaisedButton(
+                        color: Colors.white,
+                        textColor: Theme.of(context).accentColor,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            side: BorderSide(
+                                color: Theme.of(context).accentColor)),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        onPressed: () async {
+                          await authenticate();
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(left: 5),
+                              child: Text(
+                                "Unlock NullPass",
+                                style: TextStyle(
+                                  backgroundColor: Colors.transparent,
+                                  color: Theme.of(context).accentColor,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      color: Colors.white,
-                      onPressed: () async {
-                        await authenticate();
-                      },
                     ),
                   ),
               ],
