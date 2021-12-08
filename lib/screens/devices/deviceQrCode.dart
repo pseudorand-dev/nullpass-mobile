@@ -15,7 +15,6 @@ import 'package:nullpass/models/syncRegistration.dart';
 import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
-import 'package:openpgp/key_pair.dart';
 import 'package:openpgp/openpgp.dart';
 import 'package:qr_flutter/qr_flutter.dart' as qr;
 import 'package:uuid/uuid.dart';
