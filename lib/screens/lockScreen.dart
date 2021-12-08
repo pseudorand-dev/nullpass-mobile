@@ -36,17 +36,18 @@ class _LockScreenState extends State<LockScreen> {
         cancelled = false;
       });
       if (canCheckBiometrics) {
-        bool didAuthenticate = await localAuth.authenticateWithBiometrics(
+        bool didAuthenticate = await localAuth.authenticate(
           androidAuthStrings: (Platform.isAndroid)
               ? AndroidAuthMessages(
                   signInTitle: "Unlock NullPass",
-                  fingerprintHint: "",
+                  biometricHint: "",
                 )
               : null,
           iOSAuthStrings: IOSAuthMessages(),
           localizedReason: (Platform.isAndroid) ? "" : "Unlock NullPass",
           stickyAuth: true,
           useErrorDialogs: false,
+          biometricOnly: true,
         );
         if (didAuthenticate) {
           unlock();
