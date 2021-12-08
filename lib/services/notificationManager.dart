@@ -134,6 +134,8 @@ class OneSignalNotificationManager implements NotificationManager {
     }
 
     osInstance = OneSignal.shared;
+
+    // TODO: Remove this method to stop OneSignal Debugging
     if (isDebug) osInstance.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
 
     osInstance.init(_onesignalKey, iOSSettings: {
