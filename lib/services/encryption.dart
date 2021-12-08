@@ -5,10 +5,7 @@
 
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
-import 'package:openpgp/key_options.dart';
-import 'package:openpgp/key_pair.dart';
 import 'package:openpgp/openpgp.dart';
-import 'package:openpgp/options.dart';
 
 class Crypto {
   get hasKeyPair {
@@ -50,16 +47,13 @@ class Crypto {
 Future<KeyPair> _setupEncryptionKeyPair() async {
   try {
     var kp = await OpenPGP.generate(
-      options: Options(
-        keyOptions: KeyOptions(
-          cipher: Cypher.aes256,
-          compression: Compression.none,
-          compressionLevel: 0,
-          hash: Hash.sha512,
-          rsaBits: 4096,
-        ),
-      ),
-    );
+        options: Options()
+          ..keyOptions = (KeyOptions()
+            ..hash = Hash.SHA512
+            ..rsaBits = 4096
+            ..compressionLevel = 0
+            ..cipher = Cipher.AES256
+            ..compression = Compression.NONE));
 
     Log.debug("publicKey: ${kp.publicKey}");
     Log.debug("privateKey: ${kp.privateKey}");

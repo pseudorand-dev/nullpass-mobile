@@ -18,8 +18,6 @@ import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';
-import 'package:openpgp/key_options.dart';
-import 'package:openpgp/key_pair.dart';
 import 'package:openpgp/openpgp.dart';
 import 'package:uuid/uuid.dart';
 
@@ -82,7 +80,7 @@ class _QrScannerState extends State<QrScanner> {
 
       var encryptedMsg = await OpenPGP.encryptSymmetric(
           sd.toString(), receivedNonce,
-          options: KeyOptions(cipher: Cypher.aes256));
+          options: KeyOptions()..cipher = Cipher.AES256);
 
       // var tmpMap = await sd.toEncryptedMap(_scannedQrData.pgpPubKey);
       // QrData(

@@ -47,8 +47,6 @@ class _NullPassAppState extends State<NullPassApp> {
   void initState() {
     super.initState();
 
-    assert((isDebug = true) || true);
-
     if (isDebug) {
       // print('debug on');
       Log.debug('debug on');

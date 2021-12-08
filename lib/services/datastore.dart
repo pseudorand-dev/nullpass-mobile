@@ -12,7 +12,7 @@ import 'package:nullpass/models/deviceSync.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/services/logging.dart';
-import 'package:openpgp/key_pair.dart';
+import 'package:openpgp/openpgp.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -91,7 +91,7 @@ class NullPassDB {
           privKey != null &&
           pubKey.isNotEmpty &&
           privKey.isNotEmpty) {
-        return KeyPair(publicKey: pubKey, privateKey: privKey);
+        return KeyPair(pubKey, privKey);
       }
     } catch (e) {
       Log.debug(
