@@ -15,7 +15,7 @@ import 'package:nullpass/screens/secrets/secretSearch.dart';
 import 'package:nullpass/screens/secrets/secretView.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/widgets.dart';
-import 'package:flutter_widgets/src/visibility_detector/visibility_detector.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class SecretList extends StatelessWidget {
   final List<Secret> items;
