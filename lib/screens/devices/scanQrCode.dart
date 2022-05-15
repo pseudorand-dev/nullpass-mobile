@@ -5,7 +5,7 @@
 
 import 'dart:convert';
 
-import 'package:barcode_scan/barcode_scan.dart';
+import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -339,7 +339,11 @@ class _QrScannerState extends State<QrScanner> {
   Future<void> scan() async {
     try {
       _initiated = false;
-      var scanResult = await BarcodeScanner.scan();
+      var scanResult = await BarcodeScanner.scan(
+        options: ScanOptions(
+          restrictFormat: [BarcodeFormat.qr],
+        ),
+      );
       if (scanResult.type != ResultType.Barcode) {
         if (scanResult.type == ResultType.Error) {
           throw Exception("The barcode scan returned an error:\n" +
