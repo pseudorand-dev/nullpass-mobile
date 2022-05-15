@@ -339,7 +339,11 @@ class _QrScannerState extends State<QrScanner> {
   Future<void> scan() async {
     try {
       _initiated = false;
-      var scanResult = await BarcodeScanner.scan();
+      var scanResult = await BarcodeScanner.scan(
+        options: ScanOptions(
+          restrictFormat: [BarcodeFormat.qr],
+        ),
+      );
       if (scanResult.type != ResultType.Barcode) {
         if (scanResult.type == ResultType.Error) {
           throw Exception("The barcode scan returned an error:\n" +
