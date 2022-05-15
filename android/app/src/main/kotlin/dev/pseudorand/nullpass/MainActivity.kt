@@ -5,6 +5,9 @@
 
 package dev.pseudorand.nullpass
 
-import io.flutter.embedding.android.FlutterFragmentActivity
+/// stashed from new flutter project
+// import io.flutter.embedding.android.FlutterActivity
+// class MainActivity: FlutterActivity() { }
 
+import io.flutter.embedding.android.FlutterFragmentActivity
 class MainActivity: FlutterFragmentActivity() { }
