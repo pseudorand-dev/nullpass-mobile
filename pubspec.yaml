@@ -20,6 +20,7 @@ dependencies:
   material_design_icons_flutter: ^5.0.6595
   onesignal_flutter: ^2.6.2
   openpgp: ^3.1.0
+  otp: ^3.0.2
   path_provider: ^2.0.7
   qr_flutter: ^4.0.0
   secure_screen_switcher:
