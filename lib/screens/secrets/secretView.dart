@@ -476,7 +476,7 @@ class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
     );
   }
 
-  Color _getProgressColor(timeRemainingPercentage) {
+  Color _getProgressColor(double timeRemainingPercentage) {
     if (timeRemainingPercentage > 0.49) {
       return Colors.green;
     } else if (timeRemainingPercentage > 0.25) {
@@ -484,6 +484,21 @@ class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
     } else {
       return Colors.red;
     }
+  }
+
+  Future<void> copyToClipboard(String code) async {
+    await Clipboard.setData(ClipboardData(
+      text: code,
+    ));
+    await NullPassDB.instance.addAuditRecord(AuditRecord(
+      type: AuditType.SecretOTPCodeCopied,
+      message:
+          'The "${widget.nickname}" secret\'s one-time passcode was copied.',
+      secretsReferenceId: <String>{widget.uuid},
+      vaultsReferenceId: widget.vaults.toSet(),
+      date: DateTime.now().toUtc(),
+    ));
+    showSnackBar(widget.scaffoldKey, 'One-Time Passcode Copied');
   }
 
   @override
@@ -511,24 +526,12 @@ class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
             Padding(padding: EdgeInsets.all(5)),
             IconButton(
               icon: Icon(Icons.content_copy),
-              onPressed: () async {
-                await Clipboard.setData(ClipboardData(
-                  text: code,
-                ));
-                await NullPassDB.instance.addAuditRecord(AuditRecord(
-                  type: AuditType.SecretOTPCodeCopied,
-                  message:
-                      'The "${widget.nickname}" secret\'s one-time passcode was copied.',
-                  secretsReferenceId: <String>{widget.uuid},
-                  vaultsReferenceId: widget.vaults.toSet(),
-                  date: DateTime.now().toUtc(),
-                ));
-                showSnackBar(widget.scaffoldKey, 'One-Time Passcode Copied');
-              },
+              onPressed: () async => await copyToClipboard(code),
             ),
           ],
         ),
       ),
+      onLongPress: () async => await copyToClipboard(code),
     );
   }
 }
