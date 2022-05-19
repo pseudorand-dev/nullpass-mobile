@@ -360,6 +360,28 @@ class _CreateSecretState extends State<SecretEdit> {
                   title: TextFormField(
                     onChanged: (value) {
                       setState(() {
+                        _secret.otpCode = value.toUpperCase();
+                      });
+                      Log.debug('new otpCode ${_secret.otpCode}');
+                    },
+                    initialValue: _secret.otpCode?.toUpperCase(),
+                    decoration: InputDecoration(
+                        labelText: 'One-Time Passcode',
+                        border: InputBorder.none),
+                    validator: (value) {
+                      if (value.trim().isNotEmpty &&
+                          _secret.getOnetimePasscode().trim() == '') {
+                        return 'The One-Time Passcode provided is invalid';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                FormDivider(),
+                ListTile(
+                  title: TextFormField(
+                    onChanged: (value) {
+                      setState(() {
                         _secret.notes = value;
                       });
                       Log.debug('new notes ${_secret.notes}');
