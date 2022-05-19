@@ -17,6 +17,7 @@ import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/services/sync.dart';
 import 'package:nullpass/widgets.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SecretView extends StatefulWidget {
@@ -455,7 +456,6 @@ class OneTimePasscodeTile extends StatefulWidget {
 }
 
 class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
-  GlobalKey<State> _key = new GlobalKey();
   Timer timer;
 
   @protected
@@ -476,28 +476,59 @@ class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
     );
   }
 
+  Color _getProgressColor(timeRemainingPercentage) {
+    if (timeRemainingPercentage > 0.49) {
+      return Colors.green;
+    } else if (timeRemainingPercentage > 0.25) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var code = Secret.generateOnetimePasscode(this.widget.otpCode).trim() ?? '';
+    var timeRemaining = Secret.getOtpTimeRemaining();
+    double timeRemainingPercentage = timeRemaining / 30;
+
     return ListTile(
       title: Text('One-Time Passcode'),
       subtitle: Text(code),
-      trailing: IconButton(
-          icon: Icon(Icons.content_copy),
-          onPressed: () async {
-            await Clipboard.setData(ClipboardData(
-              text: code,
-            ));
-            await NullPassDB.instance.addAuditRecord(AuditRecord(
-              type: AuditType.SecretOTPCodeCopied,
-              message:
-                  'The "${this.widget.nickname}" secret\'s one-time passcode was copied.',
-              secretsReferenceId: <String>{this.widget.uuid},
-              vaultsReferenceId: this.widget.vaults.toSet(),
-              date: DateTime.now().toUtc(),
-            ));
-            showSnackBar(this.widget.scaffoldKey, 'One-Time Passcode Copied');
-          }),
+      trailing: Container(
+        width: 100,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            CircularPercentIndicator(
+              radius: 30,
+              lineWidth: 2,
+              percent: timeRemainingPercentage,
+              progressColor: _getProgressColor(timeRemainingPercentage),
+              center: Text('$timeRemaining'),
+              reverse: true,
+            ),
+            Padding(padding: EdgeInsets.all(5)),
+            IconButton(
+              icon: Icon(Icons.content_copy),
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(
+                  text: code,
+                ));
+                await NullPassDB.instance.addAuditRecord(AuditRecord(
+                  type: AuditType.SecretOTPCodeCopied,
+                  message:
+                      'The "${widget.nickname}" secret\'s one-time passcode was copied.',
+                  secretsReferenceId: <String>{widget.uuid},
+                  vaultsReferenceId: widget.vaults.toSet(),
+                  date: DateTime.now().toUtc(),
+                ));
+                showSnackBar(widget.scaffoldKey, 'One-Time Passcode Copied');
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
