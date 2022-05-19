@@ -124,6 +124,8 @@ class NullPassDB {
   static final _NullPassSecretDetailsDB _secretDetailsDB =
       _NullPassSecretDetailsDB.instance;
 
+  static final otpKeySuffix = "_otp";
+
   Future<bool> insertSecret(Secret s) async {
     try {
       await _secretDetailsDB.insert(s);
@@ -134,10 +136,10 @@ class NullPassDB {
     }
 
     try {
-      await _nullpassSecureStorage.write(key: s.uuid, value: s.message);
+      await _writeSecretData(s);
     } catch (e) {
       Log.debug(
-          "an error occured while trying to add the secret to the secure storage: $e");
+          "an error occured while trying to add the secret data to the secure storage: $e");
       return false;
     }
 
@@ -153,11 +155,10 @@ class NullPassDB {
     }
 
     try {
-      ls.forEach((s) async =>
-          await _nullpassSecureStorage.write(key: s.uuid, value: s.message));
+      ls.forEach((s) async => _writeSecretData(s));
     } catch (e) {
       Log.debug(
-          "an error occured while trying to bulk insert the secrets into the secure storage: $e");
+          "an error occured while trying to bulk insert the secret data into the secure storage: $e");
     }
 
     // throw new Exception("TBD - not yet implemented");
@@ -174,6 +175,8 @@ class NullPassDB {
 
     try {
       result.message = await _nullpassSecureStorage.read(key: uuid);
+      result.otpCode =
+          await _nullpassSecureStorage.read(key: uuid + otpKeySuffix);
       return result;
     } catch (e) {
       Log.debug(
@@ -195,7 +198,10 @@ class NullPassDB {
     if (secretList != null) {
       try {
         Map<String, String> messageMap = await _nullpassSecureStorage.readAll();
-        secretList.forEach((s) => s.message = messageMap[s.uuid]);
+        secretList.forEach((s) {
+          s.message = messageMap[s.uuid];
+          s.otpCode = messageMap[s.uuid + otpKeySuffix];
+        });
         // secretList.forEach((s) async =>
         //     (s.message = await _nullpassSecureStorage.read(key: s.uuid)));
         return secretList;
@@ -219,7 +225,10 @@ class NullPassDB {
     if (secretList != null) {
       try {
         Map<String, String> messageMap = await _nullpassSecureStorage.readAll();
-        secretList.forEach((s) => s.message = messageMap[s.uuid]);
+        secretList.forEach((s) {
+          s.message = messageMap[s.uuid];
+          s.otpCode = messageMap[s.uuid + otpKeySuffix];
+        });
         return secretList;
       } catch (e) {
         Log.debug(
@@ -231,10 +240,10 @@ class NullPassDB {
 
   Future<bool> updateSecret(Secret s) async {
     try {
-      await _nullpassSecureStorage.write(key: s.uuid, value: s.message);
+      await _writeSecretData(s);
     } catch (e) {
       Log.debug(
-          "an error occured while trying to update the secret in the secure storage: $e");
+          "an error occured while trying to update the secret's data in the secure storage: $e");
       return false;
     }
 
@@ -255,6 +264,14 @@ class NullPassDB {
     } catch (e) {
       Log.debug(
           "an error occured while trying to delete the secret from the secure storage: $e");
+      return false;
+    }
+
+    try {
+      await _nullpassSecureStorage.delete(key: uuid + otpKeySuffix);
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to delete the secret's OTP code from the secure storage: $e");
       return false;
     }
 
@@ -305,14 +322,40 @@ class NullPassDB {
       sList.forEach((s) async {
         var message = await _nullpassSecureStorage.read(key: s.uuid);
         s.message = message;
+
+        var otpCode = await _nullpassSecureStorage.read(
+          key: s.uuid + otpKeySuffix,
+        );
+        s.otpCode = otpCode;
       });
     } catch (e) {
       Log.debug(
-          "an error occured while trying to delete all secrets from the secure storage: $e");
+          "an error occured while trying to find a secrets in the the secure storage: $e");
       return null;
     }
 
     return sList;
+  }
+
+  Future<void> _writeSecretData(Secret s) async {
+    try {
+      await _nullpassSecureStorage.write(key: s.uuid, value: s.message);
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to write the secret data into the secure storage: $e");
+    }
+
+    try {
+      if (s.otpCode != null && s.otpCode.trim().isNotEmpty) {
+        await _nullpassSecureStorage.write(
+          key: s.uuid + otpKeySuffix,
+          value: s.otpCode?.toUpperCase(),
+        );
+      }
+    } catch (e) {
+      Log.debug(
+          "an error occured while trying to write the secret's otp data into the secure storage: $e");
+    }
   }
 
   /* Vaults */
