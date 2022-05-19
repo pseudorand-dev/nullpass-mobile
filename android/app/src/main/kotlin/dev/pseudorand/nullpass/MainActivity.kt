@@ -5,14 +5,9 @@
 
 package dev.pseudorand.nullpass
 
-import android.os.Bundle
+/// stashed from new flutter project
+// import io.flutter.embedding.android.FlutterActivity
+// class MainActivity: FlutterActivity() { }
 
-import io.flutter.app.FlutterActivity
-import io.flutter.plugins.GeneratedPluginRegistrant
-
-class MainActivity: FlutterActivity() {
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    GeneratedPluginRegistrant.registerWith(this)
-  }
-}
+import io.flutter.embedding.android.FlutterFragmentActivity
+class MainActivity: FlutterFragmentActivity() { }
