@@ -8,6 +8,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:nullpass/common.dart';
+import 'package:nullpass/services/logging.dart';
+import 'package:otp/otp.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
 
@@ -69,6 +71,7 @@ class Secret {
   String appName;
   String genericEndpoint;
   String message;
+  String otpCode;
   String get thumbnailURI => _getThumbnail();
   String notes;
   List<String> tags;
@@ -93,6 +96,7 @@ class Secret {
   String notes
   DateTime createdOn
   DateTime lastUpdatedOn
+  String otp
   */
 
   factory Secret.fromJson(Map<String, dynamic> json) =>
@@ -108,6 +112,7 @@ class Secret {
     String website = '',
     String appName = '',
     String genericEndpoint = '',
+    String otpCode = '',
     String thumbnailURI = '',
     String notes = '',
     List<String> tags,
@@ -124,6 +129,7 @@ class Secret {
     this.nickname = nickname;
     this.username = username;
     this.message = message;
+    this.otpCode = otpCode;
     this.type = type;
     this.website = website;
     this.appName = appName;
@@ -206,6 +212,7 @@ class Secret {
   Secret.fromMap(Map<String, dynamic> map) {
     uuid = map[columnSecretId] ?? map['uuid'] ?? map['_id'] ?? map['gid'] ?? '';
     message = map['message'] ?? map['password'];
+    otpCode = map['otpCode'] ?? map['otp'];
     nickname = map[columnSecretNickname];
     username = map[columnSecretUsername];
     type = tryParseSecretTypeFromString(map[columnSecretType]);
@@ -259,6 +266,7 @@ class Secret {
       columnSecretLastModified: lastModified.toIso8601String(),
       columnSecretSortKey: sortKey,
       // columnPassword: password, // TODO: move password to secure storage - remove
+      // columnOTPCode: otpCode,
     };
     return map;
   }
@@ -268,6 +276,7 @@ class Secret {
         'nickname': nickname,
         'username': username,
         'message': message,
+        'otpCode': otpCode,
         'type': secretTypeToString(type),
         'website': website,
         'appName': appName,
@@ -304,6 +313,7 @@ class Secret {
       nickname: jsonBlob['nickname'],
       username: jsonBlob['username'],
       message: jsonBlob['message'] ?? jsonBlob['password'],
+      otpCode: jsonBlob['otpCode'] ?? jsonBlob['otp'],
       type:
           tryParseSecretTypeFromString(jsonBlob['type']) ?? SecretType.Generic,
       website: jsonBlob['website'],
@@ -335,6 +345,10 @@ class Secret {
 
     if (this.message != null) {
       sec = "$sec,\"message\":\"${this.message}\"";
+    }
+
+    if (this.otpCode != null) {
+      sec = "$sec,\"otpCode\":\"${this.otpCode}\"";
     }
 
     if (this.type != null) {
@@ -396,6 +410,7 @@ class Secret {
       appName: this.appName,
       genericEndpoint: this.genericEndpoint,
       message: this.message,
+      otpCode: this.otpCode,
       notes: this.notes,
       tags: <String>[],
       vaults: <String>[],
@@ -407,5 +422,42 @@ class Secret {
     this.vaults.forEach((v) => s.vaults.add(v));
 
     return s;
+  }
+
+  String getOnetimePasscode() {
+    return generateOnetimePasscode(this.otpCode);
+  }
+
+  static String generateOnetimePasscode(String otpCode) {
+    if (otpCode == null || otpCode.trim().isEmpty) {
+      return '';
+    }
+
+    try {
+      Log.debug("generating otpCode without padding");
+      var passcode = OTP.generateTOTPCodeString(
+        otpCode.toUpperCase(),
+        DateTime.now().millisecondsSinceEpoch,
+      );
+      Log.debug("passcode: $passcode");
+      return passcode;
+    } catch (e) {
+      Log.error("Error generating OTP without padding: $e");
+    }
+
+    try {
+      Log.debug("generating otpCode with padding");
+      var passcode = OTP.generateTOTPCodeString(
+        otpCode.toUpperCase(),
+        DateTime.now().millisecondsSinceEpoch,
+        isGoogle: true,
+      );
+      Log.debug("passcode: $passcode");
+      return passcode;
+    } catch (e) {
+      Log.error("Error generating OTP with padding: $e");
+    }
+
+    return '';
   }
 }
