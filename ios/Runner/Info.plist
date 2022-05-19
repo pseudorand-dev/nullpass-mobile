@@ -49,5 +49,7 @@
 	<string>Camera permission is required for barcode scanning.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>FaceID permission is required to protect the app content.</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 </dict>
 </plist>
