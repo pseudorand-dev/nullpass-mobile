@@ -11,16 +11,32 @@ bool isDebug = false;
 // The package name to log under
 const String _logPackage = "dev.pseudorand.nullpass";
 
+//              0           100      250    500   1000  1500    1750   2000
 enum LogLevel { everything, verbose, debug, info, warn, error, fatal, panic }
 
 class Log {
   static LogLevel logLevel;
 
   static void debug(dynamic message,
-      {String source, Object error, StackTrace stackTrace, int severity: 0}) {
+      {String source, Object error, StackTrace stackTrace, int severity: 250}) {
     if (isDebug) {
-      developer.log(message.toString(),
-          name: _logPackage, time: DateTime.now());
+      developer.log(
+        "[DEBUG] " + message.toString(),
+        name: _logPackage,
+        time: DateTime.now(),
+      );
     }
+  }
+
+  static void error(dynamic message,
+      {String source,
+      Object error,
+      StackTrace stackTrace,
+      int severity: 1500}) {
+    developer.log(
+      "[ERROR] " + message.toString(),
+      name: _logPackage,
+      time: DateTime.now(),
+    );
   }
 }
