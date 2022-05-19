@@ -470,6 +470,7 @@ class _SettingsState extends State<Settings> {
 }
 
 Future<void> exportSecretsAndVaults() async {
+  // TODO: require re-authn (biometric validation) prior to allowing export of data
   NullPassDB npDB = NullPassDB.instance;
   List<Secret> secretsList = await npDB.getAllSecrets() ?? <Secret>[];
   List<Vault> vaultsList = await npDB.getAllVaults() ?? <Vault>[];
@@ -506,6 +507,7 @@ Future<void> exportSecretsAndVaults() async {
 }
 
 Future<void> importSecretsAndVaults(String input) async {
+  // TODO: require re-authn (biometric validation) prior to allowing import of data
   NullPassDB npDB = NullPassDB.instance;
 
   Map<String, dynamic> decodedInput = jsonDecode(input);
