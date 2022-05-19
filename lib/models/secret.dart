@@ -428,6 +428,10 @@ class Secret {
     return generateOnetimePasscode(this.otpCode);
   }
 
+  static int getOtpTimeRemaining() {
+    return OTP.remainingSeconds();
+  }
+
   static String generateOnetimePasscode(String otpCode) {
     if (otpCode == null || otpCode.trim().isEmpty) {
       return '';
