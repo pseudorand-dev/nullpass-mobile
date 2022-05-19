@@ -3,6 +3,8 @@
  * Copyright (c) 2019 Pseudorand Development. All rights reserved.
  */
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -163,6 +165,7 @@ class _SecretViewState extends State<SecretView> {
                           website: secret.website,
                           username: secret.username,
                           message: secret.message,
+                          otpCode: secret.otpCode,
                           notes: secret.notes,
                           thumbnailURI: secret.thumbnailURI,
                           vaults: secret.vaults,
@@ -306,6 +309,14 @@ class _SecretViewState extends State<SecretView> {
                   onPressed: () {}),
               onLongPress: () {},
             ),
+            if (secret.getOnetimePasscode().isNotEmpty)
+              OneTimePasscodeTile(
+                otpCode: secret.otpCode,
+                nickname: secret.nickname,
+                uuid: secret.uuid,
+                vaults: secret.vaults,
+                scaffoldKey: _scaffoldKey,
+              ),
             ListTile(
               title: Text('Notes'),
               subtitle: Text(secret.notes ?? ''),
@@ -419,6 +430,74 @@ class SecretPreview extends StatelessWidget {
         children: secretSpan,
       ),
       textAlign: TextAlign.center,
+    );
+  }
+}
+
+class OneTimePasscodeTile extends StatefulWidget {
+  final String otpCode;
+  String nickname;
+  String uuid;
+  List<String> vaults;
+  final GlobalKey<ScaffoldState> scaffoldKey;
+
+  OneTimePasscodeTile({
+    Key key,
+    @required this.otpCode,
+    @required this.nickname,
+    @required this.scaffoldKey,
+    @required this.uuid,
+    @required this.vaults,
+  }) : super(key: key);
+
+  @override
+  _OneTimePasscodeTileState createState() => _OneTimePasscodeTileState();
+}
+
+class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
+  GlobalKey<State> _key = new GlobalKey();
+  Timer timer;
+
+  @protected
+  @mustCallSuper
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    timer = Timer.periodic(
+      Duration(milliseconds: 500),
+      (Timer t) {
+        setState(() {});
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var code = Secret.generateOnetimePasscode(this.widget.otpCode).trim() ?? '';
+    return ListTile(
+      title: Text('One-Time Passcode'),
+      subtitle: Text(code),
+      trailing: IconButton(
+          icon: Icon(Icons.content_copy),
+          onPressed: () async {
+            await Clipboard.setData(ClipboardData(
+              text: code,
+            ));
+            await NullPassDB.instance.addAuditRecord(AuditRecord(
+              type: AuditType.SecretOTPCodeCopied,
+              message:
+                  'The "${this.widget.nickname}" secret\'s one-time passcode was copied.',
+              secretsReferenceId: <String>{this.widget.uuid},
+              vaultsReferenceId: this.widget.vaults.toSet(),
+              date: DateTime.now().toUtc(),
+            ));
+            showSnackBar(this.widget.scaffoldKey, 'One-Time Passcode Copied');
+          }),
     );
   }
 }
