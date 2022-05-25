@@ -167,6 +167,8 @@ class _SecretViewState extends State<SecretView> {
                           username: secret.username,
                           message: secret.message,
                           otpCode: secret.otpCode,
+                          otpTitle:
+                              secret.isOTPTitleStored() ? secret.otpTitle : '',
                           notes: secret.notes,
                           thumbnailURI: secret.thumbnailURI,
                           vaults: secret.vaults,
@@ -317,6 +319,26 @@ class _SecretViewState extends State<SecretView> {
                 uuid: secret.uuid,
                 vaults: secret.vaults,
                 scaffoldKey: _scaffoldKey,
+              ),
+            if (secret.getOnetimePasscode().isNotEmpty)
+              ListTile(
+                title: Text('OTP Title'),
+                subtitle: Text(secret.otpTitle ?? ''),
+                trailing: IconButton(
+                    icon: Icon(Icons.content_copy),
+                    onPressed: () async {
+                      await Clipboard.setData(
+                          ClipboardData(text: secret.otpTitle));
+                      await NullPassDB.instance.addAuditRecord(AuditRecord(
+                        type: AuditType.SecretOTPTitleCopied,
+                        message:
+                            'The "${secret.nickname}" secret\'s otpTitle was copied.',
+                        secretsReferenceId: <String>{secret.uuid},
+                        vaultsReferenceId: secret.vaults.toSet(),
+                        date: DateTime.now().toUtc(),
+                      ));
+                      showSnackBar(_scaffoldKey, 'otpTitle Copied');
+                    }),
               ),
             ListTile(
               title: Text('Notes'),
