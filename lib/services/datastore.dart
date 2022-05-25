@@ -20,7 +20,7 @@ import 'package:sqflite/sqflite.dart';
 // This is the actual database filename that is saved in the docs directory.
 final _dbName = "nullpass";
 // Increment this version when you need to change the schema.
-final _dbVersion = 1;
+final _dbVersion = 2;
 
 // a common representation of the database for all subtables to access (so a separate DB isn't created per object)
 Database _db;
@@ -883,6 +883,7 @@ class _NullPassSecretDetailsDB {
     columnSecretId,
     columnSecretNickname,
     columnSecretUsername,
+    columnSecretOTPTitle,
     columnSecretType,
     columnSecretWebsite,
     columnSecretAppName,
