@@ -56,6 +56,10 @@ class _CreateSecretState extends State<SecretEdit> {
         if (val) _secret.vaults.add(f);
       });
 
+      if (_secret.otpCode == null || _secret.otpCode.trim().isEmpty) {
+        _secret.otpTitle = null;
+      }
+
       NullPassDB helper = NullPassDB.instance;
       bool success = false;
       if (widget.edit == SecretEditType.Create) {
@@ -375,6 +379,24 @@ class _CreateSecretState extends State<SecretEdit> {
                       }
                       return null;
                     },
+                  ),
+                ),
+                FormDivider(),
+                ListTile(
+                  title: TextFormField(
+                    enabled: (_secret.otpCode != null &&
+                        _secret.otpCode.trim().isNotEmpty),
+                    onChanged: (value) {
+                      setState(() {
+                        _secret.otpTitle = value?.trim();
+                      });
+                      Log.debug('new otpTitle ${_secret.otpTitle}');
+                    },
+                    initialValue:
+                        _secret.isOTPTitleStored() ? _secret.otpTitle : '',
+                    decoration: InputDecoration(
+                        labelText: 'Optional OTP Title',
+                        border: InputBorder.none),
                   ),
                 ),
                 FormDivider(),
