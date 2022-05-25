@@ -18,6 +18,7 @@ final String secretTableName = 'secrets';
 final String columnSecretId = '_id';
 final String columnSecretNickname = 'nickname';
 final String columnSecretUsername = 'username';
+final String columnSecretOTPTitle = 'otpTitle';
 final String columnSecretType = 'type';
 final String columnSecretWebsite = 'website';
 final String columnSecretAppName = 'appName';
@@ -30,7 +31,7 @@ final String columnSecretCreated = 'created';
 final String columnSecretLastModified = 'lastModified';
 final String columnSecretSortKey = 'sortKey';
 
-enum SecretType { Website, App, Generic }
+enum SecretType { Website, App, Generic, OTP }
 
 SecretType parseSecretTypeFromString(String str) {
   String strToLower = str.toLowerCase();
@@ -72,6 +73,7 @@ class Secret {
   String genericEndpoint;
   String message;
   String otpCode;
+  String _otpTitle;
   String get thumbnailURI => _getThumbnail();
   String notes;
   List<String> tags;
@@ -80,6 +82,9 @@ class Secret {
   DateTime lastModified;
   String get sortKey => this.nickname.toLowerCase();
   int get strength => this._secretStrength();
+
+  String get otpTitle => _getOTPTitle();
+  void set otpTitle(String title) => this._otpTitle = title;
 
   /*
   String uuid
@@ -97,6 +102,7 @@ class Secret {
   DateTime createdOn
   DateTime lastUpdatedOn
   String otp
+  String otpTitleKey
   */
 
   factory Secret.fromJson(Map<String, dynamic> json) =>
@@ -113,6 +119,7 @@ class Secret {
     String appName = '',
     String genericEndpoint = '',
     String otpCode = '',
+    String otpTitle = '',
     String thumbnailURI = '',
     String notes = '',
     List<String> tags,
@@ -143,6 +150,7 @@ class Secret {
     this.vaults = vaults ?? <String>[];
     this.created = created ?? now;
     this.lastModified = lastModified ?? now;
+    this._otpTitle = otpTitle;
   }
 
   String _getThumbnail() {
@@ -213,6 +221,7 @@ class Secret {
     uuid = map[columnSecretId] ?? map['uuid'] ?? map['_id'] ?? map['gid'] ?? '';
     message = map['message'] ?? map['password'];
     otpCode = map['otpCode'] ?? map['otp'];
+    _otpTitle = map[columnSecretOTPTitle];
     nickname = map[columnSecretNickname];
     username = map[columnSecretUsername];
     type = tryParseSecretTypeFromString(map[columnSecretType]);
@@ -254,6 +263,7 @@ class Secret {
       columnSecretId: uuid,
       columnSecretNickname: nickname,
       columnSecretUsername: username,
+      columnSecretOTPTitle: _otpTitle,
       columnSecretType: secretTypeToString(type),
       columnSecretWebsite: website,
       columnSecretAppName: appName,
@@ -277,6 +287,7 @@ class Secret {
         'username': username,
         'message': message,
         'otpCode': otpCode,
+        'otpTitle': _otpTitle,
         'type': secretTypeToString(type),
         'website': website,
         'appName': appName,
@@ -314,6 +325,7 @@ class Secret {
       username: jsonBlob['username'],
       message: jsonBlob['message'] ?? jsonBlob['password'],
       otpCode: jsonBlob['otpCode'] ?? jsonBlob['otp'],
+      otpTitle: jsonBlob['otpTitle'],
       type:
           tryParseSecretTypeFromString(jsonBlob['type']) ?? SecretType.Generic,
       website: jsonBlob['website'],
@@ -349,6 +361,10 @@ class Secret {
 
     if (this.otpCode != null) {
       sec = "$sec,\"otpCode\":\"${this.otpCode}\"";
+    }
+
+    if (this._otpTitle != null) {
+      sec = "$sec,\"otpTitle\":\"${this._otpTitle}\"";
     }
 
     if (this.type != null) {
@@ -411,6 +427,7 @@ class Secret {
       genericEndpoint: this.genericEndpoint,
       message: this.message,
       otpCode: this.otpCode,
+      otpTitle: this._otpTitle,
       notes: this.notes,
       tags: <String>[],
       vaults: <String>[],
@@ -422,6 +439,18 @@ class Secret {
     this.vaults.forEach((v) => s.vaults.add(v));
 
     return s;
+  }
+
+  String _getOTPTitle() {
+    if (this._otpTitle != null && this._otpTitle.trim().isNotEmpty) {
+      return this._otpTitle;
+    } else {
+      return "${this.website.trim()} (${this.username.trim()})";
+    }
+  }
+
+  bool isOTPTitleStored() {
+    return this._otpTitle != null && this._otpTitle.trim().isNotEmpty;
   }
 
   String getOnetimePasscode() {
