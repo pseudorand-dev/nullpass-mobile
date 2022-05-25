@@ -37,7 +37,13 @@ _initDatabase() async {
   String path = join(documentsDirectory.path, _dbName);
 
   // Open the database. Can also add an onUpdate callback parameter.
-  return await openDatabase(path, version: _dbVersion, onCreate: _onCreate);
+  return await openDatabase(
+    path,
+    version: _dbVersion,
+    onCreate: _onCreate,
+    onDowngrade: (Database db, int oldVersion, int newVersion) async => {},
+    onUpgrade: _onUpgrade,
+  );
 }
 
 // SQL string to create the database
@@ -47,6 +53,15 @@ Future _onCreate(Database db, int version) async {
   await db.execute("${_NullPassDevicesDB.createTable}");
   await db.execute("${_NullPassVaultsDB.createTable}");
   await db.execute("${_NullPassAuditDB.createTable}");
+}
+
+Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+  var batch = db.batch();
+  if (oldVersion == 1) {
+    // V2 Changes
+    await batch.execute("${_NullPassSecretDetailsDB.migrateTableToV2}");
+  }
+  await batch.commit();
 }
 
 const String _encryptionStorePubKeyID = "encPubKey";
@@ -860,6 +875,9 @@ class _NullPassSecretDetailsDB {
                 $columnSecretSortKey TEXT NOT NULL
               )
               ''';
+  static final migrateTableToV2 = '''
+      ALTER TABLE $secretTableName ADD $columnSecretOTPTitle TEXT
+    ''';
 
   static final List<String> _secretTableColumns = [
     columnSecretId,
