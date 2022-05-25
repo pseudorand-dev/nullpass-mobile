@@ -47,6 +47,8 @@ class AuditType {
       AuditType._("SecretPasswordCopied");
   static const AuditType SecretOTPCodeCopied =
       AuditType._("SecretOTPCodeCopied");
+  static const AuditType SecretOTPTitleCopied =
+      AuditType._("SecretOTPTitleCopied");
 
   // Sync Actions
   static const AuditType SyncCreated = AuditType._("SyncCreated");
@@ -82,6 +84,7 @@ class AuditType {
     "SecretPasswordViewed",
     "SecretPasswordCopied",
     "SecretOTPCodeCopied",
+    "SecretOTPTitleCopied",
     "SyncCreated",
     "SyncUpdated",
     "SyncDeleted",
