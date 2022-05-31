@@ -58,6 +58,8 @@ class _CreateSecretState extends State<SecretEdit> {
 
       if (_secret.otpCode == null || _secret.otpCode.trim().isEmpty) {
         _secret.otpTitle = null;
+      } else {
+        _secret.otpCode = _secret.otpCode.trim().toUpperCase();
       }
 
       NullPassDB helper = NullPassDB.instance;
@@ -362,6 +364,7 @@ class _CreateSecretState extends State<SecretEdit> {
                 FormDivider(),
                 ListTile(
                   title: TextFormField(
+                    textCapitalization: TextCapitalization.characters,
                     onChanged: (value) {
                       setState(() {
                         _secret.otpCode = value.toUpperCase();
