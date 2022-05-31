@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/models/secret.dart';
@@ -12,6 +13,7 @@ import 'package:nullpass/models/vault.dart';
 import 'package:nullpass/screens/secrets/secretGenerate.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
+import 'package:nullpass/services/otp_scanning.dart';
 import 'package:nullpass/services/sync.dart';
 import 'package:nullpass/widgets.dart';
 import 'package:uuid/uuid.dart';
@@ -34,6 +36,8 @@ class _CreateSecretState extends State<SecretEdit> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   Secret _secret;
   TextEditingController _passwordController = new TextEditingController();
+  TextEditingController _otpCodeController = new TextEditingController();
+  TextEditingController _otpTitleController = new TextEditingController();
 
   bool _loading = true;
   Map<String, Vault> vaults;
@@ -60,6 +64,10 @@ class _CreateSecretState extends State<SecretEdit> {
         _secret.otpTitle = null;
       } else {
         _secret.otpCode = _secret.otpCode.trim().toUpperCase();
+      }
+
+      if (_secret.isOTPTitleStored()) {
+        _secret.otpTitle = _secret.otpTitle.trim();
       }
 
       NullPassDB helper = NullPassDB.instance;
@@ -117,10 +125,12 @@ class _CreateSecretState extends State<SecretEdit> {
           : new Secret(nickname: '', website: '', username: '', message: ''));
     }
 
+    _otpCodeController.text = _secret.otpCode ?? '';
+    _otpTitleController.text =
+        _secret.isOTPTitleStored() ? _secret.otpTitle : '';
+
     vaults = <String, Vault>{};
     selectedVaults = <String, bool>{};
-
-    // _secret.vaults.forEach((v) => )
 
     defaultVault = sharedPrefs.getString(DefaultVaultIDPrefKey) ?? "";
 
@@ -142,7 +152,7 @@ class _CreateSecretState extends State<SecretEdit> {
     setState(() {
       _secret.message = value;
     });
-    _passwordController.text = value;
+    _setControllerTextAndMoveCursor(_passwordController, value);
   }
 
   List<Widget> _generateChips(BuildContext context) {
@@ -365,13 +375,13 @@ class _CreateSecretState extends State<SecretEdit> {
                 ListTile(
                   title: TextFormField(
                     textCapitalization: TextCapitalization.characters,
+                    controller: _otpCodeController,
                     onChanged: (value) {
                       setState(() {
                         _secret.otpCode = value.toUpperCase();
                       });
                       Log.debug('new otpCode ${_secret.otpCode}');
                     },
-                    initialValue: _secret.otpCode?.toUpperCase(),
                     decoration: InputDecoration(
                         labelText: 'One-Time Passcode',
                         border: InputBorder.none),
@@ -383,10 +393,41 @@ class _CreateSecretState extends State<SecretEdit> {
                       return null;
                     },
                   ),
+                  trailing: IconButton(
+                    icon: Icon(MdiIcons.qrcodeScan),
+                    onPressed: () async {
+                      try {
+                        var results = await OtpQrScan.scan();
+                        var title = results.name;
+                        if (!title.contains(':') &&
+                            !title.contains('(') &&
+                            !title.contains(' - ')) {
+                          title = '${results.issuer} (${title})';
+                        }
+                        setState(() {
+                          _secret.otpCode = results.secret.toUpperCase();
+                          _secret.otpTitle = title.trim();
+                        });
+                        _setControllerTextAndMoveCursor(
+                          _otpCodeController,
+                          _secret.otpCode.toUpperCase(),
+                        );
+                        _setControllerTextAndMoveCursor(
+                          _otpTitleController,
+                          _secret.otpTitle?.trim(),
+                        );
+                        Log.debug('new otp secret "${_secret.otpCode}"');
+                        Log.debug('new otp title "${_secret.otpTitle}"');
+                      } catch (e) {
+                        Log.error('Failed to scan QR code', stackTrace: e);
+                      }
+                    },
+                  ),
                 ),
                 FormDivider(),
                 ListTile(
                   title: TextFormField(
+                    controller: _otpTitleController,
                     enabled: (_secret.otpCode != null &&
                         _secret.otpCode.trim().isNotEmpty),
                     onChanged: (value) {
@@ -395,8 +436,6 @@ class _CreateSecretState extends State<SecretEdit> {
                       });
                       Log.debug('new otpTitle ${_secret.otpTitle}');
                     },
-                    initialValue:
-                        _secret.isOTPTitleStored() ? _secret.otpTitle : '',
                     decoration: InputDecoration(
                         labelText: 'Optional OTP Title',
                         border: InputBorder.none),
@@ -526,7 +565,6 @@ class _PasswordInputState extends State<PasswordInput> {
           labelText: 'Password',
           border: InputBorder.none,
         ),
-        // initialValue: _initialValue,
         obscureText: !_visible,
         validator: (value) {
           if (value.isEmpty) {
@@ -572,4 +610,14 @@ class _PasswordInputState extends State<PasswordInput> {
       ),
     );
   }
+}
+
+void _setControllerTextAndMoveCursor(
+  TextEditingController controller,
+  String text,
+) {
+  controller.text = text;
+  controller.selection = TextSelection.fromPosition(
+    TextPosition(offset: controller.text.length),
+  );
 }
