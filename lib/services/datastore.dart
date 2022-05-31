@@ -366,6 +366,8 @@ class NullPassDB {
           key: s.uuid + otpKeySuffix,
           value: s.otpCode?.toUpperCase(),
         );
+      } else {
+        await _nullpassSecureStorage.delete(key: s.uuid + otpKeySuffix);
       }
     } catch (e) {
       Log.debug(
