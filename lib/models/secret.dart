@@ -467,28 +467,30 @@ class Secret {
     }
 
     try {
+      Log.debug("generating otpCode with padding");
+      var passcode = OTP.generateTOTPCodeString(
+        otpCode.toUpperCase(),
+        DateTime.now().millisecondsSinceEpoch,
+        algorithm: Algorithm.SHA1,
+        isGoogle: true,
+      );
+      Log.debug("Google padded passcode: $passcode");
+      return passcode;
+    } catch (e) {
+      Log.error("Error generating OTP with padding: $e");
+    }
+
+    try {
       Log.debug("generating otpCode without padding");
       var passcode = OTP.generateTOTPCodeString(
         otpCode.toUpperCase(),
         DateTime.now().millisecondsSinceEpoch,
+        algorithm: Algorithm.SHA1,
       );
       Log.debug("passcode: $passcode");
       return passcode;
     } catch (e) {
       Log.error("Error generating OTP without padding: $e");
-    }
-
-    try {
-      Log.debug("generating otpCode with padding");
-      var passcode = OTP.generateTOTPCodeString(
-        otpCode.toUpperCase(),
-        DateTime.now().millisecondsSinceEpoch,
-        isGoogle: true,
-      );
-      Log.debug("passcode: $passcode");
-      return passcode;
-    } catch (e) {
-      Log.error("Error generating OTP with padding: $e");
     }
 
     return '';
