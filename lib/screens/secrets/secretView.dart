@@ -230,8 +230,9 @@ class _SecretViewState extends State<SecretView> {
                           enableDomStorage: true,
                         );
                       } else {
-                        _scaffoldKey.currentState.showSnackBar(SnackBar(
-                            content: Text('Can\'t launch this website')));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Can\'t launch this website')),
+                        );
                       }
                     }),
                 onLongPress: () async {
@@ -244,7 +245,7 @@ class _SecretViewState extends State<SecretView> {
                     vaultsReferenceId: secret.vaults.toSet(),
                     date: DateTime.now().toUtc(),
                   ));
-                  showSnackBar(_scaffoldKey, 'Website Copied');
+                  showSnackBar(context, 'Website Copied');
                 }),
             ListTile(
               title: Text('Username'),
@@ -262,7 +263,7 @@ class _SecretViewState extends State<SecretView> {
                       vaultsReferenceId: secret.vaults.toSet(),
                       date: DateTime.now().toUtc(),
                     ));
-                    showSnackBar(_scaffoldKey, 'Username Copied');
+                    showSnackBar(context, 'Username Copied');
                   }),
             ),
             ListTile(
@@ -281,7 +282,7 @@ class _SecretViewState extends State<SecretView> {
                       vaultsReferenceId: secret.vaults.toSet(),
                       date: DateTime.now().toUtc(),
                     ));
-                    showSnackBar(_scaffoldKey, 'Password Copied');
+                    showSnackBar(context, 'Password Copied');
                   }),
               onLongPress: () async {
                 await NullPassDB.instance.addAuditRecord(AuditRecord(
@@ -337,7 +338,7 @@ class _SecretViewState extends State<SecretView> {
                         vaultsReferenceId: secret.vaults.toSet(),
                         date: DateTime.now().toUtc(),
                       ));
-                      showSnackBar(_scaffoldKey, 'otpTitle Copied');
+                      showSnackBar(context, 'otpTitle Copied');
                     }),
               ),
             ListTile(
@@ -355,7 +356,7 @@ class _SecretViewState extends State<SecretView> {
                       vaultsReferenceId: secret.vaults.toSet(),
                       date: DateTime.now().toUtc(),
                     ));
-                    showSnackBar(_scaffoldKey, 'Notes Copied');
+                    showSnackBar(context, 'Notes Copied');
                   }),
             ),
             ListTile(
@@ -388,8 +389,9 @@ class _SecretViewState extends State<SecretView> {
                     vaultsReferenceId: secret.vaults.toSet(),
                     date: DateTime.now().toUtc(),
                   ));
-                  _scaffoldKey.currentState.showSnackBar(
-                      SnackBar(content: Text('Copied the Thumbnail URL')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Copied the Thumbnail URL')),
+                  );
                 },
               ),
             /*
@@ -508,7 +510,7 @@ class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
     }
   }
 
-  Future<void> copyToClipboard(String code) async {
+  Future<void> copyToClipboard(BuildContext context, String code) async {
     await Clipboard.setData(ClipboardData(
       text: code,
     ));
@@ -520,7 +522,7 @@ class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
       vaultsReferenceId: widget.vaults.toSet(),
       date: DateTime.now().toUtc(),
     ));
-    showSnackBar(widget.scaffoldKey, 'One-Time Passcode Copied');
+    showSnackBar(context, 'One-Time Passcode Copied');
   }
 
   @override
@@ -548,12 +550,12 @@ class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
             Padding(padding: EdgeInsets.all(5)),
             IconButton(
               icon: Icon(Icons.content_copy),
-              onPressed: () async => await copyToClipboard(code),
+              onPressed: () async => await copyToClipboard(context, code),
             ),
           ],
         ),
       ),
-      onLongPress: () async => await copyToClipboard(code),
+      onLongPress: () async => await copyToClipboard(context, code),
     );
   }
 }

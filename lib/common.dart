@@ -80,10 +80,11 @@ List<Secret> secretsListFromJsonString(String jsonBlob) {
 //    ..showSnackBar(SnackBar(content: Text(text)));
 //}
 
-void showSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String text,
+void showSnackBar(BuildContext context, String text,
     {bool vibrate = true, int vibrateDuration = 5}) async {
-  scaffoldKey.currentState.showSnackBar(
-      SnackBar(content: Text(text), duration: Duration(milliseconds: 1000)));
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(text), duration: Duration(milliseconds: 1000)),
+  );
   var hasVibrator = await Vibration.hasVibrator();
   if (vibrate && hasVibrator) {
     // if (Vibration.hasVibrator())
