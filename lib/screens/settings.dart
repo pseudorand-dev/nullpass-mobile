@@ -340,15 +340,16 @@ class _SettingsState extends State<Settings> {
                             ],
                           ),
                           actions: <Widget>[
-                            FlatButton(
-                                child: Text('Cancel'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                }),
-                            FlatButton(
-                                child: Text('Import'),
-                                onPressed: () async {
-                                  await importSecretsAndVaults(_importText);
+                            TextButton(
+                              child: Text('Cancel'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            TextButton(
+                              child: Text('Import'),
+                              onPressed: () async {
+                                await importSecretsAndVaults(_importText);
                                   var v = await NullPassDB.instance
                                       .getDefaultVault();
                                   if (v != null) {
@@ -383,17 +384,19 @@ class _SettingsState extends State<Settings> {
                           content: Text(
                               'This will export all of your password data. Be sure before proceeding as this will decrypt all data and copy it to your clipboard which can be available to many applications and services.'),
                           actions: <Widget>[
-                            FlatButton(
-                                child: Text('Cancel'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                }),
-                            FlatButton(
-                                child: Text('Export'),
-                                onPressed: () async {
-                                  await exportSecretsAndVaults();
-                                  Navigator.of(context).pop();
-                                })
+                            TextButton(
+                              child: Text('Cancel'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            TextButton(
+                              child: Text('Export'),
+                              onPressed: () async {
+                                await exportSecretsAndVaults();
+                                Navigator.of(context).pop();
+                              },
+                            )
                           ],
                         );
                       },
@@ -434,22 +437,23 @@ class _SettingsState extends State<Settings> {
                           content: Text(
                               'This will delete all password data. Be sure before proceeding as this is not undoable or recoverable.'),
                           actions: <Widget>[
-                            FlatButton(
-                                child: Text('Cancel'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                }),
-                            FlatButton(
-                                child: Text(
-                                  'Delete',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                                onPressed: () async {
-                                  NullPassDB npDB = NullPassDB.instance;
-                                  await npDB.deleteAllDevices();
-                                  await npDB.deleteAllSyncs();
-                                  await npDB.deleteAllSecrets();
-                                  await npDB.deleteAllVaults();
+                            TextButton(
+                              child: Text('Cancel'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            TextButton(
+                              child: Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              onPressed: () async {
+                                NullPassDB npDB = NullPassDB.instance;
+                                await npDB.deleteAllDevices();
+                                await npDB.deleteAllSyncs();
+                                await npDB.deleteAllSecrets();
+                                await npDB.deleteAllVaults();
                                   sharedPrefs.setString(
                                       DefaultVaultIDPrefKey, "");
                                   Navigator.of(context).pop();

@@ -199,28 +199,29 @@ class _CreateSecretState extends State<SecretEdit> {
                 },
               ),
               actions: <Widget>[
-                FlatButton(
-                    child: Text('Cancel'),
-                    onPressed: () {
-                      newVaultName = "";
-                      Navigator.of(context).pop();
-                    }),
-                FlatButton(
-                    child: Text('Add'),
-                    onPressed: () async {
-                      // NullPassDB npDB = NullPassDB.instance;
-                      // await npDB.deleteAllSecrets();
-                      var v = Vault(
-                          nickname: newVaultName,
-                          manager: VaultManager.Internal,
-                          managerId: Vault.InternalSourceID,
-                          isDefault: false);
-                      var added = await NullPassDB.instance.insertVault(v);
-                      newVaultName = "";
-                      if (added) {
-                        await NullPassDB.instance.addAuditRecord(AuditRecord(
-                          type: AuditType.VaultCreated,
-                          message: 'The "${v.nickname}" vault was added.',
+                TextButton(
+                  child: Text('Cancel'),
+                  onPressed: () {
+                    newVaultName = "";
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: Text('Add'),
+                  onPressed: () async {
+                    // NullPassDB npDB = NullPassDB.instance;
+                    // await npDB.deleteAllSecrets();
+                    var v = Vault(
+                        nickname: newVaultName,
+                        manager: VaultManager.Internal,
+                        managerId: Vault.InternalSourceID,
+                        isDefault: false);
+                    var added = await NullPassDB.instance.insertVault(v);
+                    newVaultName = "";
+                    if (added) {
+                      await NullPassDB.instance.addAuditRecord(AuditRecord(
+                        type: AuditType.VaultCreated,
+                        message: 'The "${v.nickname}" vault was added.',
                           vaultsReferenceId: <String>{v.uid},
                           date: DateTime.now().toUtc(),
                         ));
@@ -255,7 +256,7 @@ class _CreateSecretState extends State<SecretEdit> {
                   ? Text('Update Secret')
                   : Text('Secret Action')),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -279,7 +280,7 @@ class _CreateSecretState extends State<SecretEdit> {
                   ? Text('Update Secret')
                   : Text('Secret Action')),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -482,7 +483,7 @@ class _CreateSecretState extends State<SecretEdit> {
                 ),
                 FormDivider(),
                 ListTile(
-                  title: RaisedButton(
+                  title: ElevatedButton(
                     onPressed: () {
                       submit(context);
                     },
@@ -490,7 +491,11 @@ class _CreateSecretState extends State<SecretEdit> {
                       'Save',
                       style: TextStyle(color: Colors.white),
                     ),
-                    color: Colors.blue,
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                        Colors.blue,
+                      ),
+                    ),
                   ),
                 ),
               ],

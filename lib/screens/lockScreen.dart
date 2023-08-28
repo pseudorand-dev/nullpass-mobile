@@ -101,15 +101,23 @@ class _LockScreenState extends State<LockScreen> {
                   Padding(
                     padding: EdgeInsets.all(24),
                     child: ListTile(
-                      title: RaisedButton(
-                        color: Colors.white,
-                        textColor: Theme.of(context).accentColor,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            side: BorderSide(
-                                color: Theme.of(context).accentColor)),
-                        padding:
+                      title: ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                            Colors.white,
+                          ),
+                          textStyle: MaterialStateProperty.all<TextStyle>(
+                              TextStyle(color: Theme.of(context).accentColor)),
+                          shape: MaterialStateProperty.all<OutlinedBorder>(
+                              RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  side: BorderSide(
+                                      color: Theme.of(context).accentColor))),
+                          padding:
+                              MaterialStateProperty.all<EdgeInsetsGeometry>(
                             EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          ),
+                        ),
                         onPressed: () async {
                           await authenticate();
                         },

@@ -111,13 +111,13 @@ class _SecretViewState extends State<SecretView> {
                             'Are you sure you want to delete "${this.secret.nickname}"?\nPlease be sure before proceeding as you will not be able to undo this.',
                           ),
                           actions: <Widget>[
-                            FlatButton(
+                            TextButton(
                               child: Text('Cancel'),
                               onPressed: () {
                                 Navigator.of(context).pop(false);
                               },
                             ),
-                            FlatButton(
+                            TextButton(
                               child: Text(
                                 'Delete',
                                 style: TextStyle(color: Colors.red),

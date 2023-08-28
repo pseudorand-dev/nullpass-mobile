@@ -93,12 +93,13 @@ class ManageVaultState extends State<ManageVault> {
                               content: Text(
                                   'This will delete the Vault and any passwords that live only with in it. Be sure before proceeding as this is not undoable or recoverable.'),
                               actions: <Widget>[
-                                FlatButton(
-                                    child: Text('Cancel'),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    }),
-                                FlatButton(
+                                TextButton(
+                                  child: Text('Cancel'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                                TextButton(
                                   child: Text(
                                     'Delete',
                                     style: TextStyle(color: Colors.red),
@@ -290,22 +291,24 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
         ],
       ),
       actions: <Widget>[
-        FlatButton(
-            child: Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            }),
-        FlatButton(
-            child: (this.isNew) ? Text('Add') : Text('Update'),
-            onPressed: () async {
-              // NullPassDB npDB = NullPassDB.instance;
-              // await npDB.deleteAllSecrets();
-              if (this.isNew)
-                await addVault();
-              else
-                await updateVault();
-              Navigator.of(context).pop();
-            })
+        TextButton(
+          child: Text('Cancel'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        TextButton(
+          child: (this.isNew) ? Text('Add') : Text('Update'),
+          onPressed: () async {
+            // NullPassDB npDB = NullPassDB.instance;
+            // await npDB.deleteAllSecrets();
+            if (this.isNew)
+              await addVault();
+            else
+              await updateVault();
+            Navigator.of(context).pop();
+          },
+        )
       ],
     );
   }

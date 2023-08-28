@@ -231,13 +231,17 @@ class _QrScannerState extends State<QrScanner> {
                 ),
               CenterLoader(),
               ListTile(
-                title: RaisedButton(
+                title: ElevatedButton(
                   onPressed: scan,
                   child: Text(
                     "Rescan QR Code",
                     style: TextStyle(color: Colors.white),
                   ),
-                  color: Colors.blue,
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                      Colors.blue,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -270,13 +274,17 @@ class _QrScannerState extends State<QrScanner> {
                 style: TextStyle(color: Colors.red),
               ),
               ListTile(
-                title: RaisedButton(
+                title: ElevatedButton(
                   onPressed: scan,
                   child: Text(
                     "Rescan QR Code",
                     style: TextStyle(color: Colors.white),
                   ),
-                  color: Colors.blue,
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                      Colors.blue,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -311,13 +319,17 @@ class _QrScannerState extends State<QrScanner> {
                         style: TextStyle(color: Colors.red),
                       ),
                     ListTile(
-                      title: RaisedButton(
+                      title: ElevatedButton(
                         onPressed: scan,
                         child: Text(
                           "Rescan QR Code",
                           style: TextStyle(color: Colors.white),
                         ),
-                        color: Colors.blue,
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                            Colors.blue,
+                          ),
+                        ),
                       ),
                     ),
                   ],

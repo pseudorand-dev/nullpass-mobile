@@ -185,7 +185,7 @@ class _SecretGenerateState extends State<SecretGenerate> {
                 }),
           ),
           ListTile(
-            title: RaisedButton(
+            title: ElevatedButton(
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: _secretText));
                 Navigator.pop(context, _secretText);
@@ -208,7 +208,11 @@ class _SecretGenerateState extends State<SecretGenerate> {
                 'Use',
                 style: TextStyle(color: Colors.white),
               ),
-              color: Colors.blue,
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                  Colors.blue,
+                ),
+              ),
             ),
           ),
         ],

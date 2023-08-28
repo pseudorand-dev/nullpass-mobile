@@ -79,7 +79,7 @@ class _TmpLockScreenState extends State<_TmpLockScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                RaisedButton(
+                ElevatedButton(
                   child: Text("Login"),
                   onPressed: () async {
                     unlock();

@@ -274,7 +274,7 @@ class _ManageSyncState extends State<ManageSync> {
         return AlertDialog(
           title: Text(_vaultMap[vid]?.nickname ?? "Update Sync Access"),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -375,21 +375,20 @@ class _ManageSyncState extends State<ManageSync> {
       var ds = _deviceSyncMap[v.uid];
 
       if (v.manager == VaultManager.External && ds != null) {
-        trailingWidget = FlatButton(
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textTheme: ButtonTextTheme.primary,
+        trailingWidget = TextButton(
           child: Text(
             ds.vaultAccess.toString(),
             textAlign: TextAlign.end,
           ),
           onPressed: null,
-          textColor: Colors.blue,
-          disabledTextColor: Colors.grey,
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.blue,
+            disabledForegroundColor: Colors.grey,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         );
       } else if (v.manager == VaultManager.Internal && ds != null) {
-        trailingWidget = FlatButton(
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textTheme: ButtonTextTheme.primary,
+        trailingWidget = TextButton(
           child: Text(
             ds.vaultAccess.toString(),
             textAlign: TextAlign.end,
@@ -397,13 +396,14 @@ class _ManageSyncState extends State<ManageSync> {
           onPressed: () async {
             await updateVaultAccessDialog(v.uid, vaultAccess: ds.vaultAccess);
           },
-          textColor: Colors.blue,
-          disabledTextColor: Colors.grey,
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.blue,
+            disabledForegroundColor: Colors.grey,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         );
       } else if (v.manager == VaultManager.Internal) {
-        trailingWidget = trailingWidget = FlatButton(
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textTheme: ButtonTextTheme.primary,
+        trailingWidget = trailingWidget = TextButton(
           child: Text(
             DeviceAccess.None.toString(),
             textAlign: TextAlign.end,
@@ -411,8 +411,11 @@ class _ManageSyncState extends State<ManageSync> {
           onPressed: () async {
             await updateVaultAccessDialog(v.uid);
           },
-          textColor: Colors.blue,
-          disabledTextColor: Colors.grey,
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.blue,
+            disabledForegroundColor: Colors.grey,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         );
       }
 
@@ -519,7 +522,7 @@ class _ManageSyncState extends State<ManageSync> {
                 Container(
                   padding: EdgeInsets.only(top: 25.0),
                   child: ListTile(
-                    title: RaisedButton(
+                    title: ElevatedButton(
                       onPressed: () {
                         onSave(context);
                       },
@@ -527,7 +530,11 @@ class _ManageSyncState extends State<ManageSync> {
                         'Save',
                         style: TextStyle(color: Colors.white),
                       ),
-                      color: Colors.blue,
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                          Colors.blue,
+                        ),
+                      ),
                     ),
                   ),
                 ),
