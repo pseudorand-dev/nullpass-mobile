@@ -26,14 +26,14 @@ const String _noDeviceID = "no_device_id";
 
 class QrScanner extends StatefulWidget {
   final Function fabPressFunction;
-  final Function(BuildContext) nextStep;
+  final Future<void> Function(BuildContext?) nextStep;
   final Function(Device) setDevice;
 
   QrScanner(
-      {Key key,
-      @required this.fabPressFunction,
-      @required this.nextStep,
-      @required this.setDevice})
+      {Key? key,
+      required this.fabPressFunction,
+      required this.nextStep,
+      required this.setDevice})
       : super(key: key);
 
   @override
@@ -42,38 +42,38 @@ class QrScanner extends StatefulWidget {
 
 class _QrScannerState extends State<QrScanner> {
   final String _title = "NullPass Syncing";
-  Function _fabPressFunction;
-  Function(BuildContext) _nextStep;
-  Function(Device) _setDevice;
+  Function? _fabPressFunction;
+  late Function(BuildContext?) _nextStep;
+  late Function(Device) _setDevice;
   String _errorText = "";
-  BuildContext _context;
+  BuildContext? _context;
 
-  String _responseNonce;
-  KeyPair _encryptionKeyPair;
+  String? _responseNonce;
+  KeyPair? _encryptionKeyPair;
 
   String _barcodeData = "";
   bool _initiated = false;
-  QrData _scannedQrData;
-  String _recipient;
-  String _scannedPublicKey;
+  QrData? _scannedQrData;
+  String? _recipient;
+  String? _scannedPublicKey;
 
   Future<void> _initiateHandshake() async {
-    if (_scannedQrData.isValid()) {
+    if (_scannedQrData!.isValid()) {
       Log.debug("sending initiation message");
 
       setState(() {
-        _recipient = _scannedQrData.deviceId;
+        _recipient = _scannedQrData!.deviceId;
       });
 
       if (_encryptionKeyPair == null) {
         _encryptionKeyPair = await NullPassDB.instance.getEncryptionKeyPair();
       }
 
-      var receivedNonce = _scannedQrData.generatedNonce;
+      var receivedNonce = _scannedQrData!.generatedNonce!;
 
       var sd = SyncRegistration(
-        deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
-        pgpPubKey: _encryptionKeyPair.publicKey,
+        deviceId: sharedPrefs!.getString(DeviceNotificationIdPrefKey),
+        pgpPubKey: _encryptionKeyPair!.publicKey,
         generatedNonce: _responseNonce,
         receivedNonce: receivedNonce,
       );
@@ -101,7 +101,7 @@ class _QrScannerState extends State<QrScanner> {
           data: encryptedMsg);
 
       await notify.sendMessageToAnotherDevice(
-          deviceIDs: <String>[_recipient], message: tmpNotification);
+          deviceIDs: <String?>[_recipient], message: tmpNotification);
     }
   }
 
@@ -110,7 +110,7 @@ class _QrScannerState extends State<QrScanner> {
     Log.debug("recieved: $param");
     try {
       var decryptedMsg = await OpenPGP.decrypt(
-          param as String, _encryptionKeyPair.privateKey, "");
+          param as String, _encryptionKeyPair!.privateKey, "");
       var syncRegMap = jsonDecode(decryptedMsg);
       var scannedResp = SyncRegistration.fromMap(syncRegMap);
 
@@ -121,19 +121,19 @@ class _QrScannerState extends State<QrScanner> {
         });
 
         var sd = SyncRegistration(
-          deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
+          deviceId: sharedPrefs!.getString(DeviceNotificationIdPrefKey),
           receivedNonce: scannedResp.generatedNonce,
           generatedNonce: _responseNonce,
         );
 
         var encryptedMsg =
-            await OpenPGP.encrypt(sd.toString(), scannedResp.pgpPubKey);
+            await OpenPGP.encrypt(sd.toString(), scannedResp.pgpPubKey!);
 
         Log.debug(encryptedMsg);
         var tmpNote = np.Notification(np.NotificationType.SyncInitStepThree,
             data: encryptedMsg);
         notify.sendMessageToAnotherDevice(
-            deviceIDs: <String>[_recipient], message: tmpNote);
+            deviceIDs: <String?>[_recipient], message: tmpNote);
 
         /*
         // go to selector
@@ -155,7 +155,7 @@ class _QrScannerState extends State<QrScanner> {
     Log.debug("recieved: $param");
     try {
       var decryptedMsg = await OpenPGP.decrypt(
-          param as String, _encryptionKeyPair.privateKey, "");
+          param as String, _encryptionKeyPair!.privateKey, "");
       var syncRegMap = jsonDecode(decryptedMsg);
       var scannedResp = SyncRegistration.fromMap(syncRegMap);
 
@@ -206,7 +206,7 @@ class _QrScannerState extends State<QrScanner> {
     if (_barcodeData != null &&
         _barcodeData.isNotEmpty &&
         _scannedQrData != null &&
-        _scannedQrData.isValid()) {
+        _scannedQrData!.isValid()) {
       if (!_initiated) {
         _initiateHandshake();
         _initiated = true;
@@ -247,7 +247,7 @@ class _QrScannerState extends State<QrScanner> {
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: _fabPressFunction,
+            onPressed: _fabPressFunction as void Function()?,
             tooltip: 'QR Code',
             child: Icon(MdiIcons.qrcodeEdit),
           ),
@@ -290,7 +290,7 @@ class _QrScannerState extends State<QrScanner> {
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: _fabPressFunction,
+            onPressed: _fabPressFunction as void Function()?,
             tooltip: 'QR Code',
             child: Icon(MdiIcons.qrcodeEdit),
           ),
@@ -338,7 +338,7 @@ class _QrScannerState extends State<QrScanner> {
             ),
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: _fabPressFunction,
+            onPressed: _fabPressFunction as void Function()?,
             tooltip: 'QR Code',
             child: Icon(MdiIcons.qrcodeEdit),
           ),
@@ -391,7 +391,7 @@ class _QrScannerState extends State<QrScanner> {
           // _scannedQrData = QrData.fromMap(qrd);
           _scannedQrData = tmpData;
         });
-      } else if (tmpData.deviceId == null || tmpData.deviceId.isEmpty) {
+      } else if (tmpData.deviceId == null || tmpData.deviceId!.isEmpty) {
         setState(() {
           this._errorText = _noDeviceID;
           this._barcodeData = "";

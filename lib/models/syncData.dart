@@ -25,10 +25,10 @@ enum SyncType {
   DataUpdate,
   StateChange,
 }
-String syncTypeToString(SyncType st) =>
+String syncTypeToString(SyncType? st) =>
     st.toString().substring(st.toString().lastIndexOf(".") + 1);
 
-SyncType parseSyncTypeFromString(String syncType) {
+SyncType parseSyncTypeFromString(String? syncType) {
   var ret = SyncType.Unknown;
   try {
     ret = SyncType.values.firstWhere((st) =>
@@ -36,7 +36,7 @@ SyncType parseSyncTypeFromString(String syncType) {
             .toString()
             .toLowerCase()
             .substring(st.toString().lastIndexOf(".") + 1) ==
-        syncType.toLowerCase());
+        syncType!.toLowerCase());
   } catch (e) {
     Log.debug(
         "An error occurred while trying to translate string to SyncType: ${e.toString()}");
@@ -45,22 +45,22 @@ SyncType parseSyncTypeFromString(String syncType) {
 }
 
 class SyncDataWrapper {
-  NullPassSync data;
-  SyncType type;
-  String receivedNonce;
-  String generatedNonce;
-  bool state;
+  NullPassSync? data;
+  SyncType? type;
+  String? receivedNonce;
+  String? generatedNonce;
+  bool? state;
 
   SyncDataWrapper(
       {this.data, this.type, this.receivedNonce, this.generatedNonce});
 
   Map<String, dynamic> toJson() {
     return {
-      _SYNC_DATA_KEY: this.data.toJson(),
+      _SYNC_DATA_KEY: this.data!.toJson(),
       _DATA_TYPE_KEY: syncTypeToString(this.type),
-      if (this.receivedNonce != null && receivedNonce.isNotEmpty)
+      if (this.receivedNonce != null && receivedNonce!.isNotEmpty)
         _RECEIVED_NONCE_KEY: this.receivedNonce,
-      if (this.generatedNonce != null && generatedNonce.isNotEmpty)
+      if (this.generatedNonce != null && generatedNonce!.isNotEmpty)
         _GENERATED_NONCE_KEY: this.generatedNonce,
     };
   }
@@ -100,8 +100,8 @@ class SyncDataWrapper {
 
 // Handles changes of sync access for preexisting syncs
 class SyncStateChange {
-  DeviceAccess newState;
-  String vaultId;
+  DeviceAccess? newState;
+  String? vaultId;
 }
 
 abstract class NullPassSync {
@@ -112,16 +112,16 @@ abstract class NullPassSync {
 }
 
 class SyncVaultAdd extends NullPassSync {
-  String vaultId;
-  String vaultName;
-  DeviceAccess accessLevel;
-  List<Secret> secrets;
+  String? vaultId;
+  String? vaultName;
+  DeviceAccess? accessLevel;
+  List<Secret>? secrets;
 
   SyncVaultAdd({
-    @required String vaultId,
-    String vaultName,
-    DeviceAccess accessLevel,
-    List<Secret> secrets,
+    required String? vaultId,
+    String? vaultName,
+    DeviceAccess? accessLevel,
+    List<Secret>? secrets,
   }) {
     this.vaultId = vaultId;
     this.vaultName = vaultName;
@@ -141,19 +141,19 @@ class SyncVaultAdd extends NullPassSync {
     vaultName = map["vault_name"];
     accessLevel = DeviceAccess.fromString(map["access_level"]);
     secrets = <Secret>[];
-    (map["secrets"] as List).forEach((s) => secrets.add(Secret.fromMap(s)));
+    (map["secrets"] as List).forEach((s) => secrets!.add(Secret.fromMap(s)));
   }
 }
 
 class SyncVaultUpdate extends NullPassSync {
-  DeviceAccess accessLevel;
-  String vaultName;
-  String vaultId;
+  DeviceAccess? accessLevel;
+  String? vaultName;
+  String? vaultId;
 
   SyncVaultUpdate({
-    @required String vaultId,
-    @required String vaultName,
-    @required DeviceAccess accessLevel,
+    required String? vaultId,
+    required String? vaultName,
+    required DeviceAccess? accessLevel,
   }) {
     this.vaultId = vaultId;
     this.vaultName = vaultName;
@@ -174,7 +174,7 @@ class SyncVaultUpdate extends NullPassSync {
 }
 
 class SyncVaultRemove extends NullPassSync {
-  String vaultId;
+  String? vaultId;
 
   SyncVaultRemove(this.vaultId);
 
@@ -186,10 +186,10 @@ class SyncVaultRemove extends NullPassSync {
 }
 
 class SyncDataAdd extends NullPassSync {
-  String vaultId;
-  List<Secret> secrets;
+  String? vaultId;
+  List<Secret>? secrets;
 
-  SyncDataAdd({@required this.vaultId, @required this.secrets});
+  SyncDataAdd({required this.vaultId, required this.secrets});
 
   Map<String, dynamic> toJson() => {
         "vault_id": vaultId,
@@ -199,15 +199,15 @@ class SyncDataAdd extends NullPassSync {
   SyncDataAdd.fromMap(Map map) {
     vaultId = map["vault_id"];
     secrets = <Secret>[];
-    (map["secrets"] as List).forEach((s) => secrets.add(Secret.fromMap(s)));
+    (map["secrets"] as List).forEach((s) => secrets!.add(Secret.fromMap(s)));
   }
 }
 
 class SyncDataUpdate extends NullPassSync {
-  String vaultId;
-  List<Secret> secrets;
+  String? vaultId;
+  List<Secret>? secrets;
 
-  SyncDataUpdate({@required this.vaultId, @required this.secrets});
+  SyncDataUpdate({required this.vaultId, required this.secrets});
 
   Map<String, dynamic> toJson() => {
         "vault_id": vaultId,
@@ -217,15 +217,15 @@ class SyncDataUpdate extends NullPassSync {
   SyncDataUpdate.fromMap(Map map) {
     vaultId = map["vault_id"];
     secrets = <Secret>[];
-    (map["secrets"] as List).forEach((s) => secrets.add(Secret.fromMap(s)));
+    (map["secrets"] as List).forEach((s) => secrets!.add(Secret.fromMap(s)));
   }
 }
 
 class SyncDataRemove extends NullPassSync {
-  String vaultId;
-  List<String> secretIDs;
+  String? vaultId;
+  List<String?>? secretIDs;
 
-  SyncDataRemove({@required this.vaultId, @required this.secretIDs});
+  SyncDataRemove({required this.vaultId, required this.secretIDs});
 
   Map<String, dynamic> toJson() => {
         "vault_id": vaultId,
@@ -235,6 +235,6 @@ class SyncDataRemove extends NullPassSync {
   SyncDataRemove.fromMap(Map map) {
     vaultId = map["vault_id"];
     secretIDs = <String>[];
-    (map["secret_ids"] as List).forEach((s) => secretIDs.add(s as String));
+    (map["secret_ids"] as List).forEach((s) => secretIDs!.add(s as String));
   }
 }

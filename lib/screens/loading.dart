@@ -7,18 +7,18 @@ import 'package:nullpass/screens/appDrawer.dart';
 import 'package:nullpass/widgets.dart';
 
 class LoadingPage extends StatelessWidget {
-  final String title;
-  final NullPassRoute route;
+  final String? title;
+  final NullPassRoute? route;
 
   LoadingPage({this.title, this.route});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: title,
+      title: title!,
       home: Scaffold(
         appBar: AppBar(
-          title: Text(title),
+          title: Text(title!),
         ),
         drawer: AppDrawer(currentPage: route, reloadSecretList: (dynamic) {}),
         body: Container(

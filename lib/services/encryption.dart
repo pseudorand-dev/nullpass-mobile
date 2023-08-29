@@ -31,7 +31,7 @@ class Crypto {
     return _singleton;
   }
 
-  static bool isKeyPairValid(KeyPair kp) {
+  static bool isKeyPairValid(KeyPair? kp) {
     if (kp != null &&
         kp.publicKey != null &&
         kp.privateKey != null &&
@@ -44,7 +44,7 @@ class Crypto {
   }
 }
 
-Future<KeyPair> _setupEncryptionKeyPair() async {
+Future<KeyPair?> _setupEncryptionKeyPair() async {
   try {
     var kp = await OpenPGP.generate(
         options: Options()

@@ -15,10 +15,10 @@ const String _logPackage = "dev.pseudorand.nullpass";
 enum LogLevel { everything, verbose, debug, info, warn, error, fatal, panic }
 
 class Log {
-  static LogLevel logLevel;
+  static LogLevel? logLevel;
 
   static void debug(dynamic message,
-      {String source, Object error, StackTrace stackTrace, int severity: 250}) {
+      {String? source, Object? error, StackTrace? stackTrace, int severity: 250}) {
     if (isDebug) {
       developer.log(
         "[DEBUG] " + message.toString(),
@@ -29,9 +29,9 @@ class Log {
   }
 
   static void error(dynamic message,
-      {String source,
-      Object error,
-      StackTrace stackTrace,
+      {String? source,
+      Object? error,
+      StackTrace? stackTrace,
       int severity: 1500}) {
     developer.log(
       "[ERROR] " + message.toString(),

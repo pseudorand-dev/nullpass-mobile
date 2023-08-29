@@ -28,15 +28,16 @@ enum NullPassRoute {
   ManageDevices,
   Settings,
   AuditLog,
-  HelpAndFeedback
+  HelpAndFeedback,
+  ViewOTPsList
 }
 
 class AppDrawer extends StatelessWidget {
-  final NullPassRoute currentPage;
+  final NullPassRoute? currentPage;
   final Function reloadSecretList;
 
   AppDrawer(
-      {Key key, @required this.currentPage, @required this.reloadSecretList})
+      {Key? key, required this.currentPage, required this.reloadSecretList})
       : super(key: key);
 
   @override

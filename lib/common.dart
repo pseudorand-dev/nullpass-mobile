@@ -16,9 +16,9 @@ import 'package:vibration/vibration.dart';
 const String OneSignalKey = "<THIS_NEEDS_TO_BE_ADDED_BEFORE_COMPILATION>";
 
 // A common variable for the internal notification system
-np.NotificationManager notify;
+late np.NotificationManager notify;
 
-SharedPreferences sharedPrefs;
+SharedPreferences? sharedPrefs;
 const String AuthOnLoadPrefKey = 'AuthenticateOnAppLoad';
 const String AuthTimeoutSecondsPrefKey = 'AutenticationTimeoutSeconds';
 const String SecretLengthPrefKey = 'SecretLength';
@@ -54,11 +54,11 @@ bool isTrue(dynamic value) {
 }
 
 List<Secret> secretsListFromJsonString(String jsonBlob) {
-  List<Secret> secretList;
+  List<Secret>? secretList;
   var decoded = jsonDecode(jsonBlob);
 
   try {
-    var jsonList = decoded as List;
+    var jsonList = decoded as List?;
     secretList = jsonList != null
         ? jsonList.map((i) => Secret.fromJson(i)).toList()
         : null;
@@ -67,7 +67,7 @@ List<Secret> secretsListFromJsonString(String jsonBlob) {
   if (secretList == null) {
     secretList = <Secret>[];
     var jsonMap = decoded as Map;
-    jsonMap.forEach((k, v) => secretList.add(Secret.fromJson(v)));
+    jsonMap.forEach((k, v) => secretList!.add(Secret.fromJson(v)));
   }
 
   return secretList;
@@ -86,7 +86,7 @@ void showSnackBar(BuildContext context, String text,
     SnackBar(content: Text(text), duration: Duration(milliseconds: 1000)),
   );
   var hasVibrator = await Vibration.hasVibrator();
-  if (vibrate && hasVibrator) {
+  if (vibrate && hasVibrator!) {
     // if (Vibration.hasVibrator())
     Vibration.vibrate(duration: vibrateDuration);
   }
@@ -96,7 +96,7 @@ String base64EncodeString(String input) => base64.encode(utf8.encode(input));
 
 String base64DecodeString(String input) => utf8.decode(base64.decode(input));
 
-String stringListToString(List<String> stringList) {
+String stringListToString(List<String?> stringList) {
   var str = "[";
 
   stringList.forEach((s) {

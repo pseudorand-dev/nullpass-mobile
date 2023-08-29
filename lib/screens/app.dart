@@ -18,25 +18,25 @@ class NullPassApp extends StatefulWidget {
 }
 
 class _NullPassAppState extends State<NullPassApp> {
-  List<Secret> _secrets = <Secret>[];
+  List<Secret>? _secrets = <Secret>[];
   bool _loading = true;
   static bool _completeSecretsPull = false;
-  static bool _completeEncryptionKeyGeneration = false;
+  static bool? _completeEncryptionKeyGeneration = false;
 
   Future<void> encryptionKeyCallback() async {
     _completeEncryptionKeyGeneration =
-        sharedPrefs.getBool(EncryptionKeyPairSetupPrefKey);
-    if (_completeEncryptionKeyGeneration && _completeSecretsPull) {
+        sharedPrefs!.getBool(EncryptionKeyPairSetupPrefKey);
+    if (_completeEncryptionKeyGeneration! && _completeSecretsPull) {
       setState(() {
         _loading = false;
       });
     }
   }
 
-  Future<void> secretsPullCallback(List<Secret> result) async {
+  Future<void> secretsPullCallback(List<Secret>? result) async {
     _secrets = result;
     _completeSecretsPull = true;
-    if (_completeEncryptionKeyGeneration && _completeSecretsPull) {
+    if (_completeEncryptionKeyGeneration! && _completeSecretsPull) {
       setState(() {
         _loading = false;
       });
@@ -74,7 +74,7 @@ class _NullPassAppState extends State<NullPassApp> {
   void _reloadSecretList(result) async {
     if (isTrue(result)) {
       NullPassDB npDB = NullPassDB.instance;
-      List<Secret> sList = await npDB.getAllSecrets();
+      List<Secret>? sList = await npDB.getAllSecrets();
       setState(() {
         _secrets = sList;
       });

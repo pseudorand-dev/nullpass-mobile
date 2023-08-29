@@ -18,7 +18,7 @@ class ManageVault extends StatefulWidget {
 
 class ManageVaultState extends State<ManageVault> {
   bool _loading = true;
-  List<Vault> _vaults;
+  List<Vault>? _vaults;
 
   @override
   void initState() {
@@ -43,13 +43,13 @@ class ManageVaultState extends State<ManageVault> {
       return Scaffold(
         appBar: AppBar(title: Text('Manage Vaults')),
         body: ListView.builder(
-          itemCount: this._vaults.length,
+          itemCount: this._vaults!.length,
           itemBuilder: (context, index) {
             return ListTile(
               contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 5),
-              title: Text(this._vaults[index].nickname),
-              subtitle: this._vaults[index].manager == VaultManager.Internal
-                  ? ((this._vaults[index].isDefault) ? Text("Default") : null)
+              title: Text(this._vaults![index].nickname!),
+              subtitle: this._vaults![index].manager == VaultManager.Internal
+                  ? (this._vaults![index].isDefault! ? Text("Default") : null)
                   : Text("Synced from External Device"),
               trailing: Container(
                 width: 100,
@@ -57,7 +57,7 @@ class ManageVaultState extends State<ManageVault> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
-                    if (this._vaults[index].manager == VaultManager.Internal)
+                    if (this._vaults![index].manager == VaultManager.Internal)
                       IconButton(
                         icon: Icon(Icons.edit),
                         onPressed: () async {
@@ -65,7 +65,7 @@ class ManageVaultState extends State<ManageVault> {
                             context: context,
                             builder: (BuildContext context) {
                               return NewVaultDialog(
-                                  vault: this._vaults[index],
+                                  vault: this._vaults![index],
                                   onUpdate: () async {
                                     var lv = await NullPassDB.instance
                                         .getAllVaults();
@@ -108,14 +108,14 @@ class ManageVaultState extends State<ManageVault> {
                                     NullPassDB npDB = NullPassDB.instance;
                                     // TODO: await npDB.deleteAllSecrets(); that only live in that vault and remove the vault from all secrets
                                     await npDB
-                                        .deleteVault(this._vaults[index].uid);
+                                        .deleteVault(this._vaults![index].uid);
                                     await NullPassDB.instance
                                         .addAuditRecord(AuditRecord(
                                       type: AuditType.VaultDeleted,
                                       message:
-                                          'The "${this._vaults[index].nickname}" vault was deleted.',
-                                      vaultsReferenceId: <String>{
-                                        this._vaults[index].uid
+                                          'The "${this._vaults![index].nickname}" vault was deleted.',
+                                      vaultsReferenceId: <String?>{
+                                        this._vaults![index].uid
                                       },
                                       date: DateTime.now().toUtc(),
                                     ));
@@ -126,6 +126,10 @@ class ManageVaultState extends State<ManageVault> {
                                     });
                                     Navigator.of(context).pop();
                                   },
+                                  // Widget: Text(
+                                  //   'Delete',
+                                  //   style: TextStyle(color: Colors.red),
+                                  // ),
                                 )
                               ],
                             );
@@ -167,19 +171,19 @@ class ManageVaultState extends State<ManageVault> {
 // typedef AsyncVaultCallback = Future<void> Function(Vault);
 
 class NewVaultDialog extends StatefulWidget {
-  final Vault vault;
+  final Vault? vault;
   final AsyncCallback onUpdate;
   final bool isNew;
 
-  NewVaultDialog({this.vault, @required this.onUpdate, this.isNew = false});
+  NewVaultDialog({this.vault, required this.onUpdate, this.isNew = false});
 
   @override
   _NewVaultDialogState createState() => _NewVaultDialogState();
 }
 
 class _NewVaultDialogState extends State<NewVaultDialog> {
-  Vault _vaultCopy;
-  bool isNew;
+  late Vault _vaultCopy;
+  late bool isNew;
 
   Future<void> addVault() async {
     var v = Vault(
@@ -192,10 +196,10 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
       await NullPassDB.instance.addAuditRecord(AuditRecord(
         type: AuditType.VaultCreated,
         message: 'The "${v.nickname}" vault was created.',
-        vaultsReferenceId: <String>{v.uid},
+        vaultsReferenceId: <String?>{v.uid},
         date: DateTime.now().toUtc(),
       ));
-      if (v.isDefault) {
+      if (v.isDefault!) {
         await setVaultAsDefault(v.uid);
       }
       await this.widget.onUpdate();
@@ -206,25 +210,25 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
     var v = Vault(
       nickname: _vaultCopy.nickname,
       isDefault: _vaultCopy.isDefault,
-      uid: this.widget.vault.uid,
-      manager: this.widget.vault.manager,
-      managerId: this.widget.vault.managerId,
-      createdAt: this.widget.vault.createdAt,
-      modifiedAt: this.widget.vault.modifiedAt,
+      uid: this.widget.vault!.uid,
+      manager: this.widget.vault!.manager,
+      managerId: this.widget.vault!.managerId,
+      createdAt: this.widget.vault!.createdAt,
+      modifiedAt: this.widget.vault!.modifiedAt,
     );
     if (await NullPassDB.instance.updateVault(v)) {
       await NullPassDB.instance.addAuditRecord(AuditRecord(
         type: AuditType.VaultUpdated,
         message: 'The "${v.nickname}" vault was updated.',
-        vaultsReferenceId: <String>{v.uid},
+        vaultsReferenceId: <String?>{v.uid},
         date: DateTime.now().toUtc(),
       ));
-      if (v.isDefault && !this.widget.vault.isDefault) {
+      if (v.isDefault! && !this.widget.vault!.isDefault!) {
         await setVaultAsDefault(v.uid);
       }
 
-      if (!v.isDefault && this.widget.vault.isDefault) {
-        sharedPrefs.setString(DefaultVaultIDPrefKey, "");
+      if (!v.isDefault! && this.widget.vault!.isDefault!) {
+        sharedPrefs!.setString(DefaultVaultIDPrefKey, "");
       }
       await this.widget.onUpdate();
     }
@@ -232,7 +236,7 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
 
   Future<void> setVaultAsDefault(vid) async {
     await NullPassDB.instance.setVaultAsDefault(vid);
-    sharedPrefs.setString(DefaultVaultIDPrefKey, vid);
+    sharedPrefs!.setString(DefaultVaultIDPrefKey, vid);
   }
 
   @override
@@ -243,13 +247,13 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
 
     if (this.widget.vault != null) {
       _vaultCopy = Vault(
-        uid: this.widget.vault.uid,
-        managerId: this.widget.vault.managerId,
-        manager: this.widget.vault.manager,
-        nickname: this.widget.vault.nickname,
-        modifiedAt: this.widget.vault.modifiedAt,
-        isDefault: this.widget.vault.isDefault,
-        createdAt: this.widget.vault.createdAt,
+        uid: this.widget.vault!.uid,
+        managerId: this.widget.vault!.managerId,
+        manager: this.widget.vault!.manager,
+        nickname: this.widget.vault!.nickname,
+        modifiedAt: this.widget.vault!.modifiedAt,
+        isDefault: this.widget.vault!.isDefault,
+        createdAt: this.widget.vault!.createdAt,
       );
     } else {
       _vaultCopy = Vault(
@@ -281,7 +285,7 @@ class _NewVaultDialogState extends State<NewVaultDialog> {
             contentPadding: EdgeInsets.fromLTRB(2, 10, 0, 0),
             title: (this.isNew) ? Text('Set As Default') : Text("Default"),
             trailing: Switch(
-                value: _vaultCopy.isDefault,
+                value: _vaultCopy.isDefault!,
                 onChanged: (newValue) async {
                   setState(() {
                     _vaultCopy.isDefault = newValue;

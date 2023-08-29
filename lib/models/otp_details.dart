@@ -15,7 +15,7 @@ const Map<OTPAlgorithm, String> OTPAlgorithmToString = {
   OTPAlgorithm.SHA512: 'SHA512',
   OTPAlgorithm.MD5: 'MD5',
 };
-OTPAlgorithm OTPAlgorithmFromString(String value, [OTPAlgorithm defaultValue]) {
+OTPAlgorithm OTPAlgorithmFromString(String value, [OTPAlgorithm? defaultValue]) {
   if (value != null && value.trim().toUpperCase() == 'SHA1') {
     return OTPAlgorithm.SHA1;
   } else if (value != null && value.trim().toUpperCase() == 'SHA256') {
@@ -36,7 +36,7 @@ const Map<OTPType, String> OTPTypeToString = {
   OTPType.HOTP: 'HOTP',
   OTPType.TOTP: 'TOTP',
 };
-OTPType OTPTypeFromString(String value, [OTPType defaultValue]) {
+OTPType OTPTypeFromString(String value, [OTPType? defaultValue]) {
   if (value != null && value.trim().toUpperCase() == OTPType.TOTP) {
     return OTPType.TOTP;
   } else if (value != null && value.trim().toUpperCase() == OTPType.HOTP) {
@@ -58,7 +58,7 @@ const Map<OTPDigitCount, int> OTPDigitCountToInt = {
   OTPDigitCount.SIX: 6,
   OTPDigitCount.EIGHT: 8,
 };
-OTPDigitCount OTPDigitCountFromInt(int value, [OTPDigitCount defaultValue]) {
+OTPDigitCount OTPDigitCountFromInt(int? value, [OTPDigitCount? defaultValue]) {
   if (value == 6) {
     return OTPDigitCount.SIX;
   } else if (value == 8) {
@@ -69,24 +69,24 @@ OTPDigitCount OTPDigitCountFromInt(int value, [OTPDigitCount defaultValue]) {
 }
 
 class OTPDetails {
-  String secret;
-  String name;
-  String issuer;
-  OTPAlgorithm algorithm;
-  OTPType type;
-  int counter;
-  OTPDigitCount _digits;
+  String? secret;
+  String? name;
+  String? issuer;
+  OTPAlgorithm? algorithm;
+  OTPType? type;
+  int? counter;
+  OTPDigitCount? _digits;
   int get digits => OTPDigitCountToInt[_digits] ?? -1;
   set digits(int value) => _digits = OTPDigitCountFromInt(value);
 
   OTPDetails({
-    String secret,
-    String name,
-    String issuer,
-    OTPAlgorithm algorithm,
-    OTPType type,
-    int counter,
-    OTPDigitCount digits,
+    String? secret,
+    String? name,
+    String? issuer,
+    OTPAlgorithm? algorithm,
+    OTPType? type,
+    int? counter,
+    OTPDigitCount? digits,
   }) {
     this.secret = secret;
     this.name = name;
@@ -99,7 +99,7 @@ class OTPDetails {
 
   @override
   String toString() {
-    return '{secret: $secret, name: $name, issuer: $issuer, algorithm: ${algorithm.name}, digits: $digits, type: ${type.name}, counter: $counter}';
+    return '{secret: $secret, name: $name, issuer: $issuer, algorithm: ${algorithm!.name}, digits: $digits, type: ${type!.name}, counter: $counter}';
   }
 
   Map<String, dynamic> toJson() {
@@ -107,10 +107,10 @@ class OTPDetails {
       'secret': secret,
       'name': name,
       'issuer': issuer,
-      'algorithm': algorithm.name,
+      'algorithm': algorithm!.name,
       'digits': digits,
-      'type': type.name,
-      'counter': counter.toInt(),
+      'type': type!.name,
+      'counter': counter!.toInt(),
     };
   }
 }

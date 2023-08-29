@@ -16,7 +16,7 @@ class AuditLog extends StatefulWidget {
 }
 
 class _AuditLogState extends State<AuditLog> {
-  List<AuditRecord> _auditRecords;
+  late List<AuditRecord> _auditRecords;
   bool _loading = true;
 
   @override
@@ -61,7 +61,7 @@ class _AuditLogState extends State<AuditLog> {
                             horizontal: 12.0,
                           ),
                           title: Text(
-                            ar.message,
+                            ar.message!,
                             style: TextStyle(fontSize: 12),
                           ),
                           subtitle: Text(

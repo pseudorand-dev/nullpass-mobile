@@ -21,10 +21,10 @@ final String columnDeviceSortKey = "sort_key";
 
 enum DeviceType { MacOS, iOS, Android, Unknown }
 
-String deviceTypeToString(DeviceType dt) =>
+String deviceTypeToString(DeviceType? dt) =>
     dt.toString().substring(dt.toString().lastIndexOf(".") + 1);
 
-DeviceType parseDeviceTypeFromString(String dType) {
+DeviceType parseDeviceTypeFromString(String? dType) {
   var ret = DeviceType.Unknown;
   try {
     ret = DeviceType.values.firstWhere((e) =>
@@ -32,7 +32,7 @@ DeviceType parseDeviceTypeFromString(String dType) {
             .toString()
             .toLowerCase()
             .substring(e.toString().lastIndexOf(".") + 1) ==
-        dType.toLowerCase());
+        dType!.toLowerCase());
   } catch (e) {
     Log.debug(
         "An error occurred while trying to translate string to NotificationType: ${e.toString()}");
@@ -42,25 +42,25 @@ DeviceType parseDeviceTypeFromString(String dType) {
 }
 
 class Device {
-  String id;
-  String deviceID;
-  String nickname;
-  String encryptionKey;
-  DeviceType type;
-  String notes;
-  DateTime created;
-  DateTime lastModified;
-  String get sortKey => (nickname != null) ? nickname.trim().toLowerCase() : "";
+  String? id;
+  String? deviceID;
+  String? nickname;
+  String? encryptionKey;
+  DeviceType? type;
+  String? notes;
+  DateTime? created;
+  DateTime? lastModified;
+  String get sortKey => (nickname != null) ? nickname!.trim().toLowerCase() : "";
 
   Device({
-    String id,
-    @required String deviceID,
-    String nickname,
-    String encryptionKey,
-    DeviceType type,
-    String notes,
-    DateTime created,
-    DateTime lastModified,
+    String? id,
+    required String? deviceID,
+    String? nickname,
+    String? encryptionKey,
+    DeviceType? type,
+    String? notes,
+    DateTime? created,
+    DateTime? lastModified,
   }) {
     if (id == null || id.trim() == '' || !isUUID(id, 4)) {
       id = (new Uuid()).v4();
@@ -86,10 +86,10 @@ class Device {
         columnDeviceType: deviceTypeToString(this.type),
         columnDeviceNotes: this.notes,
         columnDeviceCreated: (this.created != null)
-            ? this.created.toIso8601String()
+            ? this.created!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         columnDeviceModified: (this.lastModified != null)
-            ? this.lastModified.toIso8601String()
+            ? this.lastModified!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         columnDeviceSortKey: sortKey,
       };
@@ -121,10 +121,10 @@ class Device {
         columnDeviceType: deviceTypeToString(this.type),
         columnDeviceNotes: this.notes,
         columnDeviceCreated: (this.created != null)
-            ? this.created.toIso8601String()
+            ? this.created!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         columnDeviceModified: (this.lastModified != null)
-            ? this.lastModified.toIso8601String()
+            ? this.lastModified!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         columnDeviceSortKey: sortKey,
       };

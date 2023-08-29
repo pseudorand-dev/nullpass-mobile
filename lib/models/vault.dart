@@ -9,13 +9,13 @@ import 'package:uuid/uuid.dart';
 // TODO: replace with better terminology
 enum VaultManager { Internal, External }
 
-String vaultSourceToString(VaultManager input) {
+String vaultSourceToString(VaultManager? input) {
   return input.toString().substring(input.toString().indexOf(".") + 1);
 }
 
-VaultManager vaultSourceFromString(String input) {
+VaultManager vaultSourceFromString(String? input) {
   return VaultManager.values.firstWhere(
-      (vs) => vaultSourceToString(vs).toLowerCase() == input.toLowerCase());
+      (vs) => vaultSourceToString(vs).toLowerCase() == input!.toLowerCase());
 }
 
 const String _VAULT_UID_KEY = "_id";
@@ -40,14 +40,14 @@ final String columnVaultModified = _VAULT_MODIFIED_KEY;
 class Vault {
   static const String InternalSourceID = "myDevice";
 
-  String uid;
-  String nickname;
-  VaultManager manager;
-  String managerId;
-  bool isDefault;
-  DateTime createdAt;
-  DateTime modifiedAt;
-  get sortKey => nickname.trim().toLowerCase() ?? "";
+  String? uid;
+  String? nickname;
+  VaultManager? manager;
+  String? managerId;
+  bool? isDefault;
+  DateTime? createdAt;
+  DateTime? modifiedAt;
+  get sortKey => nickname!.trim().toLowerCase() ?? "";
 
   Vault(
       {uid,
@@ -59,7 +59,7 @@ class Vault {
       this.modifiedAt})
       : this.uid = _populateUID(uid);
 
-  static String _populateUID(String uid) {
+  static String _populateUID(String? uid) {
     if (uid == null || uid.trim().isEmpty) {
       return Uuid().v4();
     } else {
@@ -86,8 +86,8 @@ class Vault {
         _VAULT_MANAGERID_KEY: this.managerId,
         _VAULT_ISDEFAULT_KEY: this.isDefault,
         _VAULT_SORTKEY_KEY: this.sortKey,
-        _VAULT_CREATED_KEY: this.createdAt.toIso8601String(),
-        _VAULT_MODIFIED_KEY: this.modifiedAt.toIso8601String(),
+        _VAULT_CREATED_KEY: this.createdAt!.toIso8601String(),
+        _VAULT_MODIFIED_KEY: this.modifiedAt!.toIso8601String(),
       };
 
   Vault.fromMap(Map input) {

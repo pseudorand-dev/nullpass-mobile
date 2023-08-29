@@ -23,8 +23,8 @@ final _dbName = "nullpass";
 final _dbVersion = 2;
 
 // a common representation of the database for all subtables to access (so a separate DB isn't created per object)
-Database _db;
-Future<Database> get _database async {
+Database? _db;
+Future<Database?> get _database async {
   if (_db != null) return _db;
   _db = await _initDatabase();
   return _db;
@@ -59,7 +59,7 @@ Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
   var batch = db.batch();
   if (oldVersion == 1) {
     // V2 Changes
-    await batch.execute("${_NullPassSecretDetailsDB.migrateTableToV2}");
+    batch.execute("${_NullPassSecretDetailsDB.migrateTableToV2}");
   }
   await batch.commit();
 }
@@ -76,7 +76,7 @@ class NullPassDB {
   static final _nullpassSecureStorage = new FlutterSecureStorage();
 
   /* PGP */
-  Future<bool> insertEncryptionKeyPair(KeyPair kp) async {
+  Future<bool> insertEncryptionKeyPair(KeyPair? kp) async {
     try {
       if (kp != null &&
           kp.publicKey != null &&
@@ -96,11 +96,11 @@ class NullPassDB {
     return false;
   }
 
-  Future<KeyPair> getEncryptionKeyPair() async {
+  Future<KeyPair?> getEncryptionKeyPair() async {
     try {
-      String pubKey =
+      String? pubKey =
           await _nullpassSecureStorage.read(key: _encryptionStorePubKeyID);
-      String privKey =
+      String? privKey =
           await _nullpassSecureStorage.read(key: _encryptionStoreSecKeyID);
       if (pubKey != null &&
           privKey != null &&
@@ -115,7 +115,7 @@ class NullPassDB {
     return null;
   }
 
-  Future<String> getEncryptionPublicKey() async {
+  Future<String?> getEncryptionPublicKey() async {
     try {
       return await _nullpassSecureStorage.read(key: _encryptionStorePubKeyID);
     } catch (e) {
@@ -125,7 +125,7 @@ class NullPassDB {
     }
   }
 
-  Future<String> getEncryptionPrivateKey() async {
+  Future<String?> getEncryptionPrivateKey() async {
     try {
       return await _nullpassSecureStorage.read(key: _encryptionStoreSecKeyID);
     } catch (e) {
@@ -179,8 +179,8 @@ class NullPassDB {
     // throw new Exception("TBD - not yet implemented");
   }
 
-  Future<Secret> getSecretByID(String uuid) async {
-    Secret result;
+  Future<Secret?> getSecretByID(String uuid) async {
+    Secret? result;
     try {
       result = await _secretDetailsDB.getSecretByID(uuid);
     } catch (e) {
@@ -189,7 +189,7 @@ class NullPassDB {
     }
 
     try {
-      result.message = await _nullpassSecureStorage.read(key: uuid);
+      result!.message = await _nullpassSecureStorage.read(key: uuid);
       result.otpCode =
           await _nullpassSecureStorage.read(key: uuid + otpKeySuffix);
       return result;
@@ -201,8 +201,8 @@ class NullPassDB {
     return null;
   }
 
-  Future<List<Secret>> getAllSecrets() async {
-    List<Secret> secretList;
+  Future<List<Secret>?> getAllSecrets() async {
+    List<Secret>? secretList;
     try {
       secretList = await _secretDetailsDB.getAllSecrets();
     } catch (e) {
@@ -215,7 +215,7 @@ class NullPassDB {
         Map<String, String> messageMap = await _nullpassSecureStorage.readAll();
         secretList.forEach((s) {
           s.message = messageMap[s.uuid];
-          s.otpCode = messageMap[s.uuid + otpKeySuffix];
+          s.otpCode = messageMap[s.uuid! + otpKeySuffix];
         });
         // secretList.forEach((s) async =>
         //     (s.message = await _nullpassSecureStorage.read(key: s.uuid)));
@@ -228,8 +228,8 @@ class NullPassDB {
     return null;
   }
 
-  Future<List<Secret>> getAllSecretsInVault(String vaultID) async {
-    List<Secret> secretList;
+  Future<List<Secret>?> getAllSecretsInVault(String? vaultID) async {
+    List<Secret>? secretList;
     try {
       secretList = await _secretDetailsDB.getAllSecretsInVault(vaultID);
     } catch (e) {
@@ -242,7 +242,7 @@ class NullPassDB {
         Map<String, String> messageMap = await _nullpassSecureStorage.readAll();
         secretList.forEach((s) {
           s.message = messageMap[s.uuid];
-          s.otpCode = messageMap[s.uuid + otpKeySuffix];
+          s.otpCode = messageMap[s.uuid! + otpKeySuffix];
         });
         return secretList;
       } catch (e) {
@@ -322,7 +322,7 @@ class NullPassDB {
     return true;
   }
 
-  Future<List<Secret>> findSecret(String keyword) async {
+  Future<List<Secret>?> findSecret(String? keyword) async {
     List<Secret> sList;
 
     try {
@@ -335,11 +335,11 @@ class NullPassDB {
 
     try {
       sList.forEach((s) async {
-        var message = await _nullpassSecureStorage.read(key: s.uuid);
+        var message = await _nullpassSecureStorage.read(key: s.uuid!);
         s.message = message;
 
         var otpCode = await _nullpassSecureStorage.read(
-          key: s.uuid + otpKeySuffix,
+          key: s.uuid! + otpKeySuffix,
         );
         s.otpCode = otpCode;
       });
@@ -354,20 +354,20 @@ class NullPassDB {
 
   Future<void> _writeSecretData(Secret s) async {
     try {
-      await _nullpassSecureStorage.write(key: s.uuid, value: s.message);
+      await _nullpassSecureStorage.write(key: s.uuid!, value: s.message);
     } catch (e) {
       Log.debug(
           "an error occured while trying to write the secret data into the secure storage: $e");
     }
 
     try {
-      if (s.otpCode != null && s.otpCode.trim().isNotEmpty) {
+      if (s.otpCode != null && s.otpCode!.trim().isNotEmpty) {
         await _nullpassSecureStorage.write(
-          key: s.uuid + otpKeySuffix,
+          key: s.uuid! + otpKeySuffix,
           value: s.otpCode?.toUpperCase(),
         );
       } else {
-        await _nullpassSecureStorage.delete(key: s.uuid + otpKeySuffix);
+        await _nullpassSecureStorage.delete(key: s.uuid! + otpKeySuffix);
       }
     } catch (e) {
       Log.debug(
@@ -378,7 +378,7 @@ class NullPassDB {
   /* Vaults */
   static final _NullPassVaultsDB _vaultDB = _NullPassVaultsDB.instance;
 
-  Future<Vault> createDefaultVault() async {
+  Future<Vault?> createDefaultVault() async {
     try {
       var v = await _vaultDB.getDefaultVault();
       if (v != null) return v;
@@ -418,7 +418,7 @@ class NullPassDB {
     }
   }
 
-  Future<Vault> getVaultByID(String vid) async {
+  Future<Vault?> getVaultByID(String? vid) async {
     try {
       var v = await _vaultDB.getVaultByID(vid);
       return v;
@@ -429,7 +429,7 @@ class NullPassDB {
     }
   }
 
-  Future<Vault> getDefaultVault() async {
+  Future<Vault?> getDefaultVault() async {
     try {
       var v = await _vaultDB.getDefaultVault();
       return v;
@@ -440,7 +440,7 @@ class NullPassDB {
     }
   }
 
-  Future<List<Vault>> getAllVaults() async {
+  Future<List<Vault>?> getAllVaults() async {
     try {
       var lv = await _vaultDB.getAllVaults();
       return lv;
@@ -451,7 +451,7 @@ class NullPassDB {
     }
   }
 
-  Future<List<Vault>> getAllInternallyManagedVaults() async {
+  Future<List<Vault>?> getAllInternallyManagedVaults() async {
     try {
       var lv = await _vaultDB.getAllInternalVaults();
       return lv;
@@ -462,7 +462,7 @@ class NullPassDB {
     }
   }
 
-  Future<List<Vault>> getAllExternallyManagedVaults() async {
+  Future<List<Vault>?> getAllExternallyManagedVaults() async {
     try {
       var lv = await _vaultDB.getAllExternalVaults();
       return lv;
@@ -473,7 +473,7 @@ class NullPassDB {
     }
   }
 
-  Future<Vault> setVaultAsDefault(String vid) async {
+  Future<Vault?> setVaultAsDefault(String vid) async {
     try {
       var newDefaultVault = await getVaultByID(vid);
       // if the Vault we are trying to select exists - i.e. can be made default
@@ -489,13 +489,13 @@ class NullPassDB {
         });
 
         // Update the vault we want to be marked as default to be default
-        if (!newDefaultVault.isDefault) {
+        if (!newDefaultVault.isDefault!) {
           newDefaultVault.isDefault = true;
           await addAuditRecord(AuditRecord(
             type: AuditType.VaultNewDefault,
             message:
                 'The "${newDefaultVault.nickname}" vault was made the default.',
-            vaultsReferenceId: <String>{newDefaultVault.uid},
+            vaultsReferenceId: <String?>{newDefaultVault.uid},
             date: DateTime.now().toUtc(),
           ));
           await _vaultDB.update(newDefaultVault);
@@ -520,14 +520,14 @@ class NullPassDB {
     }
   }
 
-  Future<bool> deleteVault(String vid) async {
+  Future<bool> deleteVault(String? vid) async {
     try {
       var sL = await getAllSecretsInVault(vid) ?? <Secret>[];
       for (var s in sL) {
-        if (s.vaults.length == 1 && s.vaults[0] == vid) {
-          await deleteSecret(s.uuid);
-        } else if (s.vaults.length > 1 && s.vaults.contains(vid)) {
-          s.vaults.remove(vid);
+        if (s.vaults!.length == 1 && s.vaults![0] == vid) {
+          await deleteSecret(s.uuid!);
+        } else if (s.vaults!.length > 1 && s.vaults!.contains(vid)) {
+          s.vaults!.remove(vid);
           await updateSecret(s);
         }
       }
@@ -574,7 +574,7 @@ class NullPassDB {
     }
   }
 
-  Future<Device> getDeviceByID(String id) async {
+  Future<Device?> getDeviceByID(String id) async {
     try {
       return await _deviceDB.getDeviceByID(id);
     } catch (e) {
@@ -584,7 +584,7 @@ class NullPassDB {
     }
   }
 
-  Future<Device> getDeviceBySyncID(String id) async {
+  Future<Device?> getDeviceBySyncID(String? id) async {
     try {
       return await _deviceDB.getDeviceBySyncID(id);
     } catch (e) {
@@ -594,7 +594,7 @@ class NullPassDB {
     }
   }
 
-  Future<List<Device>> getAllDevices() async {
+  Future<List<Device>?> getAllDevices() async {
     try {
       return await _deviceDB.getAllDevices();
     } catch (e) {
@@ -615,7 +615,7 @@ class NullPassDB {
     }
   }
 
-  Future<bool> deleteDevice(String id) async {
+  Future<bool> deleteDevice(String? id) async {
     try {
       await _deviceDB.delete(id);
       return true;
@@ -653,7 +653,7 @@ class NullPassDB {
     return false;
   }
 
-  Future<String> fetchSyncDataBackup(String id) async {
+  Future<String?> fetchSyncDataBackup(String id) async {
     try {
       return await _nullpassSecureStorage.read(key: id);
     } catch (e) {
@@ -696,7 +696,7 @@ class NullPassDB {
     }
   }
 
-  Future<DeviceSync> getSyncByID(String id) async {
+  Future<DeviceSync?> getSyncByID(String id) async {
     try {
       return await _syncDeviceDB.getSyncByID(id);
     } catch (e) {
@@ -706,8 +706,8 @@ class NullPassDB {
     }
   }
 
-  Future<DeviceSync> getSyncByDeviceAndVault(
-      String deviceId, String vaultId) async {
+  Future<DeviceSync?> getSyncByDeviceAndVault(
+      String? deviceId, String? vaultId) async {
     try {
       var syncsWithDevice = await getAllSyncsWithADevice(deviceId);
       return syncsWithDevice.firstWhere((ds) => ds.vaultID == vaultId);
@@ -720,7 +720,7 @@ class NullPassDB {
     }
   }
 
-  Future<List<DeviceSync>> getAllSyncs() async {
+  Future<List<DeviceSync>?> getAllSyncs() async {
     try {
       return await _syncDeviceDB.getAllSyncs();
     } catch (e) {
@@ -730,7 +730,7 @@ class NullPassDB {
     }
   }
 
-  Future<List<DeviceSync>> getAllSyncsForAVault(String vaultId) async {
+  Future<List<DeviceSync>> getAllSyncsForAVault(String? vaultId) async {
     try {
       var dsl = await _syncDeviceDB.getAllSyncs() ?? <DeviceSync>[];
       dsl.retainWhere((ds) => ds.vaultID == vaultId);
@@ -742,7 +742,7 @@ class NullPassDB {
     }
   }
 
-  Future<List<DeviceSync>> getAllSyncsWithADevice(String deviceId) async {
+  Future<List<DeviceSync>> getAllSyncsWithADevice(String? deviceId) async {
     try {
       return await _syncDeviceDB.getAllSyncsWithADeviceByID(deviceId);
     } catch (e) {
@@ -752,7 +752,7 @@ class NullPassDB {
     }
   }
 
-  Future<List<DeviceSync>> getAllVaultSyncsFromThisDevice(
+  Future<List<DeviceSync>?> getAllVaultSyncsFromThisDevice(
       String vaultId) async {
     try {
       return await _syncDeviceDB.getAllVaultSyncsFromThisDevice(vaultId);
@@ -774,7 +774,7 @@ class NullPassDB {
     }
   }
 
-  Future<bool> deleteSync(String id) async {
+  Future<bool> deleteSync(String? id) async {
     try {
       await _syncDeviceDB.delete(id);
       return true;
@@ -786,12 +786,12 @@ class NullPassDB {
   }
 
   Future<bool> deleteSyncOfVaultToDevice(
-      String deviceId, String vaultId) async {
+      String? deviceId, String? vaultId) async {
     // Doesn't seem to work so replace with get all syncs and delete any
     // that have a matching vault id ->
     // await _syncDeviceDB.deleteSyncOfVaultToDevice(deviceId, vaultId);
     try {
-      var dsL = await _syncDeviceDB.getAllSyncs();
+      var dsL = (await _syncDeviceDB.getAllSyncs())!;
       var vaultSync = dsL.where((v) => v.vaultID == vaultId);
       for (var vs in vaultSync) {
         await _syncDeviceDB.delete(vs.id);
@@ -804,7 +804,7 @@ class NullPassDB {
     }
   }
 
-  Future<bool> deleteAllSyncsToDevice(String deviceId) async {
+  Future<bool> deleteAllSyncsToDevice(String? deviceId) async {
     try {
       await _syncDeviceDB.deleteAllSyncsToDevice(deviceId);
       return true;
@@ -841,7 +841,7 @@ class NullPassDB {
     }
   }
 
-  Future<List<AuditRecord>> getAllAuditRecords() async {
+  Future<List<AuditRecord>?> getAllAuditRecords() async {
     try {
       return await _auditDB.getAll();
     } catch (e) {
@@ -902,7 +902,7 @@ class _NullPassSecretDetailsDB {
   /* Database helper methods */
 
   Future<int> insert(Secret s) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     s.created = DateTime.now().toUtc();
     s.lastModified = DateTime.now().toUtc();
     Log.debug(s.toMap());
@@ -911,7 +911,7 @@ class _NullPassSecretDetailsDB {
   }
 
   Future<void> insertBulk(List<Secret> ls) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     var batch = db.batch();
     ls.forEach((s) => batch.insert(secretTableName, s.toMap()));
     var results = await batch.commit(continueOnError: true);
@@ -920,7 +920,7 @@ class _NullPassSecretDetailsDB {
   }
 
   Future<void> insertBulkMaps(List<Map<String, dynamic>> ls) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     var batch = db.batch();
     ls.forEach((s) => batch.insert(secretTableName, s));
     await batch.commit(noResult: true, continueOnError: true);
@@ -928,40 +928,41 @@ class _NullPassSecretDetailsDB {
   }
 
   Future<void> insertBulkSecrets(List<Secret> ls) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     var batch = db.batch();
     ls.forEach((s) => batch.insert(secretTableName, s.toMap()));
     await batch.commit(noResult: true, continueOnError: true);
     return;
   }
 
-  Future<Secret> getSecretByID(String uuid) async {
-    Database db = await _database;
+  Future<Secret?> getSecretByID(String uuid) async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(secretTableName,
         columns: _secretTableColumns,
         where: '$columnSecretId = ?',
         whereArgs: [uuid]);
     if (maps.length > 0) {
-      Secret s = Secret.fromMap(maps.first);
+      Secret s = Secret.fromMap(maps.first as Map<String, dynamic>);
       return s;
     }
     return null;
   }
 
-  Future<List<Secret>> getAllSecrets() async {
-    Database db = await _database;
+  Future<List<Secret>?> getAllSecrets() async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(secretTableName,
         columns: _secretTableColumns, orderBy: columnSecretSortKey);
     if (maps.length > 0) {
       List<Secret> secretList = <Secret>[];
-      maps.forEach((m) => secretList.add(Secret.fromMap(m)));
+      maps.forEach(
+          (m) => secretList.add(Secret.fromMap(m as Map<String, dynamic>)));
       return secretList;
     }
     return null;
   }
 
-  Future<List<Secret>> getAllSecretsInVault(vaultID) async {
-    Database db = await _database;
+  Future<List<Secret>?> getAllSecretsInVault(vaultID) async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(secretTableName,
         columns: _secretTableColumns,
         where: '$columnSecretVaults LIKE ?',
@@ -969,8 +970,8 @@ class _NullPassSecretDetailsDB {
     if (maps.length > 0) {
       List<Secret> secretList = <Secret>[];
       maps.forEach((m) {
-        var s = Secret.fromMap(m);
-        if (s.vaults.contains(vaultID)) secretList.add(s);
+        var s = Secret.fromMap(m as Map<String, dynamic>);
+        if (s.vaults!.contains(vaultID)) secretList.add(s);
       });
       return secretList;
     }
@@ -978,7 +979,7 @@ class _NullPassSecretDetailsDB {
   }
 
   Future<int> update(Secret s) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     s.lastModified = DateTime.now().toUtc();
 
     int id = await db.update(secretTableName, s.toMap(),
@@ -987,20 +988,20 @@ class _NullPassSecretDetailsDB {
   }
 
   Future<int> delete(String uuid) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     int id = await db.delete(secretTableName,
         where: '$columnSecretId = ?', whereArgs: [uuid]);
     return id;
   }
 
   Future<int> deleteAll() async {
-    Database db = await _database;
+    Database db = (await _database)!;
     int id = await db.delete(secretTableName);
     return id;
   }
 
-  Future<List<Secret>> find(String keyword) async {
-    Database db = await _database;
+  Future<List<Secret>> find(String? keyword) async {
+    Database db = (await _database)!;
     List<Map<String, dynamic>> query = await db.query(secretTableName,
         where:
             '$columnSecretNickname LIKE ? OR $columnSecretWebsite LIKE ? OR $columnSecretUsername LIKE ?  OR $columnSecretNotes LIKE ?',
@@ -1043,7 +1044,7 @@ class _NullPassVaultsDB {
   ];
 
   Future<int> insert(Vault v) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     int id;
     try {
       v.createdAt = DateTime.now();
@@ -1058,7 +1059,7 @@ class _NullPassVaultsDB {
   }
 
   Future<void> bulkInsert(List<Vault> lv) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     var batch = db.batch();
     lv.forEach((v) {
       v.createdAt = DateTime.now();
@@ -1071,7 +1072,7 @@ class _NullPassVaultsDB {
   }
 
   Future<void> bulkInsertMap(List<Map<String, dynamic>> lv) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     var batch = db.batch();
     lv.forEach((v) {
       v[columnVaultCreated] = DateTime.now().toIso8601String();
@@ -1083,8 +1084,8 @@ class _NullPassVaultsDB {
     return;
   }
 
-  Future<Vault> getVaultByID(String uid) async {
-    Database db = await _database;
+  Future<Vault?> getVaultByID(String? uid) async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(vaultTableName,
         columns: _vaultsTableColumns,
         where: '$columnVaultId = ?',
@@ -1096,10 +1097,11 @@ class _NullPassVaultsDB {
     return null;
   }
 
-  Future<Vault> getDefaultVault() async {
-    Database db = await _database;
+  Future<Vault?> getDefaultVault() async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(vaultTableName,
-        columns: _vaultsTableColumns, where: '$columnVaultIsDefault = ?',
+        columns: _vaultsTableColumns,
+        where: '$columnVaultIsDefault = ?',
         // Have to use `1` instead of `true` because:
         //      "Invalid argument true with type bool.
         //       Only num, String and Uint8List are supported"
@@ -1113,7 +1115,7 @@ class _NullPassVaultsDB {
   }
 
   Future<List<Vault>> getAllDefaultVaults() async {
-    Database db = await _database;
+    Database db = (await _database)!;
     List<Map> maps = await db.query(vaultTableName,
             columns: _vaultsTableColumns,
             where: '$columnVaultIsDefault = ?',
@@ -1124,8 +1126,8 @@ class _NullPassVaultsDB {
     return defaultVList;
   }
 
-  Future<List<Vault>> getAllVaults() async {
-    Database db = await _database;
+  Future<List<Vault>?> getAllVaults() async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(vaultTableName,
         columns: _vaultsTableColumns, orderBy: columnVaultNickname);
     if (maps.length > 0) {
@@ -1136,8 +1138,8 @@ class _NullPassVaultsDB {
     return null;
   }
 
-  Future<List<Vault>> getAllInternalVaults() async {
-    Database db = await _database;
+  Future<List<Vault>?> getAllInternalVaults() async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(vaultTableName,
         columns: _vaultsTableColumns,
         where: '$columnVaultManager = ?',
@@ -1151,8 +1153,8 @@ class _NullPassVaultsDB {
     return null;
   }
 
-  Future<List<Vault>> getAllExternalVaults() async {
-    Database db = await _database;
+  Future<List<Vault>?> getAllExternalVaults() async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(vaultTableName,
         columns: _vaultsTableColumns,
         where: '$columnVaultManager = ?',
@@ -1167,7 +1169,7 @@ class _NullPassVaultsDB {
   }
 
   Future<int> update(Vault v) async {
-    Database db = await _database;
+    Database db = (await _database)!;
 
     v.modifiedAt = DateTime.now();
     int id = await db.update(vaultTableName, v.toMap(),
@@ -1175,8 +1177,8 @@ class _NullPassVaultsDB {
     return id;
   }
 
-  Future<int> delete(String uid) async {
-    Database db = await _database;
+  Future<int> delete(String? uid) async {
+    Database db = (await _database)!;
 
     int id = await db
         .delete(vaultTableName, where: '$columnVaultId = ?', whereArgs: [uid]);
@@ -1184,7 +1186,7 @@ class _NullPassVaultsDB {
   }
 
   Future<int> deleteAll() async {
-    Database db = await _database;
+    Database db = (await _database)!;
 
     int id = await db.delete(vaultTableName);
     return id;
@@ -1229,7 +1231,7 @@ class _NullPassDevicesDB {
   /* Database helper methods */
 
   Future<int> insert(Device d) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     d.created = DateTime.now().toUtc();
     d.lastModified = DateTime.now().toUtc();
     Log.debug(d.toMap());
@@ -1244,7 +1246,7 @@ class _NullPassDevicesDB {
   }
 
   Future<void> bulkInsert(List<Device> ld) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     var batch = db.batch();
     ld.forEach((d) => batch.insert(deviceTableName, d.toMap()));
     var results = await batch.commit(continueOnError: true);
@@ -1253,7 +1255,7 @@ class _NullPassDevicesDB {
   }
 
   Future<void> bulkInsertMaps(List<Map<String, dynamic>> ld) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     var batch = db.batch();
     ld.forEach((d) => batch.insert(deviceTableName, d));
     await batch.commit(noResult: true, continueOnError: true);
@@ -1261,15 +1263,15 @@ class _NullPassDevicesDB {
   }
 
   Future<void> bulkInsertDevices(List<Device> ld) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     var batch = db.batch();
     ld.forEach((d) => batch.insert(deviceTableName, d.toMap()));
     await batch.commit(noResult: true, continueOnError: true);
     return;
   }
 
-  Future<Device> getDeviceByID(String uid) async {
-    Database db = await _database;
+  Future<Device?> getDeviceByID(String uid) async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(deviceTableName,
         columns: _devicesTableColumns,
         where: '$columnDeviceId = ?',
@@ -1281,8 +1283,8 @@ class _NullPassDevicesDB {
     return null;
   }
 
-  Future<Device> getDeviceBySyncID(String uid) async {
-    Database db = await _database;
+  Future<Device?> getDeviceBySyncID(String? uid) async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(deviceTableName,
         columns: _devicesTableColumns,
         where: '$columnDeviceSyncId = ?',
@@ -1294,8 +1296,8 @@ class _NullPassDevicesDB {
     return null;
   }
 
-  Future<List<Device>> getAllDevices() async {
-    Database db = await _database;
+  Future<List<Device>?> getAllDevices() async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(deviceTableName,
         columns: _devicesTableColumns, orderBy: columnDeviceSortKey);
     if (maps.length > 0) {
@@ -1307,7 +1309,7 @@ class _NullPassDevicesDB {
   }
 
   Future<int> update(Device d) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     d.lastModified = DateTime.now().toUtc();
 
     int id = await db.update(deviceTableName, d.toMap(),
@@ -1315,15 +1317,15 @@ class _NullPassDevicesDB {
     return id;
   }
 
-  Future<int> delete(String id) async {
-    Database db = await _database;
+  Future<int> delete(String? id) async {
+    Database db = (await _database)!;
     int retId = await db
         .delete(deviceTableName, where: '$columnDeviceId = ?', whereArgs: [id]);
     return retId;
   }
 
   Future<int> deleteAll() async {
-    Database db = await _database;
+    Database db = (await _database)!;
     int id = await db.delete(deviceTableName);
     return id;
   }
@@ -1373,7 +1375,7 @@ class _NullPassSyncDevicesDB {
   /* Database helper methods */
 
   Future<int> insert(DeviceSync d) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     d.created = DateTime.now().toUtc();
     d.lastModified = DateTime.now().toUtc();
     Log.debug(d.toMap());
@@ -1382,7 +1384,7 @@ class _NullPassSyncDevicesDB {
   }
 
   Future<void> bulkInsert(List<DeviceSync> lds) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     var batch = db.batch();
     lds.forEach((ds) => batch.insert(syncTableName, ds.toMap()));
     var results = await batch.commit(continueOnError: true);
@@ -1391,7 +1393,7 @@ class _NullPassSyncDevicesDB {
   }
 
   Future<void> bulkInsertMaps(List<Map<String, dynamic>> ld) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     var batch = db.batch();
     ld.forEach((d) => batch.insert(syncTableName, d));
     await batch.commit(noResult: true, continueOnError: true);
@@ -1399,15 +1401,15 @@ class _NullPassSyncDevicesDB {
   }
 
   Future<void> bulkInsertSync(List<DeviceSync> ld) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     var batch = db.batch();
     ld.forEach((d) => batch.insert(syncTableName, d.toMap()));
     await batch.commit(noResult: true, continueOnError: true);
     return;
   }
 
-  Future<DeviceSync> getSyncByID(String uid) async {
-    Database db = await _database;
+  Future<DeviceSync?> getSyncByID(String uid) async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(syncTableName,
         columns: _syncDevicesTableColumns,
         where: '$columnSyncId = ?',
@@ -1419,8 +1421,8 @@ class _NullPassSyncDevicesDB {
     return null;
   }
 
-  Future<DeviceSync> getSyncByDeviceID(String uid) async {
-    Database db = await _database;
+  Future<DeviceSync?> getSyncByDeviceID(String uid) async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(syncTableName,
         columns: _syncDevicesTableColumns,
         where: '$columnSyncDeviceId = ?',
@@ -1432,8 +1434,8 @@ class _NullPassSyncDevicesDB {
     return null;
   }
 
-  Future<List<DeviceSync>> getAllSyncsWithADeviceByID(String uid) async {
-    Database db = await _database;
+  Future<List<DeviceSync>> getAllSyncsWithADeviceByID(String? uid) async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(syncTableName,
             columns: _syncDevicesTableColumns,
             where: '$columnSyncDeviceId = ?',
@@ -1446,8 +1448,8 @@ class _NullPassSyncDevicesDB {
     return dsList;
   }
 
-  Future<List<DeviceSync>> getAllSyncs() async {
-    Database db = await _database;
+  Future<List<DeviceSync>?> getAllSyncs() async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(syncTableName,
         columns: _syncDevicesTableColumns, orderBy: columnSyncLastPerformed);
     if (maps.length > 0) {
@@ -1458,8 +1460,8 @@ class _NullPassSyncDevicesDB {
     return null;
   }
 
-  Future<List<DeviceSync>> getAllVaultSyncsFromThisDevice(String vault) async {
-    Database db = await _database;
+  Future<List<DeviceSync>?> getAllVaultSyncsFromThisDevice(String vault) async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(syncTableName,
         columns: _syncDevicesTableColumns,
         where: '$columnSyncFromInternal = ? AND $columnSyncVaultId = ?',
@@ -1473,7 +1475,7 @@ class _NullPassSyncDevicesDB {
   }
 
   Future<int> update(DeviceSync d) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     d.lastModified = DateTime.now().toUtc();
 
     int id = await db.update(syncTableName, d.toMap(),
@@ -1481,15 +1483,15 @@ class _NullPassSyncDevicesDB {
     return id;
   }
 
-  Future<int> delete(String id) async {
-    Database db = await _database;
+  Future<int> delete(String? id) async {
+    Database db = (await _database)!;
     int retId = await db
         .delete(syncTableName, where: '$columnSyncId = ?', whereArgs: [id]);
     return retId;
   }
 
-  Future<int> deleteAllSyncsToDevice(String deviceId) async {
-    Database db = await _database;
+  Future<int> deleteAllSyncsToDevice(String? deviceId) async {
+    Database db = (await _database)!;
     int retId = await db.delete(
       deviceTableName,
       where: '$columnSyncDeviceId = ?',
@@ -1499,7 +1501,7 @@ class _NullPassSyncDevicesDB {
   }
 
   Future<int> deleteAll() async {
-    Database db = await _database;
+    Database db = (await _database)!;
     int id = await db.delete(syncTableName);
     return id;
   }
@@ -1536,7 +1538,7 @@ class _NullPassAuditDB {
   ];
 
   Future<int> insert(AuditRecord ar) async {
-    Database db = await _database;
+    Database db = (await _database)!;
     if (ar.date == null) {
       ar.date = DateTime.now().toUtc();
     }
@@ -1545,8 +1547,8 @@ class _NullPassAuditDB {
     return id;
   }
 
-  Future<List<AuditRecord>> getAll() async {
-    Database db = await _database;
+  Future<List<AuditRecord>?> getAll() async {
+    Database db = (await _database)!;
     List<Map> maps = await db.query(auditTableName,
         columns: _auditTableColumns, orderBy: columnAuditDate);
     if (maps.length > 0) {
@@ -1558,7 +1560,7 @@ class _NullPassAuditDB {
   }
 
   Future<int> deleteAll() async {
-    Database db = await _database;
+    Database db = (await _database)!;
     int id = await db.delete(auditTableName);
     return id;
   }

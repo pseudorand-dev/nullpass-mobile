@@ -48,21 +48,21 @@ void defaultSyncDataResponseHandler(dynamic str) {
 }
 
 class NotificationManager {
-  Future<String> get deviceId async {
+  Future<String?> get deviceId async {
     return null;
   }
 
-  Function(dynamic) syncInitHandshakeStepOneHandler;
-  Function(dynamic) syncInitHandshakeStepTwoHandler;
-  Function(dynamic) syncInitHandshakeStepThreeHandler;
-  Function(dynamic) syncInitHandshakeStepFourHandler;
-  Function(String, dynamic) syncDataHandler;
-  Function(dynamic) syncDataResponseHandler;
+  Function(dynamic)? syncInitHandshakeStepOneHandler;
+  Function(dynamic)? syncInitHandshakeStepTwoHandler;
+  Function(dynamic)? syncInitHandshakeStepThreeHandler;
+  Function(dynamic)? syncInitHandshakeStepFourHandler;
+  Function(String?, dynamic)? syncDataHandler;
+  Function(dynamic)? syncDataResponseHandler;
 
-  Future<void> initialize({String key}) async {}
+  Future<void> initialize({String? key}) async {}
 
   Future<void> sendMessageToAnotherDevice(
-      {List<String> deviceIDs, Notification message}) async {}
+      {List<String?>? deviceIDs, Notification? message}) async {}
 
   void setDefaultNotificationHandlers() {}
 
@@ -71,11 +71,11 @@ class NotificationManager {
 
 class OneSignalNotificationManager implements NotificationManager {
   // OneSignal Attributes
-  static String _onesignalKey;
-  static OneSignal osInstance;
+  static String? _onesignalKey;
+  static late OneSignal osInstance;
   static bool _initialized = false;
-  String _deviceId;
-  Future<String> get deviceId async {
+  String? _deviceId;
+  Future<String?> get deviceId async {
     if (this._deviceId == null) {
       setDeviceId((await osInstance.getPermissionSubscriptionState())
           .subscriptionStatus
@@ -89,26 +89,26 @@ class OneSignalNotificationManager implements NotificationManager {
     if (this._deviceId != null && newDeviceId == null) return;
 
     this._deviceId = newDeviceId;
-    sharedPrefs.setString(DeviceNotificationIdPrefKey, newDeviceId);
+    sharedPrefs!.setString(DeviceNotificationIdPrefKey, newDeviceId);
   }
 
-  List<String> receivedDataChunks;
+  List<String?>? receivedDataChunks;
 
   // Handler functions
   @override
-  Function(dynamic) syncInitHandshakeStepOneHandler;
+  Function(dynamic)? syncInitHandshakeStepOneHandler;
   @override
-  Function(dynamic) syncInitHandshakeStepTwoHandler;
+  Function(dynamic)? syncInitHandshakeStepTwoHandler;
   @override
-  Function(dynamic) syncInitHandshakeStepThreeHandler;
+  Function(dynamic)? syncInitHandshakeStepThreeHandler;
   @override
-  Function(dynamic) syncInitHandshakeStepFourHandler;
+  Function(dynamic)? syncInitHandshakeStepFourHandler;
   @override
-  Function(String, dynamic) syncDataHandler;
+  Function(String?, dynamic)? syncDataHandler;
   @override
-  Function(dynamic) syncDataResponseHandler;
+  Function(dynamic)? syncDataResponseHandler;
 
-  OneSignalNotificationManager({String key}) {
+  OneSignalNotificationManager({required String key}) {
     if (key.isNotEmpty) {
       _onesignalKey = key;
     }
@@ -126,10 +126,10 @@ class OneSignalNotificationManager implements NotificationManager {
   }
 
   @override
-  Future<void> initialize({String key}) async {
+  Future<void> initialize({String? key}) async {
     if (_initialized) return;
 
-    if (_onesignalKey.isEmpty) {
+    if (_onesignalKey!.isEmpty) {
       _onesignalKey = key;
     }
 
@@ -138,7 +138,7 @@ class OneSignalNotificationManager implements NotificationManager {
     // TODO: Remove this method to stop OneSignal Debugging
     if (isDebug) osInstance.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
 
-    osInstance.init(_onesignalKey, iOSSettings: {
+    osInstance.init(_onesignalKey!, iOSSettings: {
       OSiOSSettings.autoPrompt: false,
       OSiOSSettings.inAppLaunchUrl: true
     });
@@ -176,12 +176,12 @@ class OneSignalNotificationManager implements NotificationManager {
 
   @override
   Future<void> sendMessageToAnotherDevice(
-      {List<String> deviceIDs, Notification message}) async {
-    var dataChunks = message.toDataChunks();
+      {List<String?>? deviceIDs, Notification? message}) async {
+    var dataChunks = message!.toDataChunks();
     for (var data in dataChunks) {
       var currNote = OSCreateNotification.silentNotification(
-        playerIds: deviceIDs,
-        additionalData: data,
+        playerIds: deviceIDs as List<String>,
+        additionalData: data as Map<String, dynamic>,
       );
 
       var response = await osInstance.postNotification(currNote);
@@ -197,7 +197,7 @@ class OneSignalNotificationManager implements NotificationManager {
       Log.debug(receivedNotification.payload.additionalData);
       var tmpNotification =
           Notification.fromMap(receivedNotification.payload.additionalData);
-      if (haveReceivedAllChunks(tmpNotification)) {
+      if (tmpNotification != null && haveReceivedAllChunks(tmpNotification)) {
         var dataString = combineChunks();
         var notificationDataString = base64DecodeString(dataString);
 
@@ -208,27 +208,27 @@ class OneSignalNotificationManager implements NotificationManager {
         switch (tmpNotification.notificationType) {
           case NotificationType.SyncInitStepOne:
             receivedDataChunks = null;
-            syncInitHandshakeStepOneHandler(notificationDataString);
+            syncInitHandshakeStepOneHandler!(notificationDataString);
             break;
           case NotificationType.SyncInitStepTwo:
             receivedDataChunks = null;
-            syncInitHandshakeStepTwoHandler(notificationDataString);
+            syncInitHandshakeStepTwoHandler!(notificationDataString);
             break;
           case NotificationType.SyncInitStepThree:
             receivedDataChunks = null;
-            syncInitHandshakeStepThreeHandler(notificationDataString);
+            syncInitHandshakeStepThreeHandler!(notificationDataString);
             break;
           case NotificationType.SyncInitStepFour:
             receivedDataChunks = null;
-            syncInitHandshakeStepFourHandler(notificationDataString);
+            syncInitHandshakeStepFourHandler!(notificationDataString);
             break;
           case NotificationType.SyncUpdate:
             receivedDataChunks = null;
-            syncDataHandler(tmpNotification.deviceID, notificationDataString);
+            syncDataHandler!(tmpNotification.deviceID, notificationDataString);
             break;
           case NotificationType.SyncUpdateResponse:
             receivedDataChunks = null;
-            syncDataResponseHandler(notificationDataString);
+            syncDataResponseHandler!(notificationDataString);
             break;
           default:
             break;
@@ -241,13 +241,13 @@ class OneSignalNotificationManager implements NotificationManager {
 
   bool haveReceivedAllChunks(Notification lastestChunk) {
     if (receivedDataChunks == null)
-      receivedDataChunks = List<String>(lastestChunk.parts);
+      receivedDataChunks = List<String>.filled(lastestChunk.parts ?? 0, "");
 
-    receivedDataChunks[lastestChunk.position - 1] = lastestChunk.data;
-    for (var i = 0; i < receivedDataChunks.length; i++) {
-      if (receivedDataChunks[i] == null ||
-          receivedDataChunks[i].isEmpty ||
-          receivedDataChunks[i].trim().toLowerCase() == "null") {
+    receivedDataChunks![lastestChunk.position! - 1] = lastestChunk.data;
+    for (var i = 0; i < receivedDataChunks!.length; i++) {
+      if (receivedDataChunks![i] == null ||
+          receivedDataChunks![i]!.isEmpty ||
+          receivedDataChunks![i]!.trim().toLowerCase() == "null") {
         return false;
       }
     }
@@ -257,19 +257,19 @@ class OneSignalNotificationManager implements NotificationManager {
 
   String combineChunks() {
     var tmpStr = "";
-    for (var i = 0; i < receivedDataChunks.length; i++) {
-      tmpStr = "$tmpStr${receivedDataChunks[i]}";
+    for (var i = 0; i < receivedDataChunks!.length; i++) {
+      tmpStr = "$tmpStr${receivedDataChunks![i]}";
     }
     return tmpStr;
   }
 
-  Future<void> defaultSyncDataHandler(String senderID, dynamic data) async {
+  Future<void> defaultSyncDataHandler(String? senderID, dynamic data) async {
     Log.debug("in init sync data handler");
     Log.debug("recieved: $data");
     try {
       var db = NullPassDB.instance;
       var decryptedMsg = await OpenPGP.decrypt(
-          data as String, await db.getEncryptionPrivateKey(), "");
+          data as String, (await db.getEncryptionPrivateKey())!, "");
       var syncDataMap = jsonDecode(decryptedMsg);
       var sd = SyncDataWrapper.fromMap(syncDataMap);
 
@@ -311,7 +311,7 @@ class OneSignalNotificationManager implements NotificationManager {
   }
 
   Future<void> _defaultVaultSyncAddHandler(
-      String senderID, SyncVaultAdd svaData) async {
+      String? senderID, SyncVaultAdd svaData) async {
     var db = NullPassDB.instance;
     if (svaData.accessLevel != DeviceAccess.None) {
       var ds = DeviceSync(
@@ -336,21 +336,21 @@ class OneSignalNotificationManager implements NotificationManager {
           createdAt: DateTime.now(),
           modifiedAt: DateTime.now(),
         ));
-        await db.bulkInsertSecrets(svaData.secrets);
+        await db.bulkInsertSecrets(svaData.secrets!);
       } else if (svaData.accessLevel == DeviceAccess.Backup) {
         var jsonSecretsStr = jsonEncode(svaData.secrets);
         var encryptedSecretData = await OpenPGP.encrypt(
-            jsonSecretsStr, await db.getEncryptionPublicKey());
+            jsonSecretsStr, (await db.getEncryptionPublicKey())!);
         await db.storeSyncDataBackup(
-            ds.id, base64EncodeString(encryptedSecretData));
+            ds.id!, base64EncodeString(encryptedSecretData));
       }
     }
   }
 
   Future<void> _defaultVaultSyncUpdateHandler(
-      String senderID, SyncVaultUpdate svuData) async {
+      String? senderID, SyncVaultUpdate svuData) async {
     var db = NullPassDB.instance;
-    var ds = await db.getSyncByDeviceAndVault(senderID, svuData.vaultId);
+    var ds = (await db.getSyncByDeviceAndVault(senderID, svuData.vaultId))!;
     if (ds.vaultAccess == svuData.accessLevel &&
         ds.vaultName == svuData.vaultName) return;
     // TODO: handle name change only as well
@@ -372,7 +372,7 @@ class OneSignalNotificationManager implements NotificationManager {
       // update the vault access if the new access is Manage or ReadOnly
       if (svuData.accessLevel == DeviceAccess.Manage ||
           svuData.accessLevel == DeviceAccess.ReadOnly) {
-        var v = await db.getVaultByID(ds.vaultID);
+        var v = (await db.getVaultByID(ds.vaultID))!;
         v.manager = (svuData.accessLevel == DeviceAccess.Manage)
             ? VaultManager.Internal
             : VaultManager.External;
@@ -386,16 +386,16 @@ class OneSignalNotificationManager implements NotificationManager {
         var secrets = await db.getAllSecretsInVault(ds.vaultID);
         var jsonSecretsStr = jsonEncode(secrets);
         var encryptedSecretData = await OpenPGP.encrypt(
-            jsonSecretsStr, await db.getEncryptionPublicKey());
+            jsonSecretsStr, (await db.getEncryptionPublicKey())!);
         await db.storeSyncDataBackup(
-            ds.id, base64EncodeString(encryptedSecretData));
+            ds.id!, base64EncodeString(encryptedSecretData));
         await db.deleteVault(ds.vaultID);
       }
     } else if (ds.vaultAccess == DeviceAccess.Backup) {
-      var encodedSyncDataBackup = await db.fetchSyncDataBackup(ds.id);
+      var encodedSyncDataBackup = (await db.fetchSyncDataBackup(ds.id!))!;
       var decryptedSecretData = await OpenPGP.decrypt(
         base64DecodeString(encodedSyncDataBackup),
-        await db.getEncryptionPrivateKey(),
+        (await db.getEncryptionPrivateKey())!,
         "",
       );
 
@@ -421,21 +421,21 @@ class OneSignalNotificationManager implements NotificationManager {
       );
       await db.bulkInsertSecrets(secretList);
       await db.updateSync(ds);
-      await db.deleteSyncDataBackup(ds.id);
+      await db.deleteSyncDataBackup(ds.id!);
     }
   }
 
   Future<void> _defaultVaultSyncRemoveHandler(
-      String senderID, SyncVaultRemove svrData) async {
+      String? senderID, SyncVaultRemove svrData) async {
     var db = NullPassDB.instance;
     await db.deleteSyncDataBackup(
-        (await db.getSyncByDeviceAndVault(senderID, svrData.vaultId)).id);
+        (await db.getSyncByDeviceAndVault(senderID, svrData.vaultId))!.id!);
     await db.deleteVault(svrData.vaultId);
     await db.deleteSyncOfVaultToDevice(senderID, svrData.vaultId);
   }
 
   Future<void> _defaultDataSyncAddHandler(
-      String senderID, SyncDataAdd svaData) async {
+      String? senderID, SyncDataAdd svaData) async {
     var db = NullPassDB.instance;
     // make sure that the sync exists
     var ds = await db.getSyncByDeviceAndVault(senderID, svaData.vaultId);
@@ -447,13 +447,13 @@ class OneSignalNotificationManager implements NotificationManager {
     }
 
     if (ds.vaultAccess != DeviceAccess.Backup) {
-      await db.bulkInsertSecrets(svaData.secrets);
+      await db.bulkInsertSecrets(svaData.secrets!);
     } else {
       // Otherwise get the backup data and update the data accordingly
 
       // Get Backup data
-      var kp = await db.getEncryptionKeyPair();
-      var encodedSyncDataBackup = await db.fetchSyncDataBackup(ds.id);
+      var kp = (await db.getEncryptionKeyPair())!;
+      var encodedSyncDataBackup = (await db.fetchSyncDataBackup(ds.id!))!;
       var decryptedSecretData = await OpenPGP.decrypt(
         base64DecodeString(encodedSyncDataBackup),
         kp.privateKey,
@@ -468,7 +468,7 @@ class OneSignalNotificationManager implements NotificationManager {
       (tmpList as List).forEach((i) => secretList.add(Secret.fromMap(i)));
 
       // add all secrets who are in the data body
-      for (var s in svaData.secrets) {
+      for (var s in svaData.secrets!) {
         secretList.add(s);
       }
 
@@ -477,12 +477,12 @@ class OneSignalNotificationManager implements NotificationManager {
       var encryptedSecretData =
           await OpenPGP.encrypt(jsonSecretsStr, kp.publicKey);
       await db.storeSyncDataBackup(
-          ds.id, base64EncodeString(encryptedSecretData));
+          ds.id!, base64EncodeString(encryptedSecretData));
     }
   }
 
   Future<void> _defaultDataSyncUpdateHandler(
-      String senderID, SyncDataUpdate svuData) async {
+      String? senderID, SyncDataUpdate svuData) async {
     var db = NullPassDB.instance;
     // make sure that the sync exists
     var ds = await db.getSyncByDeviceAndVault(senderID, svuData.vaultId);
@@ -495,21 +495,21 @@ class OneSignalNotificationManager implements NotificationManager {
 
     // if the access is not backup then just add the secret
     if (ds.vaultAccess != DeviceAccess.Backup) {
-      for (var s in svuData.secrets) {
+      for (var s in svuData.secrets!) {
         await db.updateSecret(s);
       }
     } else {
       // Otherwise get the backup data and update the data accordingly
 
       // Setup map for easier updating of secret
-      var secretMap = <String, Secret>{};
-      for (var s in svuData.secrets) {
+      var secretMap = <String?, Secret>{};
+      for (var s in svuData.secrets!) {
         secretMap[s.uuid] = s;
       }
 
       // Get Backup data
-      var kp = await db.getEncryptionKeyPair();
-      var encodedSyncDataBackup = await db.fetchSyncDataBackup(ds.id);
+      var kp = (await db.getEncryptionKeyPair())!;
+      var encodedSyncDataBackup = (await db.fetchSyncDataBackup(ds.id!))!;
       var decryptedSecretData = await OpenPGP.decrypt(
         base64DecodeString(encodedSyncDataBackup),
         kp.privateKey,
@@ -518,7 +518,7 @@ class OneSignalNotificationManager implements NotificationManager {
 
       // Parse Data
       var tmpList = jsonDecode(decryptedSecretData) ?? <Secret>[];
-      var secretList = <Secret>[];
+      var secretList = <Secret?>[];
 
       // Update Secret
       (tmpList as List).forEach((i) {
@@ -536,12 +536,12 @@ class OneSignalNotificationManager implements NotificationManager {
       var encryptedSecretData =
           await OpenPGP.encrypt(jsonSecretsStr, kp.publicKey);
       await db.storeSyncDataBackup(
-          ds.id, base64EncodeString(encryptedSecretData));
+          ds.id!, base64EncodeString(encryptedSecretData));
     }
   }
 
   Future<void> _defaultDataSyncRemoveHandler(
-      String senderID, SyncDataRemove svrData) async {
+      String? senderID, SyncDataRemove svrData) async {
     var db = NullPassDB.instance;
     // make sure that the sync exists
     var ds = await db.getSyncByDeviceAndVault(senderID, svrData.vaultId);
@@ -553,21 +553,21 @@ class OneSignalNotificationManager implements NotificationManager {
     }
 
     if (ds.vaultAccess != DeviceAccess.Backup) {
-      for (var sID in svrData.secretIDs) {
-        await db.deleteSecret(sID);
+      for (var sID in svrData.secretIDs!) {
+        await db.deleteSecret(sID!);
       }
     } else {
       // Otherwise get the backup data and update the data accordingly
 
       // Setup map for easier updating of secret
-      var secretMap = <String, bool>{};
-      for (var s in svrData.secretIDs) {
+      var secretMap = <String?, bool>{};
+      for (var s in svrData.secretIDs!) {
         secretMap[s] = true;
       }
 
       // Get Backup data
-      var kp = await db.getEncryptionKeyPair();
-      var encodedSyncDataBackup = await db.fetchSyncDataBackup(ds.id);
+      var kp = (await db.getEncryptionKeyPair())!;
+      var encodedSyncDataBackup = (await db.fetchSyncDataBackup(ds.id!))!;
       var decryptedSecretData = await OpenPGP.decrypt(
         base64DecodeString(encodedSyncDataBackup),
         kp.privateKey,
@@ -593,7 +593,7 @@ class OneSignalNotificationManager implements NotificationManager {
       var encryptedSecretData =
           await OpenPGP.encrypt(jsonSecretsStr, kp.publicKey);
       await db.storeSyncDataBackup(
-          ds.id, base64EncodeString(encryptedSecretData));
+          ds.id!, base64EncodeString(encryptedSecretData));
     }
   }
 }

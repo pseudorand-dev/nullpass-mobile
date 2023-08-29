@@ -14,38 +14,38 @@ import 'package:nullpass/setup.dart';
 
 class SecretGenerate extends StatefulWidget {
   final bool inEditor;
-  SecretGenerate({Key key, this.inEditor = false}) : super(key: key);
+  SecretGenerate({Key? key, this.inEditor = false}) : super(key: key);
   _SecretGenerateState createState() => _SecretGenerateState();
 }
 
 class _SecretGenerateState extends State<SecretGenerate> {
   String _secretText = 'randomlylongtextfieldthatisnotactuallychangingyet';
-  int _secretLength;
-  bool _alphaCharacters;
-  bool _numericCharacters;
-  bool _symbolCharacters;
+  int? _secretLength;
+  bool? _alphaCharacters;
+  bool? _numericCharacters;
+  bool? _symbolCharacters;
 
   @override
   void initState() {
     super.initState();
 
-    bool spSet = sharedPrefs.getBool(SharedPrefSetupKey);
+    bool? spSet = sharedPrefs!.getBool(SharedPrefSetupKey);
     if (spSet == null || !spSet) setupSharedPreferences();
 
-    _secretLength = sharedPrefs.getInt(SecretLengthPrefKey);
-    _alphaCharacters = sharedPrefs.getBool(AlphaCharactersPrefKey);
-    _numericCharacters = sharedPrefs.getBool(NumericCharactersPrefKey);
-    _symbolCharacters = sharedPrefs.getBool(SymbolCharactersPrefKey);
+    _secretLength = sharedPrefs!.getInt(SecretLengthPrefKey);
+    _alphaCharacters = sharedPrefs!.getBool(AlphaCharactersPrefKey);
+    _numericCharacters = sharedPrefs!.getBool(NumericCharactersPrefKey);
+    _symbolCharacters = sharedPrefs!.getBool(SymbolCharactersPrefKey);
   }
 
-  String generateSecretMessage([int length = 32]) {
-    if (!_alphaCharacters && !_numericCharacters && !_symbolCharacters) {
+  String generateSecretMessage([int? length = 32]) {
+    if (!_alphaCharacters! && !_numericCharacters! && !_symbolCharacters!) {
       return 'At least one character set must be selected';
     }
 
     Set<int> invalidCodes = Set<int>();
 
-    if (!_alphaCharacters) {
+    if (!_alphaCharacters!) {
       // TODO: just do an AddAll on a static charCode set
       // const LOWER_ALPHA_START = 97;
       // const LOWER_ALPHA_END = 122;
@@ -60,7 +60,7 @@ class _SecretGenerateState extends State<SecretGenerate> {
       }
     }
 
-    if (!_numericCharacters) {
+    if (!_numericCharacters!) {
       // TODO: just do an AddAll on a static charCode set
       // const NUMERIC_START = 48;
       // const NUMERIC_END = 57;
@@ -69,7 +69,7 @@ class _SecretGenerateState extends State<SecretGenerate> {
       }
     }
 
-    if (!_symbolCharacters) {
+    if (!_symbolCharacters!) {
       // TODO: just do an AddAll on a static charCode set
       // const ASCII_START = 33;
       // const ASCII_END = 126;
@@ -92,7 +92,7 @@ class _SecretGenerateState extends State<SecretGenerate> {
     List<int> charCodes = <int>[];
     int attempts = 0;
     int pos = 0;
-    while (pos < length) {
+    while (pos < length!) {
       attempts = 1;
       int rInt = (_random.nextInt(93)) + 33;
       if (!invalidCodes.contains(rInt)) {
@@ -137,11 +137,11 @@ class _SecretGenerateState extends State<SecretGenerate> {
                   initialValue: _secretLength.toString(),
                   autocorrect: true,
                   onChanged: (value) {
-                    int tempVal = -1;
+                    int? tempVal = -1;
                     try {
                       tempVal = int.parse(value);
                     } catch (e) {}
-                    if (tempVal < 1) tempVal = _secretLength;
+                    if (tempVal! < 1) tempVal = _secretLength;
 
                     setState(() {
                       _secretLength = tempVal;
@@ -154,7 +154,7 @@ class _SecretGenerateState extends State<SecretGenerate> {
           ListTile(
             title: Text('Alpha Characters'),
             trailing: Switch(
-                value: _alphaCharacters,
+                value: _alphaCharacters!,
                 onChanged: (value) {
                   setState(() {
                     this._alphaCharacters = value;
@@ -165,7 +165,7 @@ class _SecretGenerateState extends State<SecretGenerate> {
           ListTile(
             title: Text('Numeric Characters'),
             trailing: Switch(
-                value: _numericCharacters,
+                value: _numericCharacters!,
                 onChanged: (value) {
                   setState(() {
                     this._numericCharacters = value;
@@ -176,7 +176,7 @@ class _SecretGenerateState extends State<SecretGenerate> {
           ListTile(
             title: Text('Symbol Characters'),
             trailing: Switch(
-                value: _symbolCharacters,
+                value: _symbolCharacters!,
                 onChanged: (value) {
                   setState(() {
                     this._symbolCharacters = value;

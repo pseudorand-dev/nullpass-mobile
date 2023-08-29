@@ -26,12 +26,12 @@ Future<void> main() async {
 
   // await getAppPreLoadSharedPreferences();
   var sp = await SharedPreferences.getInstance();
-  bool showLoginScreen = ((sp.containsKey(AuthOnLoadPrefKey))
+  bool? showLoginScreen = ((sp.containsKey(AuthOnLoadPrefKey))
       ? sp.getBool(AuthOnLoadPrefKey)
       : false);
   Duration loginTimeout = Duration(
     seconds: ((sp.containsKey(AuthTimeoutSecondsPrefKey))
-        ? sp.getDouble(AuthTimeoutSecondsPrefKey).round()
+        ? sp.getDouble(AuthTimeoutSecondsPrefKey)!.round()
         : 300),
   );
 
@@ -40,7 +40,7 @@ Future<void> main() async {
       builder: (args) => NullPassApp(),
       // lockScreen: _TmpLockScreen(),
       lockScreen: LockScreen(),
-      enabled: canCheckBiometrics && showLoginScreen,
+      enabled: canCheckBiometrics && showLoginScreen!,
       backgroundLockLatency: loginTimeout,
     )),
     (error, stackTrace) => Log.debug(error),
@@ -62,7 +62,7 @@ class _TmpLockScreen extends StatefulWidget {
 
 class _TmpLockScreenState extends State<_TmpLockScreen> {
   void unlock() {
-    AppLock.of(context).didUnlock();
+    AppLock.of(context)!.didUnlock();
   }
 
   @override

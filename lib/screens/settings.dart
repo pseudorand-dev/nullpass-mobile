@@ -39,26 +39,26 @@ class _SettingsState extends State<Settings> {
   void initState() {
     super.initState();
 
-    bool spSet = sharedPrefs.getBool(SharedPrefSetupKey);
+    bool? spSet = sharedPrefs!.getBool(SharedPrefSetupKey);
     if (spSet == null || !spSet) setupSharedPreferences();
 
-    _secretLength = sharedPrefs.getInt(SecretLengthPrefKey) ?? 512;
-    _alphaCharacters = sharedPrefs.getBool(AlphaCharactersPrefKey) ?? true;
-    _numericCharacters = sharedPrefs.getBool(NumericCharactersPrefKey) ?? true;
-    _symbolCharacters = sharedPrefs.getBool(SymbolCharactersPrefKey) ?? true;
-    _inAppWebpages = sharedPrefs.getBool(InAppWebpagesPrefKey) ?? true;
+    _secretLength = sharedPrefs!.getInt(SecretLengthPrefKey) ?? 512;
+    _alphaCharacters = sharedPrefs!.getBool(AlphaCharactersPrefKey) ?? true;
+    _numericCharacters = sharedPrefs!.getBool(NumericCharactersPrefKey) ?? true;
+    _symbolCharacters = sharedPrefs!.getBool(SymbolCharactersPrefKey) ?? true;
+    _inAppWebpages = sharedPrefs!.getBool(InAppWebpagesPrefKey) ?? true;
     _syncAccessNotifications =
-        sharedPrefs.getBool(SyncdDataNotificationsPrefKey) ?? true;
+        sharedPrefs!.getBool(SyncdDataNotificationsPrefKey) ?? true;
     _passwordPreviewFontSize =
-        sharedPrefs.getInt(PasswordPreviewSizePrefKey) ?? 20;
+        sharedPrefs!.getInt(PasswordPreviewSizePrefKey) ?? 20;
 
     // Auth Options
-    _authOnLoad = ((sharedPrefs.containsKey(AuthOnLoadPrefKey))
-            ? sharedPrefs.getBool(AuthOnLoadPrefKey)
+    _authOnLoad = ((sharedPrefs!.containsKey(AuthOnLoadPrefKey))
+            ? sharedPrefs!.getBool(AuthOnLoadPrefKey)
             : false) ??
         false;
-    _authTimeoutSeconds = ((sharedPrefs.containsKey(AuthTimeoutSecondsPrefKey))
-            ? sharedPrefs.getDouble(AuthTimeoutSecondsPrefKey)
+    _authTimeoutSeconds = ((sharedPrefs!.containsKey(AuthTimeoutSecondsPrefKey))
+            ? sharedPrefs!.getDouble(AuthTimeoutSecondsPrefKey)
             : 300) ??
         300;
   }
@@ -108,7 +108,7 @@ class _SettingsState extends State<Settings> {
                         tempVal = int.parse(value);
                       } catch (e) {}
                       if (tempVal < 1) tempVal = _secretLength;
-                      sharedPrefs.setInt(SecretLengthPrefKey, tempVal);
+                      sharedPrefs!.setInt(SecretLengthPrefKey, tempVal);
                       setState(() {
                         _secretLength = tempVal;
                       });
@@ -125,7 +125,7 @@ class _SettingsState extends State<Settings> {
                 trailing: Switch(
                     value: _alphaCharacters,
                     onChanged: (value) async {
-                      sharedPrefs.setBool(AlphaCharactersPrefKey, value);
+                      sharedPrefs!.setBool(AlphaCharactersPrefKey, value);
                       setState(() {
                         this._alphaCharacters = value;
                       });
@@ -139,7 +139,7 @@ class _SettingsState extends State<Settings> {
                 trailing: Switch(
                     value: _numericCharacters,
                     onChanged: (value) async {
-                      sharedPrefs.setBool(NumericCharactersPrefKey, value);
+                      sharedPrefs!.setBool(NumericCharactersPrefKey, value);
                       setState(() {
                         this._numericCharacters = value;
                       });
@@ -153,7 +153,7 @@ class _SettingsState extends State<Settings> {
                 trailing: Switch(
                     value: _symbolCharacters,
                     onChanged: (value) async {
-                      sharedPrefs.setBool(SymbolCharactersPrefKey, value);
+                      sharedPrefs!.setBool(SymbolCharactersPrefKey, value);
                       setState(() {
                         this._symbolCharacters = value;
                       });
@@ -178,7 +178,7 @@ class _SettingsState extends State<Settings> {
                     onChanged: !canCheckBiometrics
                         ? null
                         : (value) {
-                            sharedPrefs
+                            sharedPrefs!
                                 .setBool(AuthOnLoadPrefKey, value)
                                 .then((worked) {
                               // TODO: causes a refresh of the screen and therefore requires better routing support to maintain current screen
@@ -212,8 +212,8 @@ class _SettingsState extends State<Settings> {
                           tempVal = double.parse(value);
                         } catch (e) {}
                         if (tempVal < 1) tempVal = _authTimeoutSeconds;
-                        sharedPrefs.setDouble(
-                            AuthTimeoutSecondsPrefKey, tempVal);
+                        sharedPrefs!
+                            .setDouble(AuthTimeoutSecondsPrefKey, tempVal);
                         setState(() {
                           _authTimeoutSeconds = tempVal;
                         });
@@ -248,7 +248,8 @@ class _SettingsState extends State<Settings> {
                           tempVal = int.parse(value);
                         } catch (e) {}
                         if (tempVal < 1) tempVal = _passwordPreviewFontSize;
-                        sharedPrefs.setInt(PasswordPreviewSizePrefKey, tempVal);
+                        sharedPrefs!
+                            .setInt(PasswordPreviewSizePrefKey, tempVal);
                         setState(() {
                           _passwordPreviewFontSize = tempVal;
                         });
@@ -264,7 +265,7 @@ class _SettingsState extends State<Settings> {
                 trailing: Switch(
                     value: _inAppWebpages,
                     onChanged: (value) {
-                      sharedPrefs
+                      sharedPrefs!
                           .setBool(InAppWebpagesPrefKey, value)
                           .then((worked) {
                         setState(() {
@@ -289,7 +290,7 @@ class _SettingsState extends State<Settings> {
                 trailing: Switch(
                     value: _syncAccessNotifications,
                     onChanged: (value) {
-                      sharedPrefs
+                      sharedPrefs!
                           .setBool(SyncdDataNotificationsPrefKey, value)
                           .then((worked) {
                         setState(() {
@@ -350,14 +351,15 @@ class _SettingsState extends State<Settings> {
                               child: Text('Import'),
                               onPressed: () async {
                                 await importSecretsAndVaults(_importText);
-                                  var v = await NullPassDB.instance
-                                      .getDefaultVault();
-                                  if (v != null) {
-                                    sharedPrefs.setString(
-                                        DefaultVaultIDPrefKey, v.uid);
-                                  }
-                                  Navigator.of(context).pop();
-                                })
+                                var v =
+                                    await NullPassDB.instance.getDefaultVault();
+                                if (v != null) {
+                                  sharedPrefs!
+                                      .setString(DefaultVaultIDPrefKey, v.uid!);
+                                }
+                                Navigator.of(context).pop();
+                              },
+                            )
                           ],
                         );
                       },
@@ -413,8 +415,8 @@ class _SettingsState extends State<Settings> {
                 trailing: IconButton(
                   icon: Icon(Icons.add_circle, color: Colors.blue),
                   onPressed: () async {
-                    var v = await NullPassDB.instance.createDefaultVault();
-                    sharedPrefs.setString(DefaultVaultIDPrefKey, v.uid);
+                    var v = (await NullPassDB.instance.createDefaultVault())!;
+                    sharedPrefs!.setString(DefaultVaultIDPrefKey, v.uid!);
                   },
                 ),
               ),
@@ -454,10 +456,11 @@ class _SettingsState extends State<Settings> {
                                 await npDB.deleteAllSyncs();
                                 await npDB.deleteAllSecrets();
                                 await npDB.deleteAllVaults();
-                                  sharedPrefs.setString(
-                                      DefaultVaultIDPrefKey, "");
-                                  Navigator.of(context).pop();
-                                })
+                                sharedPrefs!
+                                    .setString(DefaultVaultIDPrefKey, "");
+                                Navigator.of(context).pop();
+                              },
+                            )
                           ],
                         );
                       },
@@ -479,8 +482,8 @@ Future<void> exportSecretsAndVaults() async {
   List<Secret> secretsList = await npDB.getAllSecrets() ?? <Secret>[];
   List<Vault> vaultsList = await npDB.getAllVaults() ?? <Vault>[];
 
-  Set<String> sids = <String>{};
-  Set<String> vids = <String>{};
+  Set<String?> sids = <String?>{};
+  Set<String?> vids = <String?>{};
 
   List<Map<String, dynamic>> secretsJsonList = <Map<String, dynamic>>[];
   secretsList.forEach((s) {
@@ -521,8 +524,8 @@ Future<void> importSecretsAndVaults(String input) async {
   var secretsList = <Secret>[];
   var vaultsList = <Vault>[];
 
-  Set<String> sids = <String>{};
-  Set<String> vids = <String>{};
+  Set<String?> sids = <String?>{};
+  Set<String?> vids = <String?>{};
 
   (decodedInput["secrets"] as List).forEach((sMap) {
     var s = Secret.fromJson(sMap);

@@ -51,7 +51,7 @@ SecretType parseSecretTypeFromString(String str) {
   throw new Exception("Unknown SecretType");
 }
 
-SecretType tryParseSecretTypeFromString(String str) {
+SecretType? tryParseSecretTypeFromString(String str) {
   try {
     return parseSecretTypeFromString(str);
   } catch (e) {
@@ -59,32 +59,32 @@ SecretType tryParseSecretTypeFromString(String str) {
   }
 }
 
-String secretTypeToString(SecretType st) {
+String secretTypeToString(SecretType? st) {
   return st.toString().substring(7);
 }
 
 class Secret {
-  String uuid;
-  String nickname;
-  String username;
-  SecretType type;
-  String website;
-  String appName;
-  String genericEndpoint;
-  String message;
-  String otpCode;
-  String _otpTitle;
+  String? uuid;
+  String? nickname;
+  String? username;
+  SecretType? type;
+  String? website;
+  String? appName;
+  String? genericEndpoint;
+  String? message;
+  String? otpCode;
+  String? _otpTitle;
   String get thumbnailURI => _getThumbnail();
-  String notes;
-  List<String> tags;
-  List<String> vaults;
-  DateTime created;
-  DateTime lastModified;
-  String get sortKey => this.nickname.toLowerCase();
+  String? notes;
+  List<String>? tags;
+  List<String?>? vaults;
+  DateTime? created;
+  DateTime? lastModified;
+  String get sortKey => this.nickname!.toLowerCase();
   int get strength => this._secretStrength();
 
-  String get otpTitle => _getOTPTitle();
-  void set otpTitle(String title) => this._otpTitle = title;
+  String? get otpTitle => _getOTPTitle();
+  void set otpTitle(String? title) => this._otpTitle = title;
 
   /*
   String uuid
@@ -110,22 +110,22 @@ class Secret {
 
   // TODO: move password to secure storage and remove @required
   Secret({
-    @required String nickname,
-    @required String username,
-    @required String message,
-    String uuid,
-    SecretType type = SecretType.Website,
-    String website = '',
-    String appName = '',
-    String genericEndpoint = '',
-    String otpCode = '',
-    String otpTitle = '',
-    String thumbnailURI = '',
-    String notes = '',
-    List<String> tags,
-    List<String> vaults,
-    DateTime created,
-    DateTime lastModified,
+    required String? nickname,
+    required String? username,
+    required String? message,
+    String? uuid,
+    SecretType? type = SecretType.Website,
+    String? website = '',
+    String? appName = '',
+    String? genericEndpoint = '',
+    String? otpCode = '',
+    String? otpTitle = '',
+    String? thumbnailURI = '',
+    String? notes = '',
+    List<String>? tags,
+    List<String?>? vaults,
+    DateTime? created,
+    DateTime? lastModified,
   }) {
     if (uuid == null || uuid.trim() == '' || !isUUID(uuid, 4)) {
       uuid = (new Uuid()).v4();
@@ -155,8 +155,8 @@ class Secret {
 
   String _getThumbnail() {
     Uri uri;
-    if (this.website.startsWith("http"))
-      uri = Uri.parse(this.website);
+    if (this.website!.startsWith("http"))
+      uri = Uri.parse(this.website!);
     else
       uri = Uri.parse('http://${this.website}');
 
@@ -169,21 +169,21 @@ class Secret {
 
   int _secretStrength() {
     Map<String, double> entropyMap = new Map<String, double>();
-    this.message.split('').forEach((String character) {
+    this.message!.split('').forEach((String character) {
       entropyMap[character] =
-          entropyMap[character] != null ? entropyMap[character] + 1.0 : 1.0;
+          entropyMap[character] != null ? entropyMap[character]! + 1.0 : 1.0;
     });
 
     var score = 0.0;
     if (entropyMap.length == 1) {
       var val = entropyMap.values.first;
       score =
-          0 - ((val / this.message.length) * log(val / this.message.length));
+          0 - ((val / this.message!.length) * log(val / this.message!.length));
     } else {
       // var result = 0.0;
       score = entropyMap.values.reduce((result, val) =>
           result -
-          ((val / this.message.length) * log(val / this.message.length)));
+          ((val / this.message!.length) * log(val / this.message!.length)));
     }
     if ((score >= 3.5 && score < 4) || (score >= 4.5 && score < 5)) {
       return score.ceil();
@@ -237,16 +237,16 @@ class Secret {
       tags = (map[columnSecretTags] as String).split(',');
     } else if (map[columnSecretTags] is List &&
         (map[columnSecretTags] as List).isNotEmpty) {
-      (map[columnSecretTags] as List).forEach((v) => tags.add(v as String));
+      (map[columnSecretTags] as List).forEach((v) => tags!.add(v as String));
     }
 
-    vaults = <String>[];
+    vaults = <String?>[];
     if (map[columnSecretVaults] is String &&
         (map[columnSecretVaults] as String).trim().isNotEmpty) {
       vaults = (map[columnSecretVaults] as String).split(',');
     } else if (map[columnSecretVaults] is List &&
         (map[columnSecretVaults] as List).isNotEmpty) {
-      (map[columnSecretVaults] as List).forEach((v) => vaults.add(v as String));
+      (map[columnSecretVaults] as List).forEach((v) => vaults!.add(v as String));
     }
 
     created = DateTime.tryParse(map[columnSecretCreated]) ?? DateTime.now();
@@ -256,7 +256,7 @@ class Secret {
 
   // convenience method to create a Map from this Secret object
   Map<String, dynamic> toMap() {
-    if (uuid == null || uuid.trim() == '' || !isUUID(uuid, 4)) {
+    if (uuid == null || uuid!.trim() == '' || !isUUID(uuid, 4)) {
       uuid = (new Uuid()).v4();
     }
     var map = <String, dynamic>{
@@ -270,10 +270,10 @@ class Secret {
       columnSecretGenericEndpoint: genericEndpoint,
       columnSecretThumbnailURI: thumbnailURI,
       columnSecretNotes: notes,
-      columnSecretTags: tags.join(','),
-      columnSecretVaults: vaults.join(','),
-      columnSecretCreated: created.toIso8601String(),
-      columnSecretLastModified: lastModified.toIso8601String(),
+      columnSecretTags: tags!.join(','),
+      columnSecretVaults: vaults!.join(','),
+      columnSecretCreated: created!.toIso8601String(),
+      columnSecretLastModified: lastModified!.toIso8601String(),
       columnSecretSortKey: sortKey,
       // columnPassword: password, // TODO: move password to secure storage - remove
       // columnOTPCode: otpCode,
@@ -297,10 +297,10 @@ class Secret {
         'tags': tags,
         'vaults': vaults,
         'created': (created != null)
-            ? created.toIso8601String()
+            ? created!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         'lastModified': (lastModified != null)
-            ? lastModified.toIso8601String()
+            ? lastModified!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         'sortKey': sortKey,
       };
@@ -392,19 +392,19 @@ class Secret {
     }
 
     if (this.tags != null) {
-      sec = "$sec,\"tags\":${stringListToString(this.tags)}";
+      sec = "$sec,\"tags\":${stringListToString(this.tags!)}";
     }
 
     if (this.vaults != null) {
-      sec = "$sec,\"vaults\":${stringListToString(this.vaults)}";
+      sec = "$sec,\"vaults\":${stringListToString(this.vaults!)}";
     }
 
     if (this.created != null) {
-      sec = "$sec,\"created\":\"${this.created.toIso8601String()}\"";
+      sec = "$sec,\"created\":\"${this.created!.toIso8601String()}\"";
     }
 
     if (this.lastModified != null) {
-      sec = "$sec,\"lastModified\":\"${this.lastModified.toIso8601String()}\"";
+      sec = "$sec,\"lastModified\":\"${this.lastModified!.toIso8601String()}\"";
     }
 
     if (this.sortKey != null) {
@@ -435,22 +435,22 @@ class Secret {
       lastModified: this.lastModified,
     );
 
-    this.tags.forEach((t) => s.tags.add(t));
-    this.vaults.forEach((v) => s.vaults.add(v));
+    this.tags!.forEach((t) => s.tags!.add(t));
+    this.vaults!.forEach((v) => s.vaults!.add(v));
 
     return s;
   }
 
-  String _getOTPTitle() {
-    if (this._otpTitle != null && this._otpTitle.trim().isNotEmpty) {
+  String? _getOTPTitle() {
+    if (this._otpTitle != null && this._otpTitle!.trim().isNotEmpty) {
       return this._otpTitle;
     } else {
-      return "${this.website.trim()} (${this.username.trim()})";
+      return "${this.website!.trim()} (${this.username!.trim()})";
     }
   }
 
   bool isOTPTitleStored() {
-    return this._otpTitle != null && this._otpTitle.trim().isNotEmpty;
+    return this._otpTitle != null && this._otpTitle!.trim().isNotEmpty;
   }
 
   String getOnetimePasscode() {
@@ -461,7 +461,7 @@ class Secret {
     return OTP.remainingSeconds();
   }
 
-  static String generateOnetimePasscode(String otpCode) {
+  static String generateOnetimePasscode(String? otpCode) {
     if (otpCode == null || otpCode.trim().isEmpty) {
       return '';
     }

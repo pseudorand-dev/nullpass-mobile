@@ -18,15 +18,15 @@ import 'package:nullpass/widgets.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class SecretList extends StatelessWidget {
-  final List<Secret> items;
+  final List<Secret>? items;
   final bool loading;
   final Function reloadSecretList;
 
   SecretList(
-      {Key key,
-      @required this.items,
-      @required this.loading,
-      @required this.reloadSecretList})
+      {Key? key,
+      required this.items,
+      required this.loading,
+      required this.reloadSecretList})
       : super(key: key);
 
   @override
@@ -34,7 +34,7 @@ class SecretList extends StatelessWidget {
     if (loading) {
       return _SecretListContainer(
           bodyWidget: _SecretLoading(), reloadSecretList: (dynamic d) {});
-    } else if (items != null && items.length > 0) {
+    } else if (items != null && items!.length > 0) {
       return _SecretListContainer(
           bodyWidget: SecretListWidget(
               items: items, reloadSecretList: reloadSecretList),
@@ -51,11 +51,11 @@ class _SecretListContainer extends StatelessWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final Widget bodyWidget;
   final Function reloadSecretList;
-  static Size screenSize;
-  static Rect screenRect;
+  static Size? screenSize;
+  static Rect? screenRect;
 
   _SecretListContainer(
-      {Key key, @required this.bodyWidget, @required this.reloadSecretList})
+      {Key? key, required this.bodyWidget, required this.reloadSecretList})
       : super(key: key);
 
   void visibilityHasChanged(VisibilityInfo info) {
@@ -124,35 +124,35 @@ class _SecretListContainer extends StatelessWidget {
 }
 
 class SecretListWidget extends StatelessWidget {
-  final List<Secret> items;
+  final List<Secret>? items;
   final Function reloadSecretList;
 
   SecretListWidget(
-      {Key key, @required this.items, @required this.reloadSecretList})
+      {Key? key, required this.items, required this.reloadSecretList})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: items.length,
+      itemCount: items!.length,
       itemBuilder: (context, index) {
         return ListTile(
-          leading: Thumbnail(items[index].thumbnailURI),
-          title: Text(items[index].nickname),
-          subtitle: Text(items[index].username),
+          leading: Thumbnail(items![index].thumbnailURI),
+          title: Text(items![index].nickname!),
+          subtitle: Text(items![index].username!),
           trailing: Icon(Icons.arrow_forward_ios),
           onTap: () async {
             await NullPassDB.instance.addAuditRecord(AuditRecord(
               type: AuditType.SecretViewed,
-              message: 'The "${items[index].nickname}" secret was viewed.',
-              secretsReferenceId: <String>{items[index].uuid},
-              vaultsReferenceId: items[index].vaults.toSet(),
+              message: 'The "${items![index].nickname}" secret was viewed.',
+              secretsReferenceId: <String?>{items![index].uuid},
+              vaultsReferenceId: items![index].vaults!.toSet(),
               date: DateTime.now().toUtc(),
             ));
             await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => SecretView(secret: items[index])),
+                  builder: (context) => SecretView(secret: items![index])),
             );
             await this.reloadSecretList('true');
           },
@@ -193,7 +193,7 @@ class _SecretLoading extends StatelessWidget {
 class Thumbnail extends StatelessWidget {
   final String _imageUrl;
 
-  Thumbnail(this._imageUrl, {Key key}) : super(key: key);
+  Thumbnail(this._imageUrl, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -18,14 +18,14 @@ class Sync {
 
   NullPassDB db = NullPassDB.instance;
 
-  Future<Notification> _setupNotification(
-      String encKey, NotificationType nt, dynamic nd) async {
+  Future<Notification?> _setupNotification(
+      String? encKey, NotificationType nt, dynamic nd) async {
     if (nt != null && nd != null && encKey != null && encKey.isNotEmpty) {
       var encryptedMsg = await OpenPGP.encrypt(nd.toString(), encKey);
       return Notification(
         nt,
         data: encryptedMsg,
-        deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey),
+        deviceID: sharedPrefs!.getString(DeviceNotificationIdPrefKey),
         notificationID: Uuid().v4(),
       );
     }
@@ -33,12 +33,12 @@ class Sync {
   }
 
   Future<void> sendSecretAdded(Secret s) async {
-    for (var vid in s.vaults) {
+    for (var vid in s.vaults!) {
       // List<DeviceSync> dsL = db.getAllSyncsForAVault();
       var dsL = await db.getAllSyncsForAVault(vid) ?? <DeviceSync>[];
       // for each dsl send an added secret notification
       for (var ds in dsL) {
-        var d = await db.getDeviceBySyncID(ds.deviceID);
+        var d = (await db.getDeviceBySyncID(ds.deviceID))!;
         var note = await _setupNotification(
           d.encryptionKey,
           NotificationType.SyncUpdate,
@@ -48,19 +48,19 @@ class Sync {
         );
 
         await notify.sendMessageToAnotherDevice(
-            deviceIDs: <String>[ds.deviceID], message: note);
+            deviceIDs: <String?>[ds.deviceID], message: note);
       }
     }
-    return true;
+    return;
   }
 
   Future<void> sendSecretUpdated(Secret s) async {
-    for (var vid in s.vaults) {
+    for (var vid in s.vaults!) {
       // List<DeviceSync> dsL = db.getAllSyncsForAVault();
       var dsL = await db.getAllSyncsForAVault(vid) ?? <DeviceSync>[];
       // for each dsl send an added secret notification
       for (var ds in dsL) {
-        var d = await db.getDeviceBySyncID(ds.deviceID);
+        var d = (await db.getDeviceBySyncID(ds.deviceID))!;
         var note = await _setupNotification(
           d.encryptionKey,
           NotificationType.SyncUpdate,
@@ -70,31 +70,31 @@ class Sync {
         );
 
         await notify.sendMessageToAnotherDevice(
-            deviceIDs: <String>[ds.deviceID], message: note);
+            deviceIDs: <String?>[ds.deviceID], message: note);
       }
     }
-    return true;
+    return;
   }
 
   Future<void> sendSecretDeleted(Secret s) async {
-    for (var vid in s.vaults) {
+    for (var vid in s.vaults!) {
       // List<DeviceSync> dsL = db.getAllSyncsForAVault();
       var dsL = await db.getAllSyncsForAVault(vid) ?? <DeviceSync>[];
       // for each dsl send an added secret notification
       for (var ds in dsL) {
-        var d = await db.getDeviceBySyncID(ds.deviceID);
+        var d = (await db.getDeviceBySyncID(ds.deviceID))!;
         var note = await _setupNotification(
           d.encryptionKey,
           NotificationType.SyncUpdate,
           SyncDataWrapper(
               type: SyncType.DataRemove,
-              data: SyncDataRemove(vaultId: vid, secretIDs: <String>[s.uuid])),
+              data: SyncDataRemove(vaultId: vid, secretIDs: <String?>[s.uuid])),
         );
 
         await notify.sendMessageToAnotherDevice(
-            deviceIDs: <String>[ds.deviceID], message: note);
+            deviceIDs: <String?>[ds.deviceID], message: note);
       }
     }
-    return true;
+    return;
   }
 }

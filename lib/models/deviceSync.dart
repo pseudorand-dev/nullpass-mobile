@@ -38,12 +38,12 @@ class DeviceAccess {
     "Manage"
   ];
 
-  final String _name;
+  final String? _name;
   const DeviceAccess._(this._name);
 
-  static dynamic fromString(String deviceAccess) {
+  static dynamic fromString(String? deviceAccess) {
     if (values.contains(deviceAccess) ||
-        values.contains(deviceAccess.replaceAll("-", "")))
+        values.contains(deviceAccess!.replaceAll("-", "")))
       return DeviceAccess._(deviceAccess);
     else
       return DeviceAccess.None;
@@ -51,7 +51,7 @@ class DeviceAccess {
 
   @override
   String toString() {
-    return _name;
+    return _name!;
   }
 
   @override
@@ -65,10 +65,10 @@ class DeviceAccess {
 
 enum SyncStatus { Unknown, Creating, Active, Syncing, Deleting }
 
-String syncStatusToString(SyncStatus status) =>
+String syncStatusToString(SyncStatus? status) =>
     status.toString().substring(status.toString().lastIndexOf(".") + 1);
 
-SyncStatus parseSyncStatusFromString(String status) {
+SyncStatus parseSyncStatusFromString(String? status) {
   var syncStatus = SyncStatus.Unknown;
   try {
     syncStatus = SyncStatus.values.firstWhere((ss) =>
@@ -76,7 +76,7 @@ SyncStatus parseSyncStatusFromString(String status) {
             .toString()
             .toLowerCase()
             .substring(ss.toString().lastIndexOf(".") + 1) ==
-        status.toLowerCase());
+        status!.toLowerCase());
   } catch (e) {
     Log.debug(
       "An error occurred while trying to translate string to a SyncStatus: ${e.toString()}",
@@ -86,35 +86,35 @@ SyncStatus parseSyncStatusFromString(String status) {
 }
 
 class DeviceSync {
-  String id;
-  String deviceID;
-  String deviceSyncID;
-  bool syncFromInternal;
-  String vaultID;
-  String vaultName;
-  DeviceAccess vaultAccess;
-  String notes;
-  SyncStatus status;
-  DateTime created;
-  DateTime lastModified;
-  DateTime lastSync;
+  String? id;
+  String? deviceID;
+  String? deviceSyncID;
+  bool? syncFromInternal;
+  String? vaultID;
+  String? vaultName;
+  DeviceAccess? vaultAccess;
+  String? notes;
+  SyncStatus? status;
+  DateTime? created;
+  DateTime? lastModified;
+  DateTime? lastSync;
 
   factory DeviceSync.fromJson(Map<String, dynamic> json) =>
       DeviceSync.deviceFromJson(json);
 
   DeviceSync({
-    String id,
-    @required String deviceID,
-    String deviceSyncID,
-    @required bool syncFromInternal,
-    @required String vaultID,
-    @required String vaultName,
-    @required DeviceAccess vaultAccess,
-    SyncStatus status,
-    String notes,
-    DateTime created,
-    DateTime lastModified,
-    DateTime lastSync,
+    String? id,
+    required String? deviceID,
+    String? deviceSyncID,
+    required bool? syncFromInternal,
+    required String? vaultID,
+    required String? vaultName,
+    required DeviceAccess? vaultAccess,
+    SyncStatus? status,
+    String? notes,
+    DateTime? created,
+    DateTime? lastModified,
+    DateTime? lastSync,
   }) {
     if (id == null || id.trim() == '' || !isUUID(id, 4)) {
       id = (new Uuid()).v4();
@@ -149,13 +149,13 @@ class DeviceSync {
         columnSyncStatus: syncStatusToString(this.status),
         columnSyncNotes: this.notes,
         columnSyncCreated: (this.created != null)
-            ? this.created.toIso8601String()
+            ? this.created!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         columnSyncModified: (this.lastModified != null)
-            ? this.lastModified.toIso8601String()
+            ? this.lastModified!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         columnSyncLastPerformed: (this.lastSync != null)
-            ? this.lastSync.toIso8601String()
+            ? this.lastSync!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
       };
 
@@ -193,13 +193,13 @@ class DeviceSync {
         columnSyncStatus: syncStatusToString(this.status),
         columnSyncNotes: this.notes,
         columnSyncCreated: (this.created != null)
-            ? this.created.toIso8601String()
+            ? this.created!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         columnSyncModified: (this.lastModified != null)
-            ? this.lastModified.toIso8601String()
+            ? this.lastModified!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         columnSyncLastPerformed: (this.lastSync != null)
-            ? this.lastSync.toIso8601String()
+            ? this.lastSync!.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
       };
 

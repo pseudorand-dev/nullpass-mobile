@@ -22,8 +22,8 @@ class ManageDevices extends StatefulWidget {
 class _ManageDevicesState extends State<ManageDevices> {
   String _title = "Manage Devices";
   bool _loading = true;
-  List<Device> _devices = <Device>[];
-  NullPassDB _npDB;
+  List<Device>? _devices = <Device>[];
+  late NullPassDB _npDB;
 
   @override
   void initState() {
@@ -40,7 +40,7 @@ class _ManageDevicesState extends State<ManageDevices> {
 
   Future<bool> _reloadDeviceList() async {
     try {
-      List<Device> dList = await _npDB.getAllDevices();
+      List<Device>? dList = await _npDB.getAllDevices();
       setState(() {
         _devices = dList;
       });
@@ -99,32 +99,32 @@ class _ManageDevicesState extends State<ManageDevices> {
 }
 
 class _DeviesList extends StatelessWidget {
-  final List<Device> devices;
+  final List<Device>? devices;
   final AsyncBoolCallback reloadDevicesListFunction;
 
   _DeviesList(
-      {Key key,
-      @required this.devices,
-      @required this.reloadDevicesListFunction})
+      {Key? key,
+      required this.devices,
+      required this.reloadDevicesListFunction})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (devices == null || devices.length < 1) {
+    if (devices == null || devices!.length < 1) {
       return Container();
     } else {
       return ListView.builder(
-        itemCount: devices.length,
+        itemCount: devices!.length,
         itemBuilder: (context, index) {
           return ListTile(
             leading: Icon(Icons.phone_android),
-            title: Text(devices[index].nickname ?? ""),
+            title: Text(devices![index].nickname ?? ""),
             trailing: Icon(Icons.arrow_forward_ios),
             onTap: () async {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ManageSync(this.devices[index]),
+                  builder: (context) => ManageSync(this.devices![index]),
                 ),
               );
               await reloadDevicesListFunction();

@@ -19,10 +19,10 @@ import 'package:openpgp/openpgp.dart';
 import 'package:uuid/uuid.dart';
 
 class ManageSync extends StatefulWidget {
-  final Device device;
+  final Device? device;
   final bool inSetup;
 
-  ManageSync(this.device, {Key key, inSetup})
+  ManageSync(this.device, {Key? key, inSetup})
       : this.inSetup = inSetup ?? false,
         super(key: key);
 
@@ -33,17 +33,17 @@ class ManageSync extends StatefulWidget {
 class _ManageSyncState extends State<ManageSync> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   bool _loading = true;
-  String _title;
-  Device _device;
-  bool _inSetup;
-  Map<String, DeviceSync> _deviceSyncMap;
-  Map<String, DeviceSync> _originalSyncMap;
-  List<Vault> _vaults;
-  Map<String, Vault> _vaultMap;
+  late String _title;
+  Device? _device;
+  late bool _inSetup;
+  late Map<String?, DeviceSync> _deviceSyncMap;
+  late Map<String?, DeviceSync> _originalSyncMap;
+  List<Vault>? _vaults;
+  late Map<String?, Vault> _vaultMap;
 
   void onSave(BuildContext context) async {
-    if (this._formKey.currentState.validate()) {
-      _formKey.currentState.save();
+    if (this._formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
 
       // validate changes against original and update vault sync
       NullPassDB helper = NullPassDB.instance;
@@ -51,24 +51,24 @@ class _ManageSyncState extends State<ManageSync> {
 
       if (_inSetup) {
         var now = DateTime.now().toUtc();
-        _device.created = now;
-        _device.lastModified = now;
-        success = await helper.insertDevice(_device);
+        _device!.created = now;
+        _device!.lastModified = now;
+        success = await helper.insertDevice(_device!);
         await NullPassDB.instance.addAuditRecord(AuditRecord(
           type: AuditType.DeviceCreated,
-          message: 'The "${_device.nickname}" device was created.',
-          devicesReferenceId: <String>{_device.id},
+          message: 'The "${_device!.nickname}" device was created.',
+          devicesReferenceId: <String?>{_device!.id},
           date: DateTime.now().toUtc(),
         ));
         Log.debug('inserted row(s) - $success');
         // await showSnackBar(context, 'Created!');
       } else {
-        _device.lastModified = DateTime.now().toUtc();
-        success = await helper.updateDevice(_device);
+        _device!.lastModified = DateTime.now().toUtc();
+        success = await helper.updateDevice(_device!);
         await NullPassDB.instance.addAuditRecord(AuditRecord(
           type: AuditType.DeviceUpdated,
-          message: 'The "${_device.nickname}" device was updated.',
-          devicesReferenceId: <String>{_device.id},
+          message: 'The "${_device!.nickname}" device was updated.',
+          devicesReferenceId: <String?>{_device!.id},
           date: DateTime.now().toUtc(),
         ));
         Log.debug('updated row(s) - $success');
@@ -92,7 +92,7 @@ class _ManageSyncState extends State<ManageSync> {
     _deviceSyncMap.forEach((vid, ds) async {
       var ods = _originalSyncMap[vid];
       // np.Notification tmpNotification;
-      np.NotificationType tmpNotificationType;
+      np.NotificationType? tmpNotificationType;
       dynamic tmpNotificationData;
 
       // if the vault doesnt have a sync for this device already and the
@@ -121,10 +121,10 @@ class _ManageSyncState extends State<ManageSync> {
         if (await NullPassDB.instance.insertSync(ds)) {
           await NullPassDB.instance.addAuditRecord(AuditRecord(
             type: AuditType.SyncCreated,
-            message: 'A new sync was setup for "${_device.nickname}".',
-            devicesReferenceId: <String>{_device.id},
-            syncsReferenceId: <String>{ds.id},
-            vaultsReferenceId: <String>{ds.vaultID},
+            message: 'A new sync was setup for "${_device!.nickname}".',
+            devicesReferenceId: <String?>{_device!.id},
+            syncsReferenceId: <String?>{ds.id},
+            vaultsReferenceId: <String?>{ds.vaultID},
             date: DateTime.now().toUtc(),
           ));
           // start sync
@@ -144,16 +144,16 @@ class _ManageSyncState extends State<ManageSync> {
           );
         }
       } else if (ods != null &&
-          _vaultMap[vid].manager == VaultManager.Internal &&
+          _vaultMap[vid]!.manager == VaultManager.Internal &&
           ds.vaultAccess != DeviceAccess.None) {
         // update access
         if (await NullPassDB.instance.updateSync(ds)) {
           await NullPassDB.instance.addAuditRecord(AuditRecord(
             type: AuditType.SyncUpdated,
-            message: 'A sync was updated for "${_device.nickname}".',
-            devicesReferenceId: <String>{_device.id},
-            syncsReferenceId: <String>{ds.id},
-            vaultsReferenceId: <String>{ds.vaultID},
+            message: 'A sync was updated for "${_device!.nickname}".',
+            devicesReferenceId: <String?>{_device!.id},
+            syncsReferenceId: <String?>{ds.id},
+            vaultsReferenceId: <String?>{ds.vaultID},
             date: DateTime.now().toUtc(),
           ));
           // update sync
@@ -172,10 +172,10 @@ class _ManageSyncState extends State<ManageSync> {
         if (await NullPassDB.instance.deleteSync(ds.id)) {
           await NullPassDB.instance.addAuditRecord(AuditRecord(
             type: AuditType.SyncDeleted,
-            message: 'A sync was removed for "${_device.nickname}".',
-            devicesReferenceId: <String>{_device.id},
-            syncsReferenceId: <String>{ds.id},
-            vaultsReferenceId: <String>{ds.vaultID},
+            message: 'A sync was removed for "${_device!.nickname}".',
+            devicesReferenceId: <String?>{_device!.id},
+            syncsReferenceId: <String?>{ds.id},
+            vaultsReferenceId: <String?>{ds.vaultID},
             date: DateTime.now().toUtc(),
           ));
           // remove sync
@@ -189,19 +189,20 @@ class _ManageSyncState extends State<ManageSync> {
 
       // Send Notification
       if (tmpNotificationType != null && tmpNotificationData != null) {
-        if (_device.encryptionKey != null && _device.encryptionKey.isNotEmpty) {
+        if (_device!.encryptionKey != null &&
+            _device!.encryptionKey!.isNotEmpty) {
           var encryptedMsg = await OpenPGP.encrypt(
-              tmpNotificationData.toString(), _device.encryptionKey);
+              tmpNotificationData.toString(), _device!.encryptionKey!);
 
           var tmpNotification = np.Notification(
             tmpNotificationType,
             data: encryptedMsg,
-            deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey),
+            deviceID: sharedPrefs!.getString(DeviceNotificationIdPrefKey),
             notificationID: Uuid().v4(),
           );
 
           await notify.sendMessageToAnotherDevice(
-              deviceIDs: <String>[ds.deviceID], message: tmpNotification);
+              deviceIDs: <String?>[ds.deviceID], message: tmpNotification);
         }
       } else {
         Log.debug(
@@ -213,13 +214,13 @@ class _ManageSyncState extends State<ManageSync> {
 
   Future<void> setupData() async {
     var vaultList = await NullPassDB.instance.getAllVaults();
-    var tmpVMap = <String, Vault>{};
+    var tmpVMap = <String?, Vault>{};
     vaultList?.forEach((v) => tmpVMap[v.uid] = v);
 
     var tmpDeviceSyncs =
-        await NullPassDB.instance.getAllSyncsWithADevice(_device.deviceID);
-    var tmpDeviceSyncMap = <String, DeviceSync>{};
-    var tmpOrigDeviceSyncMap = <String, DeviceSync>{};
+        await NullPassDB.instance.getAllSyncsWithADevice(_device!.deviceID);
+    var tmpDeviceSyncMap = <String?, DeviceSync>{};
+    var tmpOrigDeviceSyncMap = <String?, DeviceSync>{};
     // var tmpDeviceAccessMap = <String, DeviceAccess>{};
     tmpDeviceSyncs.forEach((ds) {
       tmpDeviceSyncMap[ds.vaultID] = ds.clone();
@@ -249,10 +250,10 @@ class _ManageSyncState extends State<ManageSync> {
     });
   }
 
-  void changeVaultAccess(String vid, DeviceAccess vaultAccess) {
+  void changeVaultAccess(String? vid, DeviceAccess? vaultAccess) {
     var ds = _deviceSyncMap[vid] ??
         DeviceSync(
-            deviceID: _device.deviceID,
+            deviceID: _device!.deviceID,
             syncFromInternal: true,
             vaultID: vid,
             vaultName: _vaultMap[vid]?.nickname ?? "",
@@ -265,8 +266,8 @@ class _ManageSyncState extends State<ManageSync> {
     });
   }
 
-  Future<void> updateVaultAccessDialog(String vid,
-      {DeviceAccess vaultAccess = DeviceAccess.None}) async {
+  Future<void> updateVaultAccessDialog(String? vid,
+      {DeviceAccess? vaultAccess = DeviceAccess.None}) async {
     var _radioGroup = vaultAccess;
     await showDialog<void>(
       context: context,
@@ -279,6 +280,7 @@ class _ManageSyncState extends State<ManageSync> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              // Widget: Text('Cancel'),
             ),
           ],
           content: Column(
@@ -293,7 +295,7 @@ class _ManageSyncState extends State<ManageSync> {
                   activeColor: Colors.blue,
                   value: DeviceAccess.None,
                   groupValue: _radioGroup,
-                  onChanged: (newVal) async {
+                  onChanged: (dynamic newVal) async {
                     changeVaultAccess(vid, newVal);
                     Navigator.of(context).pop();
                   },
@@ -312,7 +314,7 @@ class _ManageSyncState extends State<ManageSync> {
                   activeColor: Colors.blue,
                   value: DeviceAccess.Backup,
                   groupValue: _radioGroup,
-                  onChanged: (newVal) async {
+                  onChanged: (dynamic newVal) async {
                     changeVaultAccess(vid, newVal);
                     Navigator.of(context).pop();
                   },
@@ -331,7 +333,7 @@ class _ManageSyncState extends State<ManageSync> {
                   activeColor: Colors.blue,
                   value: DeviceAccess.ReadOnly,
                   groupValue: _radioGroup,
-                  onChanged: (newVal) async {
+                  onChanged: (dynamic newVal) async {
                     changeVaultAccess(vid, newVal);
                     Navigator.of(context).pop();
                   },
@@ -350,7 +352,7 @@ class _ManageSyncState extends State<ManageSync> {
                   activeColor: Colors.blue,
                   value: DeviceAccess.Manage,
                   groupValue: _radioGroup,
-                  onChanged: (newVal) async {
+                  onChanged: (dynamic newVal) async {
                     changeVaultAccess(vid, newVal);
                     Navigator.of(context).pop();
                   },
@@ -369,8 +371,8 @@ class _ManageSyncState extends State<ManageSync> {
 
   List<Widget> generateSyncWidgets() {
     List<Widget> wList = <Widget>[];
-    _vaults.forEach((v) {
-      Widget trailingWidget;
+    _vaults!.forEach((v) {
+      Widget? trailingWidget;
 
       var ds = _deviceSyncMap[v.uid];
 
@@ -420,9 +422,9 @@ class _ManageSyncState extends State<ManageSync> {
       }
 
       wList.add(ListTile(
-        title: Text(v.nickname),
+        title: Text(v.nickname!),
         subtitle: (v.manager == VaultManager.External
-            ? Text("Synced from ${_device.nickname}")
+            ? Text("Synced from ${_device!.nickname}")
             : null),
         trailing: trailingWidget,
       ));
@@ -452,29 +454,29 @@ class _ManageSyncState extends State<ManageSync> {
               onPressed: () async {
                 // TODO: ensure delete of device and all connected syncs removes vault data and sends notifications to sync devices
                 await NullPassDB.instance
-                    .deleteAllSyncsToDevice(this._device.deviceID);
+                    .deleteAllSyncsToDevice(this._device!.deviceID);
 
-                Set<String> vids = <String>{};
-                Set<String> sids = <String>{};
+                Set<String?> vids = <String?>{};
+                Set<String?> sids = <String?>{};
                 _originalSyncMap.forEach((id, ds) {
                   vids.add(ds.vaultID);
                   sids.add(id);
                 });
                 await NullPassDB.instance.addAuditRecord(AuditRecord(
                   type: AuditType.SyncDeleted,
-                  message: 'All syncs were deleted for "${_device.nickname}".',
-                  devicesReferenceId: <String>{_device.id},
+                  message: 'All syncs were deleted for "${_device!.nickname}".',
+                  devicesReferenceId: <String?>{_device!.id},
                   syncsReferenceId: sids,
                   vaultsReferenceId: vids,
                   date: DateTime.now().toUtc(),
                 ));
 
-                await NullPassDB.instance.deleteDevice(this._device.id);
+                await NullPassDB.instance.deleteDevice(this._device!.id);
                 await NullPassDB.instance.addAuditRecord(AuditRecord(
                   type: AuditType.DeviceDeleted,
                   message:
-                      'The "${_device.nickname}" device connection was removed.',
-                  devicesReferenceId: <String>{_device.id},
+                      'The "${_device!.nickname}" device connection was removed.',
+                  devicesReferenceId: <String?>{_device!.id},
                   date: DateTime.now().toUtc(),
                 ));
 
@@ -498,10 +500,10 @@ class _ManageSyncState extends State<ManageSync> {
                           title: TextFormField(
                             onChanged: (value) {
                               setState(() {
-                                this._device.nickname = value;
+                                this._device!.nickname = value;
                               });
                             },
-                            initialValue: this._device.nickname,
+                            initialValue: this._device!.nickname,
                             decoration: InputDecoration(
                                 labelText: 'Device Nickname',
                                 border: InputBorder.none),

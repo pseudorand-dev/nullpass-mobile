@@ -25,7 +25,7 @@ class SecretEdit extends StatefulWidget {
   final Secret secret;
   final SecretEditType edit;
 
-  SecretEdit({Key key, @required this.secret, @required this.edit})
+  SecretEdit({Key? key, required this.secret, required this.edit})
       : super(key: key);
 
   @override
@@ -34,81 +34,81 @@ class SecretEdit extends StatefulWidget {
 
 class _CreateSecretState extends State<SecretEdit> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-  Secret _secret;
+  Secret? _secret;
   TextEditingController _passwordController = new TextEditingController();
   TextEditingController _otpCodeController = new TextEditingController();
   TextEditingController _otpTitleController = new TextEditingController();
 
   bool _loading = true;
-  Map<String, Vault> vaults;
-  Map<String, bool> selectedVaults;
-  String defaultVault;
-  String newVaultName;
+  late Map<String?, Vault> vaults;
+  late Map<String?, bool> selectedVaults;
+  String? defaultVault;
+  String? newVaultName;
 
   // Submit sends the new password data to the db to be saved then pop's up one level
   void submit(BuildContext context) async {
     // First validate form.
-    if (this._formKey.currentState.validate()) {
-      _formKey.currentState.save(); // Save our form now.
+    if (this._formKey.currentState!.validate()) {
+      _formKey.currentState!.save(); // Save our form now.
 
       // SAVE
-      if (_secret.uuid == null || !isUUID(_secret.uuid.trim(), '4')) {
-        _secret.uuid = (new Uuid()).v4();
+      if (_secret!.uuid == null || !isUUID(_secret!.uuid!.trim(), '4')) {
+        _secret!.uuid = (new Uuid()).v4();
       }
-      _secret.vaults = [];
+      _secret!.vaults = [];
       selectedVaults.forEach((f, val) {
-        if (val) _secret.vaults.add(f);
+        if (val) _secret!.vaults!.add(f);
       });
 
-      if (_secret.otpCode == null || _secret.otpCode.trim().isEmpty) {
-        _secret.otpTitle = null;
+      if (_secret!.otpCode == null || _secret!.otpCode!.trim().isEmpty) {
+        _secret!.otpTitle = null;
       } else {
-        _secret.otpCode = _secret.otpCode.trim().toUpperCase();
+        _secret!.otpCode = _secret!.otpCode!.trim().toUpperCase();
       }
 
-      if (_secret.isOTPTitleStored()) {
-        _secret.otpTitle = _secret.otpTitle.trim();
+      if (_secret!.isOTPTitleStored()) {
+        _secret!.otpTitle = _secret!.otpTitle!.trim();
       }
 
       NullPassDB helper = NullPassDB.instance;
       bool success = false;
       if (widget.edit == SecretEditType.Create) {
         var now = DateTime.now().toUtc();
-        _secret.created = now;
-        _secret.lastModified = now;
-        success = await helper.insertSecret(_secret);
+        _secret!.created = now;
+        _secret!.lastModified = now;
+        success = await helper.insertSecret(_secret!);
         Log.debug('inserted row(s) - $success');
         // await showSnackBar(context, 'Created!');
 
         if (success) {
           await NullPassDB.instance.addAuditRecord(AuditRecord(
             type: AuditType.SecretCreated,
-            message: 'The "${_secret.nickname}" secret was created.',
-            secretsReferenceId: <String>{_secret.uuid},
-            vaultsReferenceId: _secret.vaults.toSet(),
-            date: _secret.created,
+            message: 'The "${_secret!.nickname}" secret was created.',
+            secretsReferenceId: <String?>{_secret!.uuid},
+            vaultsReferenceId: _secret!.vaults!.toSet(),
+            date: _secret!.created,
           ));
 
           // Sync changes to appropriate parties
-          Sync.instance.sendSecretAdded(_secret);
+          Sync.instance.sendSecretAdded(_secret!);
         }
       } else if (widget.edit == SecretEditType.Update) {
-        _secret.lastModified = DateTime.now().toUtc();
-        success = await helper.updateSecret(_secret);
+        _secret!.lastModified = DateTime.now().toUtc();
+        success = await helper.updateSecret(_secret!);
         Log.debug('updated row(s) - $success');
         // await showSnackBar(context, 'Updated!');
 
         if (success) {
           await NullPassDB.instance.addAuditRecord(AuditRecord(
             type: AuditType.SecretUpdated,
-            message: 'The "${_secret.nickname}" secret was updated.',
-            secretsReferenceId: <String>{_secret.uuid},
-            vaultsReferenceId: _secret.vaults.toSet(),
-            date: _secret.lastModified,
+            message: 'The "${_secret!.nickname}" secret was updated.',
+            secretsReferenceId: <String?>{_secret!.uuid},
+            vaultsReferenceId: _secret!.vaults!.toSet(),
+            date: _secret!.lastModified,
           ));
 
           // Sync changes to appropriate parties
-          Sync.instance.sendSecretUpdated(_secret);
+          Sync.instance.sendSecretUpdated(_secret!);
         }
       }
 
@@ -125,22 +125,22 @@ class _CreateSecretState extends State<SecretEdit> {
           : new Secret(nickname: '', website: '', username: '', message: ''));
     }
 
-    _otpCodeController.text = _secret.otpCode ?? '';
+    _otpCodeController.text = _secret!.otpCode ?? '';
     _otpTitleController.text =
-        _secret.isOTPTitleStored() ? _secret.otpTitle : '';
+        _secret!.isOTPTitleStored() ? _secret!.otpTitle! : '';
 
-    vaults = <String, Vault>{};
-    selectedVaults = <String, bool>{};
+    vaults = <String?, Vault>{};
+    selectedVaults = <String?, bool>{};
 
-    defaultVault = sharedPrefs.getString(DefaultVaultIDPrefKey) ?? "";
+    defaultVault = sharedPrefs!.getString(DefaultVaultIDPrefKey) ?? "";
 
     NullPassDB.instance.getAllInternallyManagedVaults().then((vaultsList) {
-      vaultsList.forEach((v) {
+      vaultsList!.forEach((v) {
         vaults[v.uid] = v;
         selectedVaults[v.uid] =
-            (((this._secret.vaults == null || this._secret.vaults.isEmpty) &&
+            (((this._secret!.vaults == null || this._secret!.vaults!.isEmpty) &&
                     v.uid == defaultVault) ||
-                _secret.vaults.contains(v.uid));
+                _secret!.vaults!.contains(v.uid));
       });
       setState(() {
         _loading = false;
@@ -150,7 +150,7 @@ class _CreateSecretState extends State<SecretEdit> {
 
   void setPassword(String value) {
     setState(() {
-      _secret.message = value;
+      _secret!.message = value;
     });
     _setControllerTextAndMoveCursor(_passwordController, value);
   }
@@ -222,16 +222,18 @@ class _CreateSecretState extends State<SecretEdit> {
                       await NullPassDB.instance.addAuditRecord(AuditRecord(
                         type: AuditType.VaultCreated,
                         message: 'The "${v.nickname}" vault was added.',
-                          vaultsReferenceId: <String>{v.uid},
-                          date: DateTime.now().toUtc(),
-                        ));
-                        setState(() {
-                          this.vaults[v.uid] = v;
-                          this.selectedVaults[v.uid] = true;
-                        });
-                      }
-                      Navigator.of(context).pop();
-                    })
+                        vaultsReferenceId: <String?>{v.uid},
+                        date: DateTime.now().toUtc(),
+                      ));
+                      setState(() {
+                        this.vaults[v.uid] = v;
+                        this.selectedVaults[v.uid] = true;
+                      });
+                    }
+                    Navigator.of(context).pop();
+                  },
+                  // Widget: Text('Add'),
+                )
               ],
             );
           },
@@ -301,15 +303,15 @@ class _CreateSecretState extends State<SecretEdit> {
                   title: TextFormField(
                     onChanged: (value) {
                       setState(() {
-                        _secret.nickname = value;
+                        _secret!.nickname = value;
                       });
-                      Log.debug('new nickname ${_secret.nickname}');
+                      Log.debug('new nickname ${_secret!.nickname}');
                     },
-                    initialValue: _secret.nickname,
+                    initialValue: _secret!.nickname,
                     decoration: InputDecoration(
                         labelText: 'Nickname', border: InputBorder.none),
                     validator: (value) {
-                      if (value.isEmpty) {
+                      if (value!.isEmpty) {
                         return 'The Nickname field cannot be empty';
                       }
                       return null;
@@ -321,16 +323,16 @@ class _CreateSecretState extends State<SecretEdit> {
                   title: TextFormField(
                     onChanged: (value) {
                       setState(() {
-                        _secret.website = value;
+                        _secret!.website = value;
                       });
-                      Log.debug('new website ${_secret.website}');
+                      Log.debug('new website ${_secret!.website}');
                     },
-                    initialValue: _secret.website,
+                    initialValue: _secret!.website,
                     decoration: InputDecoration(
                         labelText: 'Website', border: InputBorder.none),
                     keyboardType: TextInputType.url,
                     validator: (value) {
-                      if (value.isEmpty) {
+                      if (value!.isEmpty) {
                         return 'The Website field cannot be empty';
                       }
                       return null;
@@ -342,18 +344,18 @@ class _CreateSecretState extends State<SecretEdit> {
                   title: TextFormField(
                     onChanged: (value) {
                       setState(() {
-                        _secret.username = value;
+                        _secret!.username = value;
                       });
-                      Log.debug('new username ${_secret.username}');
+                      Log.debug('new username ${_secret!.username}');
                     },
-                    initialValue: _secret.username,
+                    initialValue: _secret!.username,
                     decoration: InputDecoration(
                       labelText: 'Username',
                       border: InputBorder.none,
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value.isEmpty) {
+                      if (value!.isEmpty) {
                         return 'The Username field cannot be empty';
                       }
                       return null;
@@ -364,12 +366,12 @@ class _CreateSecretState extends State<SecretEdit> {
                 PasswordInput(
                   onChange: (value) {
                     setState(() {
-                      _secret.message = value;
+                      _secret!.message = value;
                     });
-                    Log.debug('new password ${_secret.message}');
+                    Log.debug('new password ${_secret!.message}');
                   },
                   controller: _passwordController,
-                  initialValue: _secret.message,
+                  initialValue: _secret!.message,
                   setPassword: setPassword,
                 ),
                 FormDivider(),
@@ -379,16 +381,16 @@ class _CreateSecretState extends State<SecretEdit> {
                     controller: _otpCodeController,
                     onChanged: (value) {
                       setState(() {
-                        _secret.otpCode = value.toUpperCase();
+                        _secret!.otpCode = value.toUpperCase();
                       });
-                      Log.debug('new otpCode ${_secret.otpCode}');
+                      Log.debug('new otpCode ${_secret!.otpCode}');
                     },
                     decoration: InputDecoration(
                         labelText: 'One-Time Passcode',
                         border: InputBorder.none),
                     validator: (value) {
-                      if (value.trim().isNotEmpty &&
-                          _secret.getOnetimePasscode().trim() == '') {
+                      if (value!.trim().isNotEmpty &&
+                          _secret!.getOnetimePasscode().trim() == '') {
                         return 'The One-Time Passcode provided is invalid';
                       }
                       return null;
@@ -399,28 +401,28 @@ class _CreateSecretState extends State<SecretEdit> {
                     onPressed: () async {
                       try {
                         var results = await OtpQrScan.scan();
-                        var title = results.name;
+                        var title = results.name!;
                         if (!title.contains(':') &&
                             !title.contains('(') &&
                             !title.contains(' - ')) {
                           title = '${results.issuer} (${title})';
                         }
                         setState(() {
-                          _secret.otpCode = results.secret.toUpperCase();
-                          _secret.otpTitle = title.trim();
+                          _secret!.otpCode = results.secret!.toUpperCase();
+                          _secret!.otpTitle = title.trim();
                         });
                         _setControllerTextAndMoveCursor(
                           _otpCodeController,
-                          _secret.otpCode.toUpperCase(),
+                          _secret!.otpCode!.toUpperCase(),
                         );
                         _setControllerTextAndMoveCursor(
                           _otpTitleController,
-                          _secret.otpTitle?.trim(),
+                          _secret!.otpTitle?.trim() ?? "",
                         );
-                        Log.debug('new otp secret "${_secret.otpCode}"');
-                        Log.debug('new otp title "${_secret.otpTitle}"');
-                      } catch (e) {
-                        Log.error('Failed to scan QR code', stackTrace: e);
+                        Log.debug('new otp secret "${_secret!.otpCode}"');
+                        Log.debug('new otp title "${_secret!.otpTitle}"');
+                      } on Exception catch (e, s) {
+                        Log.error('Failed to scan QR code', stackTrace: s);
                       }
                     },
                   ),
@@ -429,13 +431,13 @@ class _CreateSecretState extends State<SecretEdit> {
                 ListTile(
                   title: TextFormField(
                     controller: _otpTitleController,
-                    enabled: (_secret.otpCode != null &&
-                        _secret.otpCode.trim().isNotEmpty),
+                    enabled: (_secret!.otpCode != null &&
+                        _secret!.otpCode!.trim().isNotEmpty),
                     onChanged: (value) {
                       setState(() {
-                        _secret.otpTitle = value?.trim();
+                        _secret!.otpTitle = value?.trim();
                       });
-                      Log.debug('new otpTitle ${_secret.otpTitle}');
+                      Log.debug('new otpTitle ${_secret!.otpTitle}');
                     },
                     decoration: InputDecoration(
                         labelText: 'Optional OTP Title',
@@ -447,11 +449,11 @@ class _CreateSecretState extends State<SecretEdit> {
                   title: TextFormField(
                     onChanged: (value) {
                       setState(() {
-                        _secret.notes = value;
+                        _secret!.notes = value;
                       });
-                      Log.debug('new notes ${_secret.notes}');
+                      Log.debug('new notes ${_secret!.notes}');
                     },
-                    initialValue: _secret.notes,
+                    initialValue: _secret!.notes,
                     decoration: InputDecoration(
                         labelText: 'Notes', border: InputBorder.none),
                   ),
@@ -473,7 +475,7 @@ class _CreateSecretState extends State<SecretEdit> {
                       runSpacing: 5.0,
                     ),
                   ),
-                  validator: (value) {
+                  validator: (dynamic value) {
                     if (!selectedVaults.containsValue(true)) {
                       // TODO: create an error text widget and set it here
                       return 'You must select at least one vault to add your secret to';
@@ -511,8 +513,8 @@ class _CreateSecretState extends State<SecretEdit> {
                   return new SecretGenerate(inEditor: true);
                 });
             if (result != null && result.toString().trim() != '') {
-              _secret.message = result.toString();
-              setPassword(_secret.message);
+              _secret!.message = result.toString();
+              setPassword(_secret!.message!);
             }
           },
           tooltip: 'Generate',
@@ -525,15 +527,15 @@ class _CreateSecretState extends State<SecretEdit> {
 
 class PasswordInput extends StatefulWidget {
   final Function onChange;
-  final String initialValue;
+  final String? initialValue;
   final TextEditingController controller;
   final Function setPassword;
 
   PasswordInput(
-      {Key key,
-      @required this.onChange,
-      @required this.controller,
-      @required this.setPassword,
+      {Key? key,
+      required this.onChange,
+      required this.controller,
+      required this.setPassword,
       this.initialValue = ''})
       : super(key: key);
 
@@ -543,9 +545,9 @@ class PasswordInput extends StatefulWidget {
 
 class _PasswordInputState extends State<PasswordInput> {
   bool _visible = false;
-  String _initialValue;
-  TextEditingController _controller;
-  Function _setPassword;
+  String? _initialValue;
+  TextEditingController? _controller;
+  late Function _setPassword;
 
   @override
   void initState() {
@@ -554,7 +556,7 @@ class _PasswordInputState extends State<PasswordInput> {
       _initialValue = (widget.initialValue != null ? widget.initialValue : '');
     }
     _controller = widget.controller;
-    _controller.text = _initialValue;
+    _controller!.text = _initialValue!;
     _setPassword = widget.setPassword;
   }
 
@@ -572,7 +574,7 @@ class _PasswordInputState extends State<PasswordInput> {
         ),
         obscureText: !_visible,
         validator: (value) {
-          if (value.isEmpty) {
+          if (value!.isEmpty) {
             return 'The Password field cannot be empty';
           }
           return null;

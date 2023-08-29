@@ -17,15 +17,15 @@ enum SyncState { qrcode, scan, processing, selector, unknown }
 class SyncDevices extends StatefulWidget {
   final SyncState syncState;
 
-  SyncDevices({Key key, this.syncState = SyncState.qrcode}) : super(key: key);
+  SyncDevices({Key? key, this.syncState = SyncState.qrcode}) : super(key: key);
 
   @override
   _SyncDevicesState createState() => _SyncDevicesState();
 }
 
 class _SyncDevicesState extends State<SyncDevices> {
-  SyncState _syncState;
-  Device newDevice;
+  SyncState? _syncState;
+  Device? newDevice;
 
   void fabPress() {
     if (_syncState == SyncState.qrcode) {
@@ -39,9 +39,9 @@ class _SyncDevicesState extends State<SyncDevices> {
     }
   }
 
-  Future<void> finishSetup(BuildContext context) async {
+  Future<void> finishSetup(BuildContext? context) async {
     await Navigator.push(
-        context,
+        context!,
         MaterialPageRoute(
             builder: (context) => ManageSync(newDevice, inSetup: true)));
   }

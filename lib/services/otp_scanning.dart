@@ -7,7 +7,7 @@ import 'package:nullpass/services/logging.dart';
 class OtpQrScan {
   final String otp = "";
 
-  static OTPDetails _parseOtpQrPayload(Uri input) {
+  static OTPDetails _parseOtpQrPayload(Uri? input) {
     // otpauth://totp/ACME%20Co:john@example.com?secret=HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ&issuer=ACME%20Co&algorithm=SHA1&digits=6&period=30
     // otpauth://totp/{username}?secret={key}&issuer={provider_name}
 
@@ -23,11 +23,11 @@ class OtpQrScan {
     final type = Uri.decodeComponent(input.host);
     final identifier = inputPath;
     final params = input.queryParameters;
-    final secret = Uri.decodeComponent(params['secret']);
-    final issuer = Uri.decodeComponent(params['issuer']);
-    final algorithm = Uri.decodeComponent(params['algorithm']);
-    final digits = Uri.decodeComponent(params['digits']);
-    final period = Uri.decodeComponent(params['period']);
+    final secret = Uri.decodeComponent(params['secret']!);
+    final issuer = Uri.decodeComponent(params['issuer']!);
+    final algorithm = Uri.decodeComponent(params['algorithm']!);
+    final digits = Uri.decodeComponent(params['digits']!);
+    final period = Uri.decodeComponent(params['period']!);
 
     final otpDetails = OTPDetails(
       secret: secret,

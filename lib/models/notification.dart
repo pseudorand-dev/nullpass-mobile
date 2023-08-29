@@ -16,10 +16,10 @@ const String _NOTIFICATION_ID_KEY = "nid";
 
 class Notification {
   final NotificationType notificationType;
-  String deviceID;
-  String notificationID;
-  int parts;
-  int position;
+  String? deviceID;
+  String? notificationID;
+  int? parts;
+  int? position;
   final dynamic data;
 
   Notification(
@@ -43,15 +43,15 @@ class Notification {
   static Notification fromJson(String json) {
     var decodedBlob = jsonDecode(json) as Map<String, dynamic>;
     var nType = notificationTypeFromString(decodedBlob[_TYPE_KEY]);
-    var nParts = decodedBlob[_PARTS_KEY] as int;
-    var nPos = decodedBlob[_POSITION_KEY] as int;
+    var nParts = decodedBlob[_PARTS_KEY] as int?;
+    var nPos = decodedBlob[_POSITION_KEY] as int?;
     var did = decodedBlob[_DEVICE_ID_KEY];
     var nid = decodedBlob[_NOTIFICATION_ID_KEY];
 
     dynamic data;
     if (decodedBlob[_DATA_KEY].runtimeType == String) {
       // String
-      data = decodedBlob[_DATA_KEY] as String;
+      data = decodedBlob[_DATA_KEY] as String?;
     } else if (decodedBlob[_DATA_KEY].runtimeType ==
         (<String, dynamic>{}).runtimeType) {
       // Map
@@ -66,7 +66,7 @@ class Notification {
           "data object is unexpectedly not a string, a Map<String, dynamic> or List<dynamic>. it is a: ${decodedBlob[_DATA_KEY].runtimeType}");
       try {
         Log.debug("trying to convert it from a List to a string");
-        data = (decodedBlob[_DATA_KEY] as List).toString();
+        data = (decodedBlob[_DATA_KEY] as List?).toString();
       } catch (e) {
         Log.debug(
             "The object could also not be parsed as a list so just passing it as is");
@@ -82,15 +82,15 @@ class Notification {
         notificationID: nid);
   }
 
-  static Notification fromMap(Map<String, dynamic> input) {
-    if (input == null) return null;
+  static Notification? fromMap(Map<String, dynamic> input) {
+    if (input.isEmpty) return null;
 
     var nType = notificationTypeFromString(input[_TYPE_KEY]);
     // var nData = input[_DATA_KEY] as Map;
-    var nData = input[_DATA_KEY] as String;
+    var nData = input[_DATA_KEY] as String?;
 
-    var nParts = input[_PARTS_KEY] as int;
-    var nPos = input[_POSITION_KEY] as int;
+    var nParts = input[_PARTS_KEY] as int?;
+    var nPos = input[_POSITION_KEY] as int?;
 
     var did = input[_DEVICE_ID_KEY];
     var nid = input[_NOTIFICATION_ID_KEY];
@@ -156,7 +156,7 @@ class Notification {
       };
 }
 
-NotificationType notificationTypeFromString(String nType) {
+NotificationType notificationTypeFromString(String? nType) {
   var ret = NotificationType.Unknown;
   try {
     ret = NotificationType.values.firstWhere((e) =>
@@ -164,7 +164,7 @@ NotificationType notificationTypeFromString(String nType) {
             .toString()
             .toUpperCase()
             .substring(e.toString().lastIndexOf(".") + 1) ==
-        nType.toUpperCase());
+        nType!.toUpperCase());
   } catch (e) {
     Log.debug(
         "An error occurred while trying to translate string to NotificationType: ${e.toString()}");

@@ -16,8 +16,8 @@ class LockScreen extends StatefulWidget {
 
 class _LockScreenState extends State<LockScreen> {
   final String _title = "NullPass";
-  LocalAuthentication localAuth;
-  bool cancelled;
+  late LocalAuthentication localAuth;
+  late bool cancelled;
 
   @override
   void initState() {
@@ -37,12 +37,10 @@ class _LockScreenState extends State<LockScreen> {
       });
       if (canCheckBiometrics) {
         bool didAuthenticate = await localAuth.authenticate(
-          androidAuthStrings: (Platform.isAndroid)
-              ? AndroidAuthMessages(
-                  signInTitle: "Unlock NullPass",
-                  biometricHint: "",
-                )
-              : null,
+          androidAuthStrings: AndroidAuthMessages(
+            signInTitle: "Unlock NullPass",
+            biometricHint: "",
+          ),
           iOSAuthStrings: IOSAuthMessages(),
           localizedReason: (Platform.isAndroid) ? "" : "Unlock NullPass",
           stickyAuth: true,
@@ -80,7 +78,7 @@ class _LockScreenState extends State<LockScreen> {
   }
 
   void unlock() {
-    AppLock.of(context).didUnlock();
+    AppLock.of(context)!.didUnlock();
   }
 
   @override

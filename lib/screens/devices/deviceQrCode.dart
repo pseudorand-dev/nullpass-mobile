@@ -21,14 +21,14 @@ import 'package:uuid/uuid.dart';
 
 class QrCode extends StatefulWidget {
   final Function fabPressFunction;
-  final Function(BuildContext) nextStep;
+  final Future<void> Function(BuildContext?) nextStep;
   final Function(Device) setDevice;
 
   QrCode(
-      {Key key,
-      @required this.fabPressFunction,
-      @required this.nextStep,
-      @required this.setDevice})
+      {Key? key,
+      required this.fabPressFunction,
+      required this.nextStep,
+      required this.setDevice})
       : super(key: key);
 
   @override
@@ -37,17 +37,17 @@ class QrCode extends StatefulWidget {
 
 class _QrCodeState extends State<QrCode> {
   final String _title = "NullPass Syncing";
-  Function _fabPressFunction;
-  Function(Device) _setDevice;
-  Function(BuildContext) _nextStep;
+  Function? _fabPressFunction;
+  late Function(Device) _setDevice;
+  late Future<void> Function(BuildContext?) _nextStep;
 
-  QrData _qrData;
-  String _responseNonce;
-  KeyPair _encryptionKeyPair;
-  String _scannerDeviceId;
-  String _scannerPubKey;
+  late QrData _qrData;
+  String? _responseNonce;
+  KeyPair? _encryptionKeyPair;
+  String? _scannerDeviceId;
+  String? _scannerPubKey;
   String _errorText = "";
-  BuildContext _context;
+  BuildContext? _context;
 
   String _debugLog = "DEBUG LOG";
 
@@ -60,7 +60,7 @@ class _QrCodeState extends State<QrCode> {
     });
     try {
       var decryptedMsg = await OpenPGP.decryptSymmetric(
-          param as String, _qrData.generatedNonce);
+          param as String, _qrData.generatedNonce!);
       var syncRegMap = jsonDecode(decryptedMsg);
       var scannerInfo = SyncRegistration.fromMap(syncRegMap);
 
@@ -74,17 +74,18 @@ class _QrCodeState extends State<QrCode> {
         }
 
         var sd = SyncRegistration(
-          deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
-          pgpPubKey: _encryptionKeyPair.publicKey,
+          deviceId: sharedPrefs!.getString(DeviceNotificationIdPrefKey),
+          pgpPubKey: _encryptionKeyPair!.publicKey,
           generatedNonce: _responseNonce,
           receivedNonce: scannerInfo.generatedNonce,
         );
 
-        var encryptedMsg = await OpenPGP.encrypt(sd.toString(), _scannerPubKey);
+        var encryptedMsg =
+            await OpenPGP.encrypt(sd.toString(), _scannerPubKey!);
         var tmpNote = np.Notification(np.NotificationType.SyncInitStepTwo,
             data: encryptedMsg);
         await notify.sendMessageToAnotherDevice(
-            deviceIDs: <String>[scannerInfo.deviceId], message: tmpNote);
+            deviceIDs: <String?>[scannerInfo.deviceId], message: tmpNote);
 
         Log.debug("sending: $encryptedMsg");
 
@@ -109,23 +110,24 @@ class _QrCodeState extends State<QrCode> {
 
     try {
       var decryptedMsg = await OpenPGP.decrypt(
-          param as String, _encryptionKeyPair.privateKey, "");
+          param as String, _encryptionKeyPair!.privateKey, "");
       var syncRegMap = jsonDecode(decryptedMsg);
       var scannerInfo = SyncRegistration.fromMap(syncRegMap);
 
       if (_responseNonce == scannerInfo.receivedNonce) {
         var sd = SyncRegistration(
-          deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
+          deviceId: sharedPrefs!.getString(DeviceNotificationIdPrefKey),
           receivedNonce: scannerInfo.generatedNonce,
         );
 
-        var encryptedMsg = await OpenPGP.encrypt(sd.toString(), _scannerPubKey);
+        var encryptedMsg =
+            await OpenPGP.encrypt(sd.toString(), _scannerPubKey!);
 
         Log.debug(encryptedMsg);
         var tmpNote = np.Notification(np.NotificationType.SyncInitStepFour,
             data: encryptedMsg);
         notify.sendMessageToAnotherDevice(
-            deviceIDs: <String>[scannerInfo.deviceId], message: tmpNote);
+            deviceIDs: <String?>[scannerInfo.deviceId], message: tmpNote);
 
         Log.debug("success");
         setState(() {
@@ -204,7 +206,7 @@ class _QrCodeState extends State<QrCode> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: _fabPressFunction,
+          onPressed: _fabPressFunction as void Function()?,
           tooltip: 'QR Scanner',
           child: Icon(MdiIcons.qrcodeScan),
         ),

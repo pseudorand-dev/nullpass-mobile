@@ -9,13 +9,13 @@ import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
 
 class QrData {
-  String deviceId;
-  String generatedNonce;
+  String? deviceId;
+  String? generatedNonce;
 
   QrData({this.deviceId, this.generatedNonce});
 
   static QrData generate() {
-    var dID = sharedPrefs.getString(DeviceNotificationIdPrefKey);
+    var dID = sharedPrefs!.getString(DeviceNotificationIdPrefKey);
     var genNonce = Uuid().v4();
     return QrData(deviceId: dID, generatedNonce: genNonce);
   }
@@ -23,7 +23,7 @@ class QrData {
   @override
   String toString() {
     var tmpStr = "{\"device_id\":\"$deviceId\"";
-    if (generatedNonce != null && generatedNonce.isNotEmpty) {
+    if (generatedNonce != null && generatedNonce!.isNotEmpty) {
       tmpStr = "$tmpStr,\"generated_nonce\":\"$generatedNonce\"";
     }
     return "$tmpStr}";
@@ -50,7 +50,7 @@ class QrData {
         ? map["device_id"]
         : null;
     generatedNonce = map["generated_nonce"] != null &&
-            isUUID(map["generated_nonce"] as String)
+            isUUID(map["generated_nonce"] as String?)
         ? map["generated_nonce"]
         : null;
   }
@@ -61,7 +61,7 @@ class QrData {
 
   bool isValid() {
     if (deviceId != null &&
-        deviceId.isNotEmpty &&
+        deviceId!.isNotEmpty &&
         (generatedNonce == null || isUUID(generatedNonce))) return true;
     return false;
   }
