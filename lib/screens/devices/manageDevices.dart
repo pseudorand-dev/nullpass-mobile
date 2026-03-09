@@ -1,0 +1,125 @@
+/*
+ * Created by Ilan Rasekh on 2020/3/7
+ * Copyright (c) 2020 Pseudorand Development. All rights reserved.
+ */
+
+import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:nullpass/common.dart';
+import 'package:nullpass/models/device.dart';
+import 'package:nullpass/screens/appDrawer.dart';
+import 'package:nullpass/screens/devices/manageSync.dart';
+import 'package:nullpass/screens/devices/syncDevices.dart';
+import 'package:nullpass/services/datastore.dart';
+import 'package:nullpass/services/logging.dart';
+import 'package:nullpass/widgets.dart';
+
+class ManageDevices extends StatefulWidget {
+  const ManageDevices({super.key});
+
+  @override
+  _ManageDevicesState createState() => _ManageDevicesState();
+}
+
+class _ManageDevicesState extends State<ManageDevices> {
+  final String _title = "Manage Devices";
+  bool _loading = true;
+  List<Device> _devices = <Device>[];
+  late NullPassDB _npDB;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _npDB = NullPassDB.instance;
+
+    _reloadDeviceList().then((worked) {
+      setState(() {
+        _loading = false;
+      });
+    });
+  }
+
+  Future<bool> _reloadDeviceList() async {
+    try {
+      List<Device> dList = await _npDB.getAllDevices();
+      setState(() {
+        _devices = dList;
+      });
+      return true;
+    } catch (e) {
+      Log.debug(e);
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_title),
+      ),
+      drawer: AppDrawer(
+        currentPage: NullPassRoute.ManageDevices,
+        reloadSecretList: (dynamic) {},
+      ),
+      body: _loading
+          ? const CenterLoader()
+          : _DeviesList(
+              devices: _devices,
+              reloadDevicesListFunction: _reloadDeviceList,
+            ),
+      floatingActionButton: _loading
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () async {
+                await Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const SyncDevices(syncState: SyncState.scan),
+                  ),
+                );
+              },
+              icon: Icon(MdiIcons.qrcodeScan),
+              label: const Text('Add Device'),
+            ),
+    );
+  }
+}
+
+class _DeviesList extends StatelessWidget {
+  final List<Device> devices;
+  final AsyncBoolCallback reloadDevicesListFunction;
+
+  const _DeviesList(
+      {required this.devices,
+      required this.reloadDevicesListFunction});
+
+  @override
+  Widget build(BuildContext context) {
+    if (devices.isEmpty) {
+      return Container();
+    } else {
+      return ListView.builder(
+        itemCount: devices.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            leading: const Icon(Icons.phone_android),
+            title: Text(devices[index].nickname ?? ""),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ManageSync(devices[index]),
+                ),
+              );
+              await reloadDevicesListFunction();
+            },
+          );
+        },
+      );
+    }
+  }
+}

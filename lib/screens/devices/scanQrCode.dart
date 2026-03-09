@@ -1,0 +1,438 @@
+/*
+ * Created by Ilan Rasekh on 2020/3/7
+ * Copyright (c) 2020 Pseudorand Development. All rights reserved.
+ */
+
+import 'dart:convert';
+
+import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:nullpass/common.dart';
+import 'package:nullpass/models/device.dart';
+import 'package:nullpass/models/notification.dart' as np;
+import 'package:nullpass/models/qrData.dart';
+import 'package:nullpass/models/syncRegistration.dart';
+import 'package:nullpass/screens/appDrawer.dart';
+import 'package:nullpass/services/datastore.dart';
+import 'package:nullpass/services/logging.dart';
+import 'package:nullpass/widgets.dart';
+import 'package:openpgp/openpgp.dart';
+import 'package:uuid/uuid.dart';
+
+const String _invalidDataType = "invalid data type";
+const String _noDeviceID = "no_device_id";
+
+class QrScanner extends StatefulWidget {
+  final void Function()? fabPressFunction;
+  final Function(BuildContext) nextStep;
+  final Function(Device) setDevice;
+
+  const QrScanner(
+      {super.key,
+      required this.fabPressFunction,
+      required this.nextStep,
+      required this.setDevice});
+
+  @override
+  _QrScannerState createState() => _QrScannerState();
+}
+
+class _QrScannerState extends State<QrScanner> {
+  final String _title = "NullPass Syncing";
+  late void Function()? _fabPressFunction;
+  late Function(BuildContext) _nextStep;
+  late Function(Device) _setDevice;
+  String _errorText = "";
+  late BuildContext _context;
+
+  late String _responseNonce;
+  KeyPair? _encryptionKeyPair;
+
+  String _barcodeData = "";
+  bool _initiated = false;
+  late QrData _scannedQrData;
+  late String _recipient;
+  late String _scannedPublicKey;
+
+  Future<void> _initiateHandshake() async {
+    if (_scannedQrData.isValid()) {
+      Log.debug("sending initiation message");
+
+      setState(() {
+        _recipient = _scannedQrData.deviceId ?? '';
+      });
+
+      _encryptionKeyPair ??= await NullPassDB.instance.getEncryptionKeyPair();
+      if (_encryptionKeyPair == null) return;
+
+      var receivedNonce = _scannedQrData.generatedNonce;
+
+      var sd = SyncRegistration(
+        deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
+        pgpPubKey: _encryptionKeyPair!.publicKey,
+        generatedNonce: _responseNonce,
+        receivedNonce: receivedNonce,
+      );
+
+      var encryptedMsg = await OpenPGP.encryptSymmetric(
+          sd.toString(), receivedNonce ?? '',
+          options: KeyOptions()..cipher = Cipher.AES256);
+
+      // var tmpMap = await sd.toEncryptedMap(_scannedQrData.pgpPubKey);
+      // QrData(
+      //   deviceId: notify.deviceId,
+      //   receivedNonce: _scannedQrData.generatedNonce,
+      //   generatedNonce: _responseNonce,
+      //   pgpPubKey: encryptionKeyPair.publicKey,
+      // ).toMap();
+      // <String, dynamic>{
+      //   "device_id": notify.deviceId,
+      //   "received_nonce": _scannedQrData.generatedNonce,
+      //   "generated_nonce": _responseNonce,
+      // };
+      Log.debug(encryptedMsg);
+      Log.debug(encryptedMsg.length);
+
+      var tmpNotification = np.Notification(np.NotificationType.SyncInitStepOne,
+          data: encryptedMsg,
+          parts: 1,
+          position: 1,
+          deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey) ?? '',
+          notificationID: const Uuid().v4());
+
+      await notify.sendMessageToAnotherDevice(
+          deviceIDs: <String>[_recipient], message: tmpNotification);
+    }
+  }
+
+  void _syncInitHandshakeStepTwoHandler(dynamic param) async {
+    Log.debug("in init step two handler");
+    Log.debug("recieved: $param");
+    try {
+      var decryptedMsg = await OpenPGP.decrypt(
+          param as String, _encryptionKeyPair!.privateKey, "");
+      var syncRegMap = jsonDecode(decryptedMsg);
+      var scannedResp = SyncRegistration.fromMap(syncRegMap);
+
+      if (scannedResp.receivedNonce == _responseNonce) {
+        setState(() {
+          _scannedPublicKey = scannedResp.pgpPubKey ?? '';
+          _responseNonce = const Uuid().v4();
+        });
+
+        var sd = SyncRegistration(
+          deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
+          receivedNonce: scannedResp.generatedNonce,
+          generatedNonce: _responseNonce,
+        );
+
+        var encryptedMsg =
+            await OpenPGP.encrypt(sd.toString(), scannedResp.pgpPubKey ?? '');
+
+        Log.debug(encryptedMsg);
+        var tmpNote = np.Notification(np.NotificationType.SyncInitStepThree,
+            data: encryptedMsg,
+            parts: 1,
+            position: 1,
+            deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey) ?? '',
+            notificationID: const Uuid().v4());
+        notify.sendMessageToAnotherDevice(
+            deviceIDs: <String>[_recipient], message: tmpNote);
+
+        /*
+        // go to selector
+        Log.debug("Moving on to the next step");
+        notify.setDefaultNotificationHandlers();
+
+        _setDevice(
+            new Device(deviceID: _recipient, encryptionKey: _scannedPublicKey));
+        _nextStep(_context);
+        */
+      }
+    } catch (e) {
+      Log.debug("error init step two handler: ${e.toString()}");
+    }
+  }
+
+  void _syncInitHandshakeStepFourHandler(dynamic param) async {
+    Log.debug("in init step four handler");
+    Log.debug("recieved: $param");
+    try {
+      var decryptedMsg = await OpenPGP.decrypt(
+          param as String, _encryptionKeyPair!.privateKey, "");
+      var syncRegMap = jsonDecode(decryptedMsg);
+      var scannedResp = SyncRegistration.fromMap(syncRegMap);
+
+      if (scannedResp.receivedNonce == _responseNonce) {
+        // go to selector
+        Log.debug("Moving on to the next step");
+        notify.setDefaultNotificationHandlers();
+
+        _setDevice(
+            Device(deviceID: _recipient, encryptionKey: _scannedPublicKey));
+        _nextStep(_context);
+      }
+    } catch (e) {
+      Log.debug("error init step four handler: ${e.toString()}");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Log.debug("in initState");
+    _fabPressFunction = widget.fabPressFunction;
+    _nextStep = widget.nextStep;
+    _setDevice = widget.setDevice;
+
+    _responseNonce = const Uuid().v4();
+    Log.debug(_responseNonce);
+
+    notify.syncInitHandshakeStepTwoHandler = _syncInitHandshakeStepTwoHandler;
+    notify.syncInitHandshakeStepFourHandler = _syncInitHandshakeStepFourHandler;
+
+    scan();
+    NullPassDB.instance.getEncryptionKeyPair().then((kp) {
+      if (kp != null) {
+        setState(() {
+          _encryptionKeyPair = kp;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    setState(() {
+      _context = context;
+    });
+
+    // check state of barcode and error string
+    // if the qr is a valid QrData start processing
+    if (_barcodeData.isNotEmpty &&
+        _scannedQrData.isValid()) {
+      if (!_initiated) {
+        _initiateHandshake();
+        _initiated = true;
+      }
+
+      return MaterialApp(
+        title: _title,
+        home: Scaffold(
+          appBar: AppBar(
+            title: Text(_title),
+          ),
+          drawer: AppDrawer(
+              currentPage: NullPassRoute.QrScanner,
+              reloadSecretList: (dynamic) {}),
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              if (isDebug)
+                Text(
+                  "Barcode: ${_scannedQrData.toString()}",
+                ),
+              const CenterLoader(),
+              ListTile(
+                title: ElevatedButton(
+                  onPressed: scan,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                  ),
+                  child: const Text(
+                    "Rescan QR Code",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _fabPressFunction,
+            tooltip: 'QR Code',
+            child: Icon(MdiIcons.qrcodeEdit),
+          ),
+        ),
+      );
+    } else if (_errorText.startsWith(_invalidDataType) ||
+        _errorText == _noDeviceID) {
+      scan();
+      return MaterialApp(
+        title: _title,
+        home: Scaffold(
+          appBar: AppBar(
+            title: Text(_title),
+          ),
+          drawer: AppDrawer(
+              currentPage: NullPassRoute.QrScanner,
+              reloadSecretList: (dynamic) {}),
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                "Error: $_errorText",
+                style: const TextStyle(color: Colors.red),
+              ),
+              ListTile(
+                title: ElevatedButton(
+                  onPressed: scan,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                  ),
+                  child: const Text(
+                    "Rescan QR Code",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _fabPressFunction,
+            tooltip: 'QR Code',
+            child: Icon(MdiIcons.qrcodeEdit),
+          ),
+        ),
+      );
+    } else {
+      return MaterialApp(
+        title: _title,
+        home: Scaffold(
+          appBar: AppBar(
+            title: Text(_title),
+          ),
+          drawer: AppDrawer(
+              currentPage: NullPassRoute.QrScanner,
+              reloadSecretList: (dynamic) {}),
+          body: Center(
+            child: RepaintBoundary(
+              child: Container(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    if (_errorText.isNotEmpty)
+                      Text(
+                        "Error: $_errorText",
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ListTile(
+                      title: ElevatedButton(
+                        onPressed: scan,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                        ),
+                        child: const Text(
+                          "Rescan QR Code",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _fabPressFunction,
+            tooltip: 'QR Code',
+            child: Icon(MdiIcons.qrcodeEdit),
+          ),
+        ),
+      );
+    }
+  }
+
+  // TODO: return valuable errors
+  Future<void> scan() async {
+    try {
+      _initiated = false;
+      var scanResult = await BarcodeScanner.scan(
+        options: const ScanOptions(
+          restrictFormat: [BarcodeFormat.qr],
+        ),
+      );
+      if (scanResult.type != ResultType.Barcode) {
+        if (scanResult.type == ResultType.Error) {
+          throw Exception("The barcode scan returned an error:\n" "Raw Content - ${scanResult.rawContent}" "Scan Result - $scanResult");
+        }
+        if (scanResult.type == ResultType.Cancelled) {
+          throw FormatException("The scan was cancelled:\n" "Raw Content - ${scanResult.rawContent}" "Scan Result - $scanResult");
+        }
+        throw Exception("The barcode was not scanned:\n" "Raw Content - ${scanResult.rawContent}" "Scan Result - $scanResult");
+      }
+
+      if (scanResult.format != BarcodeFormat.qr) {
+        throw BarcodeFormatError("The barcode scanned was invalid:\n" "Format Type - ${scanResult.format.name}\n" "Format Note - ${scanResult.formatNote}\n" "Raw Content - ${scanResult.rawContent}" "Scan Result - $scanResult");
+      }
+
+      String barcode = scanResult.rawContent;
+      Log.debug(barcode);
+      var qrd = jsonDecode(barcode);
+      var tmpData = QrData.fromMap(qrd);
+      if (tmpData.isValid()) {
+        setState(() {
+          _errorText = "";
+          _barcodeData = barcode;
+          // _scannedQrData = QrData.fromMap(qrd);
+          _scannedQrData = tmpData;
+        });
+      } else if (tmpData.deviceId == null || tmpData.deviceId!.isEmpty) {
+        setState(() {
+          _errorText = _noDeviceID;
+          _barcodeData = "";
+          _scannedQrData = QrData();
+        });
+      }
+    } on TypeError catch (e) {
+      setState(() {
+        _errorText = "$_invalidDataType: $e";
+        _barcodeData = "";
+      });
+    } on PlatformException catch (e) {
+      if (e.code == BarcodeScanner.cameraAccessDenied) {
+        setState(() {
+          _errorText = "The user did not grant the camera permission!";
+          _barcodeData = "";
+        });
+      } else {
+        setState(() {
+          _errorText = "Unknown error: $e";
+          _barcodeData = "";
+        });
+      }
+    } on FormatException catch (e) {
+      Log.debug("format exception ${e.toString()}");
+      setState(() {
+        _errorText =
+            "null (User returned using the 'back'-button before scanning anything)";
+        _barcodeData = "";
+      });
+    } catch (e) {
+      Log.debug(e.runtimeType);
+      setState(() {
+        _errorText = "Unknown error: $e";
+        _barcodeData = "";
+      });
+    }
+  }
+}
+
+class BarcodeFormatError implements Exception {
+  final dynamic message;
+
+  BarcodeFormatError([this.message]);
+
+  @override
+  String toString() {
+    if (message == null ||
+        (message is String && message.trim().isEmpty)) {
+      return "BarcodeFormatError";
+    }
+    return "BarcodeFormatError: $message";
+  }
+}
