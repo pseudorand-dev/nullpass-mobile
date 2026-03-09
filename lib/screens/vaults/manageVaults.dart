@@ -140,8 +140,7 @@ class ManageVaultState extends State<ManageVault> {
             );
           },
         ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.blue,
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
             showDialog<void>(
               context: context,
@@ -157,8 +156,8 @@ class ManageVaultState extends State<ManageVault> {
               },
             );
           },
-          tooltip: 'Add',
-          child: const Icon(Icons.add),
+          icon: const Icon(Icons.add),
+          label: const Text('Add Vault'),
         ),
       );
     }

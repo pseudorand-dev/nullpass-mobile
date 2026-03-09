@@ -135,32 +135,36 @@ class _CreateSecretState extends State<SecretEdit> {
   }
 
   List<Widget> _generateChips(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     var widgetList = <Widget>[];
 
     vaults.forEach((uid, vault) {
-      widgetList.add(NullPassFilterChip(
-        label: vault.nickname,
-        isSelected: selectedVaults[uid] ?? false,
-        onSelected: (isSelected) {
+      final isSelected = selectedVaults[uid] ?? false;
+      widgetList.add(FilterChip(
+        label: Text(vault.nickname),
+        selected: isSelected,
+        onSelected: (selected) {
           setState(() {
-            selectedVaults[uid] = isSelected;
+            selectedVaults[uid] = selected;
           });
         },
+        selectedColor: colorScheme.secondaryContainer,
+        checkmarkColor: colorScheme.onSecondaryContainer,
+        labelStyle: TextStyle(
+          color: isSelected
+              ? colorScheme.onSecondaryContainer
+              : colorScheme.onSurface,
+        ),
       ));
     });
 
-    // /*
     widgetList.add(ActionChip(
-      label: const Text(
-        "Add",
-        style: TextStyle(color: Colors.black),
-      ),
-      avatar: const CircleAvatar(
-        backgroundColor: Colors.blue,
-        child: Text(
-          "+",
-          style: TextStyle(color: Colors.white),
-        ),
+      label: const Text('Add Vault'),
+      avatar: Icon(
+        Icons.add,
+        size: 18,
+        color: colorScheme.primary,
       ),
       onPressed: () async {
         showDialog<void>(
@@ -215,68 +219,47 @@ class _CreateSecretState extends State<SecretEdit> {
           },
         );
       },
-      backgroundColor: Colors.white,
-      shape: const StadiumBorder(side: BorderSide(color: Colors.blue)),
+      side: BorderSide(color: colorScheme.primary),
     ));
-    // */
 
     return widgetList;
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     if (_loading) {
       return Scaffold(
         appBar: AppBar(
-          title: (widget.edit == SecretEditType.Create)
-              ? const Text('New Secret')
-              : ((widget.edit == SecretEditType.Update)
-                  ? const Text('Update Secret')
-                  : const Text('Secret Action')),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
+          title: Text(
+            widget.edit == SecretEditType.Create
+                ? 'New Secret'
+                : 'Update Secret',
+          ),
         ),
-        body: Container(
-          child: const CenterLoader(),
-        ),
+        body: const CenterLoader(),
       );
-    } else {
-      return Scaffold(
-        appBar: AppBar(
-          title: (widget.edit == SecretEditType.Create)
-              ? const Text('New Secret')
-              : ((widget.edit == SecretEditType.Update)
-                  ? const Text('Update Secret')
-                  : const Text('Secret Action')),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.edit == SecretEditType.Create
+              ? 'New Secret'
+              : 'Update Secret',
         ),
-        body: Container(
-          padding: const EdgeInsets.all(20.0),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              children: <Widget>[
-                ListTile(
-                  title: TextFormField(
+      ),
+      body: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(24),
+                children: <Widget>[
+                  TextFormField(
                     onChanged: (value) {
                       setState(() {
                         _secret.nickname = value;
@@ -285,18 +268,20 @@ class _CreateSecretState extends State<SecretEdit> {
                     },
                     initialValue: _secret.nickname,
                     decoration: const InputDecoration(
-                        labelText: 'Nickname', border: InputBorder.none),
+                      labelText: 'Nickname',
+                      hintText: 'Enter a memorable name',
+                      prefixIcon: Icon(Icons.label_outline),
+                    ),
+                    textInputAction: TextInputAction.next,
                     validator: (value) {
                       if (value?.isEmpty ?? true) {
-                        return 'The Nickname field cannot be empty';
+                        return 'Nickname is required';
                       }
                       return null;
                     },
                   ),
-                ),
-                const FormDivider(),
-                ListTile(
-                  title: TextFormField(
+                  const SizedBox(height: 16),
+                  TextFormField(
                     onChanged: (value) {
                       setState(() {
                         _secret.website = value;
@@ -305,19 +290,21 @@ class _CreateSecretState extends State<SecretEdit> {
                     },
                     initialValue: _secret.website,
                     decoration: const InputDecoration(
-                        labelText: 'Website', border: InputBorder.none),
+                      labelText: 'Website',
+                      hintText: 'example.com',
+                      prefixIcon: Icon(Icons.language),
+                    ),
                     keyboardType: TextInputType.url,
+                    textInputAction: TextInputAction.next,
                     validator: (value) {
                       if (value?.isEmpty ?? true) {
-                        return 'The Website field cannot be empty';
+                        return 'Website is required';
                       }
                       return null;
                     },
                   ),
-                ),
-                const FormDivider(),
-                ListTile(
-                  title: TextFormField(
+                  const SizedBox(height: 16),
+                  TextFormField(
                     onChanged: (value) {
                       setState(() {
                         _secret.username = value;
@@ -327,32 +314,33 @@ class _CreateSecretState extends State<SecretEdit> {
                     initialValue: _secret.username,
                     decoration: const InputDecoration(
                       labelText: 'Username',
-                      border: InputBorder.none,
+                      hintText: 'user@example.com',
+                      prefixIcon: Icon(Icons.person_outline),
                     ),
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                     validator: (value) {
                       if (value?.isEmpty ?? true) {
-                        return 'The Username field cannot be empty';
+                        return 'Username is required';
                       }
                       return null;
                     },
                   ),
-                ),
-                const FormDivider(),
-                PasswordInput(
-                  onChange: (value) {
-                    setState(() {
-                      _secret.message = value;
-                    });
-                    Log.debug('new password ${_secret.message}');
-                  },
-                  controller: _passwordController,
-                  initialValue: _secret.message ?? '',
-                  setPassword: setPassword,
-                ),
-                const FormDivider(),
-                ListTile(
-                  title: TextFormField(
+                  const SizedBox(height: 16),
+                  PasswordInput(
+                    onChange: (value) {
+                      setState(() {
+                        _secret.message = value;
+                      });
+                      Log.debug('new password ${_secret.message}');
+                    },
+                    controller: _passwordController,
+                    initialValue: _secret.message ?? '',
+                    setPassword: setPassword,
+                    secret: _secret,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
                     onChanged: (value) {
                       setState(() {
                         _secret.otpCode = value.toUpperCase();
@@ -361,20 +349,22 @@ class _CreateSecretState extends State<SecretEdit> {
                     },
                     initialValue: _secret.otpCode?.toUpperCase(),
                     decoration: const InputDecoration(
-                        labelText: 'One-Time Passcode',
-                        border: InputBorder.none),
+                      labelText: 'One-Time Passcode',
+                      hintText: 'otpauth://...',
+                      prefixIcon: Icon(Icons.timer_outlined),
+                      helperText: 'Optional: Scan or paste TOTP secret',
+                    ),
+                    textInputAction: TextInputAction.next,
                     validator: (value) {
                       if ((value?.trim().isNotEmpty ?? false) &&
                           _secret.getOnetimePasscode().trim() == '') {
-                        return 'The One-Time Passcode provided is invalid';
+                        return 'Invalid OTP code format';
                       }
                       return null;
                     },
                   ),
-                ),
-                const FormDivider(),
-                ListTile(
-                  title: TextFormField(
+                  const SizedBox(height: 16),
+                  TextFormField(
                     onChanged: (value) {
                       setState(() {
                         _secret.notes = value;
@@ -383,71 +373,87 @@ class _CreateSecretState extends State<SecretEdit> {
                     },
                     initialValue: _secret.notes,
                     decoration: const InputDecoration(
-                        labelText: 'Notes', border: InputBorder.none),
+                      labelText: 'Notes',
+                      hintText: 'Add additional notes...',
+                      prefixIcon: Icon(Icons.notes),
+                      alignLabelWithHint: true,
+                    ),
+                    maxLines: 3,
+                    textInputAction: TextInputAction.newline,
                   ),
-                ),
-                const FormDivider(),
-                FormField(
-                  builder: (fieldState) => ListTile(
-                    contentPadding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
-                    title: Text(
-                      "Vaults",
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        // fontSize: 12.5,
+                  const SizedBox(height: 24),
+                  FormField(
+                  builder: (fieldState) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Vaults',
+                        style: theme.textTheme.titleMedium,
                       ),
-                    ),
-                    subtitle: Wrap(
-                      spacing: 5.0,
-                      runSpacing: 5.0,
-                      children: _generateChips(context),
-                    ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Select which vaults will store this secret',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        children: _generateChips(context),
+                      ),
+                      if (fieldState.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            fieldState.errorText ?? '',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.error,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   validator: (value) {
                     if (!selectedVaults.containsValue(true)) {
-                      // TODO: create an error text widget and set it here
-                      return 'You must select at least one vault to add your secret to';
+                      return 'Select at least one vault';
                     }
                     return null;
                   },
                 ),
-                const FormDivider(),
-                ListTile(
-                  title: ElevatedButton(
-                    onPressed: () {
-                      submit(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                    ),
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                border: Border(
+                  top: BorderSide(
+                    color: colorScheme.outlineVariant,
+                    width: 1,
                   ),
                 ),
-              ],
+              ),
+              child: SafeArea(
+                child: FilledButton(
+                  onPressed: () => submit(context),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: Text(
+                    widget.edit == SecretEditType.Create
+                        ? 'Create Secret'
+                        : 'Save Changes',
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.green,
-          onPressed: () async {
-            final result = await showModalBottomSheet(
-                context: context,
-                builder: (BuildContext context) {
-                  return const SecretGenerate(inEditor: true);
-                });
-            if (result != null && result.toString().trim() != '') {
-              _secret.message = result.toString();
-              setPassword(_secret.message ?? '');
-            }
-          },
-          tooltip: 'Generate',
-          child: const Icon(Icons.lock),
-        ),
-      );
-    }
+      ),
+    );
   }
 }
 
@@ -456,13 +462,16 @@ class PasswordInput extends StatefulWidget {
   final String initialValue;
   final TextEditingController controller;
   final Function setPassword;
+  final Secret secret;
 
-  const PasswordInput(
-      {super.key,
-      required this.onChange,
-      required this.controller,
-      required this.setPassword,
-      this.initialValue = ''});
+  const PasswordInput({
+    super.key,
+    required this.onChange,
+    required this.controller,
+    required this.setPassword,
+    required this.secret,
+    this.initialValue = '',
+  });
 
   @override
   _PasswordInputState createState() => _PasswordInputState();
@@ -485,60 +494,145 @@ class _PasswordInputState extends State<PasswordInput> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: TextFormField(
-        controller: _controller,
-        onChanged: (value) {
-          widget.onChange(value);
-        },
-        decoration: const InputDecoration(
-          labelText: 'Password',
-          border: InputBorder.none,
-        ),
-        // initialValue: _initialValue,
-        obscureText: !_visible,
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'The Password field cannot be empty';
-          }
-          return null;
-        },
-      ),
-      trailing: SizedBox(
-        width: 100,
-        child: Row(
-          children: <Widget>[
-            IconButton(
-              icon: _visible
-                  ? const Icon(FontAwesomeIcons.solidEye, size: 20)
-                  : const Icon(FontAwesomeIcons.solidEyeSlash, size: 20),
-              onPressed: () {
-                // _initialValue = this.widget.
-                setState(() {
-                  _visible = !_visible;
-                });
-              },
-            ),
-            IconButton(
-              // icon: new Icon(FontAwesomeIcons.lock, size: 20),
-              icon: const Icon(Icons.lock),
-              onPressed: () async {
-                final result = await showModalBottomSheet(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return const SecretGenerate(inEditor: true);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    // Calculate password strength
+    String strengthText = 'Weak';
+    double strengthValue = 0.33;
+    Color strengthColor = colorScheme.error;
+    
+    if (_controller.text.isNotEmpty) {
+      final strength = widget.secret.strength;
+      if (strength >= 3) {
+        strengthText = 'Strong';
+        strengthValue = 1.0;
+        strengthColor = Colors.green;
+      } else if (strength >= 2) {
+        strengthText = 'Fair';
+        strengthValue = 0.66;
+        strengthColor = Colors.orange;
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: _controller,
+          onChanged: (value) {
+            widget.onChange(value);
+            setState(() {}); // Refresh to update strength indicator
+          },
+          decoration: InputDecoration(
+            labelText: 'Password',
+            hintText: 'Enter or generate a password',
+            prefixIcon: const Icon(Icons.lock_outline),
+            suffixIcon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    _visible
+                        ? FontAwesomeIcons.solidEye
+                        : FontAwesomeIcons.solidEyeSlash,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _visible = !_visible;
                     });
-                if (result != null && result.toString().trim() != '') {
-                  _setPassword(result.toString());
-                  setState(() {
-                    _initialValue = result.toString();
-                  });
-                }
-              },
+                  },
+                  tooltip: _visible ? 'Hide password' : 'Show password',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.auto_awesome, size: 20),
+                  onPressed: () async {
+                    final result = await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (BuildContext context) {
+                        return DraggableScrollableSheet(
+                          initialChildSize: 0.7,
+                          minChildSize: 0.5,
+                          maxChildSize: 0.95,
+                          builder: (_, controller) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: colorScheme.surface,
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(28),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 12),
+                                    width: 32,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.onSurfaceVariant
+                                          .withOpacity(0.4),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: const SecretGenerate(inEditor: true),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                    if (result != null && result.toString().trim() != '') {
+                      _setPassword(result.toString());
+                      setState(() {
+                        _initialValue = result.toString();
+                      });
+                    }
+                  },
+                  tooltip: 'Generate password',
+                ),
+              ],
             ),
-          ],
+          ),
+          obscureText: !_visible,
+          textInputAction: TextInputAction.next,
+          validator: (value) {
+            if (value?.isEmpty ?? true) {
+              return 'Password is required';
+            }
+            return null;
+          },
         ),
-      ),
+        if (_controller.text.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: LinearProgressIndicator(
+                  value: strengthValue,
+                  backgroundColor: colorScheme.surfaceContainerHighest,
+                  valueColor: AlwaysStoppedAnimation<Color>(strengthColor),
+                  minHeight: 6,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                strengthText,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: strengthColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }

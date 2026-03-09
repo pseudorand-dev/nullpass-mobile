@@ -55,48 +55,36 @@ class _ManageDevicesState extends State<ManageDevices> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return MaterialApp(
-        title: _title,
-        home: Scaffold(
-          appBar: AppBar(
-            title: Text(_title),
-          ),
-          drawer: AppDrawer(
-              currentPage: NullPassRoute.ManageDevices,
-              reloadSecretList: (dynamic) {}),
-          body: const CenterLoader(),
-        ),
-      );
-    } else {
-      return MaterialApp(
-        title: _title,
-        home: Scaffold(
-          appBar: AppBar(
-            title: Text(_title),
-          ),
-          drawer: AppDrawer(
-              currentPage: NullPassRoute.ManageDevices,
-              reloadSecretList: (dynamic) {}),
-          body: _DeviesList(
-            devices: _devices,
-            reloadDevicesListFunction: _reloadDeviceList,
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () async {
-              await Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_title),
+      ),
+      drawer: AppDrawer(
+        currentPage: NullPassRoute.ManageDevices,
+        reloadSecretList: (dynamic) {},
+      ),
+      body: _loading
+          ? const CenterLoader()
+          : _DeviesList(
+              devices: _devices,
+              reloadDevicesListFunction: _reloadDeviceList,
+            ),
+      floatingActionButton: _loading
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () async {
+                await Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
                     builder: (context) =>
-                        const SyncDevices(syncState: SyncState.scan)),
-              );
-            },
-            tooltip: 'Add New Device',
-            child: Icon(MdiIcons.qrcodeScan),
-          ),
-        ),
-      );
-    }
+                        const SyncDevices(syncState: SyncState.scan),
+                  ),
+                );
+              },
+              icon: Icon(MdiIcons.qrcodeScan),
+              label: const Text('Add Device'),
+            ),
+    );
   }
 }
 

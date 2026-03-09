@@ -36,11 +36,9 @@ class _SecretSearchState extends State<SecretSearch> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: // _SearchField(_searchText, (value) {
-            _SearchField(_tec!, (value) async {
+        title: _SearchField(_tec!, (value) async {
           setState(() {
             _searchText = value;
-            // _tec.text = value;
           });
           List<Secret> tempSecrets = <Secret>[];
           if ((value as String).trim().isNotEmpty) {
@@ -49,27 +47,20 @@ class _SecretSearchState extends State<SecretSearch> {
           }
           setState(() {
             _secrets = tempSecrets;
-            // _tec.text = value;
           });
         }),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.clear),
+            tooltip: 'Clear search',
             onPressed: () {
               Log.debug("clear");
               setState(() {
                 _tec?.clear();
-                // _searchText = '';
+                _searchText = '';
+                _secrets = [];
               });
             },
-            // onPressed: () async {
-            //   await Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //         builder: (context) => SecretSearch()),
-            //   );
-            //   await this.reloadSecretList('true');
-            // }
           ),
         ],
       ),
@@ -92,23 +83,32 @@ class _SecretSearchState extends State<SecretSearch> {
 
 class _SearchField extends StatelessWidget {
   final void Function(String) _onChanged;
-  // String _searchText;
   final TextEditingController _tec;
 
-  // _SearchField(this._searchText, this._onChanged, {Key? key}) : super(key: key);
   const _SearchField(this._tec, this._onChanged);
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return TextFormField(
-      // decoration: InputDecoration(fillColor: Colors.white),
       controller: _tec,
-      // initialValue: _searchText,
       onChanged: _onChanged,
       autofocus: true,
-      decoration: const InputDecoration(border: InputBorder.none),
-      cursorColor: Colors.white,
-      style: const TextStyle(fontSize: 25, color: Colors.white),
+      decoration: InputDecoration(
+        hintText: 'Search secrets...',
+        hintStyle: TextStyle(
+          color: colorScheme.onSurface.withValues(alpha: 0.5),
+        ),
+        border: InputBorder.none,
+        filled: false,
+      ),
+      cursorColor: colorScheme.primary,
+      style: TextStyle(
+        fontSize: 18,
+        color: colorScheme.onSurface,
+      ),
     );
   }
 }
@@ -117,29 +117,109 @@ class _SecretListWidget extends StatelessWidget {
   final List<Secret> items;
   final void Function(String)? reloadSecretList;
 
-  const _SecretListWidget(
-      {required this.items, required this.reloadSecretList});
+  const _SecretListWidget({
+    required this.items,
+    required this.reloadSecretList,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    if (items.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.search_off,
+                size: 64,
+                color: colorScheme.onSurface.withValues(alpha: 0.3),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No secrets found',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
     return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: items.length,
       itemBuilder: (context, index) {
-        return ListTile(
-          leading: Thumbnail(items[index].thumbnailURI),
-          title: Text(items[index].nickname),
-          subtitle: Text(items[index].username),
-          trailing: const Icon(Icons.arrow_forward_ios),
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => SecretView(secret: items[index])),
-            );
-            if (reloadSecretList != null) {
-              reloadSecretList!('true');
-            }
-          },
+        final secret = items[index];
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SecretView(secret: secret),
+                ),
+              );
+              if (reloadSecretList != null) {
+                reloadSecretList!('true');
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                    ),
+                    child: ClipOval(
+                      child: Thumbnail(secret.thumbnailURI),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          secret.nickname,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          secret.username.isEmpty ? secret.website ?? '' : secret.username,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
@@ -153,18 +233,15 @@ class Thumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(25.0),
-      child: CachedNetworkImage(
-        fit: BoxFit.cover,
-        width: 40,
-        height: 40,
-        imageUrl: _imageUrl,
-        placeholder: (context, url) => const DefaultThumbnnail(),
-        errorWidget: (context, url, error) => const DefaultThumbnnail(),
-        fadeInDuration: const Duration(),
-        fadeOutDuration: const Duration(),
-      ),
+    return CachedNetworkImage(
+      fit: BoxFit.cover,
+      width: 48,
+      height: 48,
+      imageUrl: _imageUrl,
+      placeholder: (context, url) => const DefaultThumbnnail(),
+      errorWidget: (context, url, error) => const DefaultThumbnnail(),
+      fadeInDuration: const Duration(milliseconds: 200),
+      fadeOutDuration: const Duration(milliseconds: 100),
     );
   }
 }

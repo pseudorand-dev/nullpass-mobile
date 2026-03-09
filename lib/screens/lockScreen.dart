@@ -79,56 +79,133 @@ class _LockScreenState extends State<LockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return MaterialApp(
       title: _title,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: colorScheme,
+      ),
       home: Scaffold(
-        appBar: AppBar(
-          title: Text(_title),
-          centerTitle: true,
-        ),
         body: Container(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (cancelled)
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: ListTile(
-                      title: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Theme.of(context).colorScheme.secondary,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              side: BorderSide(
-                                  color: Theme.of(context).colorScheme.secondary)),
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        ),
-                        onPressed: () async {
-                          await authenticate();
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 5),
-                              child: Text(
-                                "Unlock NullPass",
-                                style: TextStyle(
-                                  backgroundColor: Colors.transparent,
-                                  color: Theme.of(context).colorScheme.secondary,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ),
-                          ],
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                colorScheme.primary,
+                colorScheme.secondary,
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(),
+                  Hero(
+                    tag: 'app-logo',
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: Image.asset(
+                          'assets/images/null_iosScaledDown_1500_Transparent.png',
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
                   ),
-              ],
+                  const SizedBox(height: 32),
+                  Text(
+                    'NullPass',
+                    style: theme.textTheme.displayMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Secure Password Manager',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                  const Spacer(),
+                  if (cancelled)
+                    Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.fingerprint,
+                            size: 64,
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                          const SizedBox(height: 24),
+                          FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: colorScheme.primary,
+                              minimumSize: const Size(double.infinity, 56),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(28),
+                              ),
+                            ),
+                            onPressed: () async {
+                              await authenticate();
+                            },
+                            icon: const Icon(Icons.fingerprint, size: 24),
+                            label: Text(
+                              'Unlock with Biometrics',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (!cancelled)
+                    Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        children: [
+                          const SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Authenticating...',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

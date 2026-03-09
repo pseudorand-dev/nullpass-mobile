@@ -40,275 +40,246 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // FlutterStatusbarcolor.setStatusBarColor(Colors.lightBlue[800]);
-    return Container(
-      color: Colors.blue,
-      width: 275,
-      child: Container(
-        color: Colors.white,
-        child: ListView(
-          padding: const EdgeInsets.all(0.0),
-          children: <Widget>[
-            /*
-            DrawerHeader(
-                child: Container(
-                    child: Text('nullpass-dev@gmail.com')
-                ),
-              decoration: BoxDecoration(color: Colors.blue),
-            ),
-            */
-            const UserAccountsDrawerHeader(
-                accountName: Text('NullPass Test'),
-                accountEmail: Text('nullpass-dev@gmail.com')),
-            ListTile(
-              selected: (currentPage == NullPassRoute.ViewSecretsList),
-              leading: const Icon(Icons.dehaze),
-              title: Text('View Secrets',
-                  style: TextStyle(
-                      color: (currentPage == NullPassRoute.ViewSecretsList)
-                          ? ThemeData.light().colorScheme.secondary
-                          : ThemeData.light().unselectedWidgetColor)),
-              onTap: () {
-                Navigator.pop(context);
-                if (currentPage != NullPassRoute.ViewSecretsList) {
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => const NullPassApp()));
-                }
-              },
-            ),
-            ListTile(
-              selected: (currentPage == NullPassRoute.FindSecret),
-              leading: const Icon(Icons.search),
-              title: Text('Find Secrets',
-                  style: TextStyle(
-                      color: (currentPage == NullPassRoute.FindSecret)
-                          ? ThemeData.light().colorScheme.secondary
-                          : ThemeData.light().unselectedWidgetColor)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const SecretSearch()));
-              },
-            ),
-            ListTile(
-              selected: (currentPage == NullPassRoute.NewSecret),
-              leading: const Icon(Icons.edit),
-              title: Text('New Secret',
-                  style: TextStyle(
-                      color: (currentPage == NullPassRoute.NewSecret)
-                          ? ThemeData.light().colorScheme.secondary
-                          : ThemeData.light().unselectedWidgetColor)),
-              onTap: () async {
-                Navigator.pop(context);
-                if (currentPage != NullPassRoute.NewSecret) {
-                  await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          // builder: (context) => SecretEdit(edit: SecretEditType.Create, // SecretNew(
-                          builder: (context) => SecretEdit(
-                              edit: SecretEditType.Create,
-                              secret: Secret(
-                                  nickname: '',
-                                  website: '',
-                                  username: '',
-                                  message: ''))));
-                  reloadSecretList('true');
-                }
-              },
-            ),
-            ListTile(
-              selected: (currentPage == NullPassRoute.GenerateSecret),
-              leading: const Icon(Icons.lock),
-              title: Text('Generate Secret',
-                  style: TextStyle(
-                      color: ThemeData.light().unselectedWidgetColor)),
-              onTap: () async {
-                Navigator.pop(context);
-                await showModalBottomSheet(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return const SecretGenerate(inEditor: false);
-                    });
-                /*
-                if (result != null && result.toString().trim() != '') {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          // builder: (context) => SecretEdit(edit: SecretEditType.Create, // SecretNew(
-                          builder: (context) => SecretAlt(
-                              edit: SecretAltType.Create,
-                              secret: new Secret(
-                                  nickname: '',
-                                  website: '',
-                                  username: '',
-                                  password: result.toString()))));
-                }
-                */
-                // this.reloadSecretList('true');
-              },
-            ),
-            ListTile(
-              selected: (currentPage == NullPassRoute.ManageVault),
-              leading: Icon(MdiIcons.safeSquareOutline),
-              title: Text('Manage Vault',
-                  style: TextStyle(
-                      color: (currentPage == NullPassRoute.ManageVault)
-                          ? ThemeData.light().colorScheme.secondary
-                          : ThemeData.light().unselectedWidgetColor)),
-              onTap: () async {
-                Navigator.pop(context);
-                if (currentPage != NullPassRoute.ManageVault) {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ManageVault()),
-                  );
-                  reloadSecretList('true');
-                }
-              },
-            ),
-            const FormDivider(),
-            ListTile(
-              selected: (currentPage == NullPassRoute.QrCode),
-              leading: Icon(MdiIcons.qrcodeEdit),
-              title: Text('Sync To This Device',
-                  style: TextStyle(
-                      color: (currentPage == NullPassRoute.QrCode)
-                          ? ThemeData.light().colorScheme.secondary
-                          : ThemeData.light().unselectedWidgetColor)),
-              onTap: () {
-                Navigator.pop(context);
-                if (currentPage != NullPassRoute.QrCode) {
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              const SyncDevices(syncState: SyncState.qrcode)));
-                }
-              },
-            ),
-            ListTile(
-              selected: (currentPage == NullPassRoute.QrScanner),
-              leading: Icon(MdiIcons.qrcodeScan),
-              title: Text('Sync To New Device',
-                  style: TextStyle(
-                      color: (currentPage == NullPassRoute.QrScanner)
-                          ? ThemeData.light().colorScheme.secondary
-                          : ThemeData.light().unselectedWidgetColor)),
-              onTap: () {
-                Navigator.pop(context);
-                if (currentPage != NullPassRoute.QrScanner) {
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              const SyncDevices(syncState: SyncState.scan)));
-                }
-              },
-            ),
-            ListTile(
-              selected: (currentPage == NullPassRoute.ManageDevices),
-              leading: const Icon(Icons.devices_other),
-              title: Text('Manage Devices',
-                  style: TextStyle(
-                      color: (currentPage == NullPassRoute.ManageDevices)
-                          ? ThemeData.light().colorScheme.secondary
-                          : ThemeData.light().unselectedWidgetColor)),
-              onTap: () {
-                Navigator.pop(context);
-                if (currentPage != NullPassRoute.ManageDevices) {
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => const ManageDevices()));
-                }
-              },
-            ),
-            const FormDivider(),
-            ListTile(
-              selected: (currentPage == NullPassRoute.Settings),
-              leading: const Icon(Icons.settings),
-              title: Text('Settings',
-                  style: TextStyle(
-                      color: (currentPage == NullPassRoute.Settings)
-                          ? ThemeData.light().colorScheme.secondary
-                          : ThemeData.light().unselectedWidgetColor)),
-              onTap: () {
-                Navigator.pop(context);
-                if (currentPage != NullPassRoute.Settings) {
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => const Settings()));
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => Settings()));
-                }
-              },
-            ),
-            ListTile(
-              selected: (currentPage == NullPassRoute.AuditLog),
-              leading: const Icon(Icons.dehaze),
-              title: Text('Audit Log',
-                  style: TextStyle(
-                      color: (currentPage == NullPassRoute.AuditLog)
-                          ? ThemeData.light().colorScheme.secondary
-                          : ThemeData.light().unselectedWidgetColor)),
-              onTap: () {
-                Navigator.pop(context);
-                if (currentPage != NullPassRoute.AuditLog) {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => const AuditLog()));
-                }
-              },
-            ),
-            ListTile(
-              selected: (currentPage == NullPassRoute.HelpAndFeedback),
-              leading: const Icon(Icons.feedback),
-              title: Text(
-                'Help & Feedback',
-                style: TextStyle(
-                    color: (currentPage == NullPassRoute.HelpAndFeedback)
-                        ? ThemeData.light().colorScheme.secondary
-                        : ThemeData.light().unselectedWidgetColor),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.primary,
+                  colorScheme.secondary,
+                ],
               ),
-              onTap: () {
-                Navigator.pop(context);
-                // if (currentPage != NullPassRoute.HelpAndFeedback) {
-                //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NullPassApp()));
-                // }
-              },
             ),
-            ListTile(
-              selected: false,
-              leading: const Icon(Icons.info),
-              title: Text('About NullPass',
-                  style: TextStyle(
-                      color: ThemeData.light().unselectedWidgetColor)),
-              onTap: () {
-                Navigator.pop(context);
-                showAboutDialog(
-                    context: context,
-                    applicationName: 'NullPass',
-                    applicationVersion: '0.1.0',
-                    applicationLegalese: 'Pseudorand Development',
-                    applicationIcon: SizedBox(
-                        height: 50.0,
-                        width: 50.0,
-                        child: Image.asset(
-                            'assets/images/null_iosScaledDown_1500_Transparent.png'))
-                    // children: aboutBoxChildren,
-                    );
-              },
-            )
-            /*
-            AboutListTile(
-              applicationName: 'NullPass',
-              applicationVersion: '0.1.0',
-              applicationLegalese: 'Pseudorand Development',
-              applicationIcon: new Container(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      'assets/images/null_iosScaledDown_1500_Transparent.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'NullPass',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Secure Password Manager',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _DrawerItem(
+            icon: Icons.auto_awesome_outlined,
+            selectedIcon: Icons.auto_awesome,
+            title: 'Generate Password',
+            selected: currentPage == NullPassRoute.GenerateSecret,
+            onTap: () async {
+              Navigator.pop(context);
+              await showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (BuildContext context) {
+                  return DraggableScrollableSheet(
+                    initialChildSize: 0.7,
+                    minChildSize: 0.5,
+                    maxChildSize: 0.95,
+                    builder: (_, controller) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(28),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(top: 12),
+                              width: 32,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const Expanded(
+                              child: SecretGenerate(inEditor: false),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+          _DrawerItem(
+            icon: Icons.qr_code_outlined,
+            selectedIcon: Icons.qr_code,
+            title: 'Sync To This Device',
+            selected: currentPage == NullPassRoute.QrCode,
+            onTap: () {
+              Navigator.pop(context);
+              if (currentPage != NullPassRoute.QrCode) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SyncDevices(syncState: SyncState.qrcode),
+                  ),
+                );
+              }
+            },
+          ),
+          _DrawerItem(
+            icon: Icons.qr_code_scanner_outlined,
+            selectedIcon: Icons.qr_code_scanner,
+            title: 'Sync To New Device',
+            selected: currentPage == NullPassRoute.QrScanner,
+            onTap: () {
+              Navigator.pop(context);
+              if (currentPage != NullPassRoute.QrScanner) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SyncDevices(syncState: SyncState.scan),
+                  ),
+                );
+              }
+            },
+          ),
+          const Divider(height: 1, indent: 16, endIndent: 16),
+          _DrawerItem(
+            icon: Icons.history_outlined,
+            selectedIcon: Icons.history,
+            title: 'Audit Log',
+            selected: currentPage == NullPassRoute.AuditLog,
+            onTap: () {
+              Navigator.pop(context);
+              if (currentPage != NullPassRoute.AuditLog) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AuditLog()),
+                );
+              }
+            },
+          ),
+          _DrawerItem(
+            icon: Icons.help_outline,
+            selectedIcon: Icons.help,
+            title: 'Help & Feedback',
+            selected: currentPage == NullPassRoute.HelpAndFeedback,
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          _DrawerItem(
+            icon: Icons.info_outline,
+            selectedIcon: Icons.info,
+            title: 'About',
+            selected: false,
+            onTap: () {
+              Navigator.pop(context);
+              showAboutDialog(
+                context: context,
+                applicationName: 'NullPass',
+                applicationVersion: '0.1.0',
+                applicationLegalese: 'Pseudorand Development',
+                applicationIcon: SizedBox(
                   height: 50.0,
                   width: 50.0,
                   child: Image.asset(
-                      'assets/images/null_iosScaledDown_1500_Transparent.png')),
-            ),
-             */
-          ],
+                    'assets/images/null_iosScaledDown_1500_Transparent.png',
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DrawerItem extends StatelessWidget {
+  final IconData icon;
+  final IconData selectedIcon;
+  final String title;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _DrawerItem({
+    required this.icon,
+    required this.selectedIcon,
+    required this.title,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: selected
+              ? colorScheme.primaryContainer
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          selected ? selectedIcon : icon,
+          color: selected
+              ? colorScheme.onPrimaryContainer
+              : colorScheme.onSurfaceVariant,
+          size: 24,
         ),
       ),
+      title: Text(
+        title,
+        style: theme.textTheme.bodyLarge?.copyWith(
+          color: selected ? colorScheme.primary : colorScheme.onSurface,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
+      selected: selected,
+      selectedTileColor: colorScheme.primaryContainer.withOpacity(0.3),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      onTap: onTap,
     );
   }
 }

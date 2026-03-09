@@ -112,5 +112,13 @@ String stringListToString(List<String> stringList) {
   return str;
 }
 
+/* THEME CONSTANTS */
+const String ThemeModePrefKey = 'ThemeMode';
+
+// Brand colors for Material 3
+const Color brandPrimary = Color(0xFF1976D2);
+const Color brandSecondary = Color(0xFF00897B);
+const Color brandTertiary = Color(0xFF7B1FA2);
+
 /* TYPES */
 typedef AsyncBoolCallback = Future<bool> Function();

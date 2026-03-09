@@ -18,7 +18,9 @@ import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/setup.dart';
 
 class Settings extends StatefulWidget {
-  const Settings({super.key});
+  final Function(ThemeMode)? onThemeChanged;
+  
+  const Settings({super.key, this.onThemeChanged});
 
   @override
   _SettingsState createState() => _SettingsState();
@@ -76,248 +78,396 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: _title,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text(_title),
-        ),
-        drawer: AppDrawer(
-            currentPage: NullPassRoute.Settings, reloadSecretList: () {}),
-        body: Center(
-          child: ListView(
-            children: <Widget>[
-              Container(
-                  color: Colors.blueGrey[100],
-                  padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
-                  child: const Text(
-                    'Default Password Generation',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                  )),
-              ListTile(
-                title: const Text('Password Length'),
-                subtitle: Text(
-                    'By default when generating a new password, make that password $_secretLength characters long.'),
-                trailing: SizedBox(
-                  width: 50,
-                  child: TextFormField(
-                    textAlign: TextAlign.end,
-                    keyboardType: TextInputType.number,
-                    initialValue: _secretLength.toString(),
-                    autocorrect: true,
-                    onChanged: (value) async {
-                      int tempVal = -1;
-                      try {
-                        tempVal = int.parse(value);
-                      } catch (e) {}
-                      if (tempVal < 1) tempVal = _secretLength;
-                      sharedPrefs.setInt(SecretLengthPrefKey, tempVal);
-                      setState(() {
-                        _secretLength = tempVal;
-                      });
-                    },
-                    decoration: const InputDecoration(border: InputBorder.none),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_title),
+      ),
+      drawer: AppDrawer(
+        currentPage: NullPassRoute.Settings,
+        reloadSecretList: () {},
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: <Widget>[
+          _SectionHeader(
+            title: 'Theme',
+            icon: Icons.palette_outlined,
+          ),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: colorScheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.brightness_6,
+                          size: 20,
+                          color: colorScheme.onSecondaryContainer,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Theme Mode',
+                              style: theme.textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Choose your preferred theme',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<ThemeMode>(
+                      segments: const [
+                        ButtonSegment(
+                          value: ThemeMode.light,
+                          label: Text('Light'),
+                          icon: Icon(Icons.light_mode, size: 18),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.dark,
+                          label: Text('Dark'),
+                          icon: Icon(Icons.dark_mode, size: 18),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.system,
+                          label: Text('Auto'),
+                          icon: Icon(Icons.brightness_auto, size: 18),
+                        ),
+                      ],
+                      selected: {
+                        ThemeMode.values.firstWhere(
+                          (mode) =>
+                              mode.toString() ==
+                              'ThemeMode.${sharedPrefs.getString(ThemeModePrefKey) ?? 'system'}',
+                          orElse: () => ThemeMode.system,
+                        )
+                      },
+                      onSelectionChanged: (Set<ThemeMode> selected) {
+                        final mode = selected.first;
+                        sharedPrefs.setString(
+                          ThemeModePrefKey,
+                          mode.toString().split('.').last,
+                        );
+                        if (widget.onThemeChanged != null) {
+                          widget.onThemeChanged!(mode);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _SectionHeader(
+            title: 'Default Password Generation',
+            icon: Icons.password,
+          ),
+          Card(
+            child: Column(
+              children: [
+                _SettingsTile(
+                  title: 'Password Length',
+                  subtitle: 'Default length: $_secretLength characters',
+                  icon: Icons.straighten,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.remove_circle_outline),
+                        onPressed: () {
+                          if (_secretLength > 8) {
+                            setState(() {
+                              _secretLength--;
+                              sharedPrefs.setInt(SecretLengthPrefKey, _secretLength);
+                            });
+                          }
+                        },
+                      ),
+                      SizedBox(
+                        width: 50,
+                        child: Text(
+                          _secretLength.toString(),
+                          style: theme.textTheme.titleMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline),
+                        onPressed: () {
+                          if (_secretLength < 128) {
+                            setState(() {
+                              _secretLength++;
+                              sharedPrefs.setInt(SecretLengthPrefKey, _secretLength);
+                            });
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                contentPadding: const EdgeInsets.fromLTRB(15, 10, 20, 10),
-              ),
-              ListTile(
-                title: const Text('Include Alpha Characters'),
-                subtitle: const Text(
-                    'Should alphabet characters be included into passwords by default.'),
-                trailing: Switch(
-                    value: _alphaCharacters,
-                    onChanged: (value) async {
-                      sharedPrefs.setBool(AlphaCharactersPrefKey, value);
-                      setState(() {
-                        _alphaCharacters = value;
-                      });
-                    }),
-                contentPadding: const EdgeInsets.fromLTRB(15, 10, 10, 10),
-              ),
-              ListTile(
-                title: const Text('Include Numeric Characters'),
-                subtitle: const Text(
-                    'Should numeric characters be included into passwords by default.'),
-                trailing: Switch(
-                    value: _numericCharacters,
-                    onChanged: (value) async {
-                      sharedPrefs.setBool(NumericCharactersPrefKey, value);
-                      setState(() {
-                        _numericCharacters = value;
-                      });
-                    }),
-                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
-              ),
-              ListTile(
-                title: const Text('Include Symbol Characters'),
-                subtitle: const Text(
-                    'Should symbol characters be included into passwords by default.'),
-                trailing: Switch(
-                    value: _symbolCharacters,
-                    onChanged: (value) async {
-                      sharedPrefs.setBool(SymbolCharactersPrefKey, value);
-                      setState(() {
-                        _symbolCharacters = value;
-                      });
-                    }),
-                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
-              ),
-              Container(
-                color: Colors.blueGrey[100],
-                padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
-                child: const Text(
-                  'App Security',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                const Divider(height: 1, indent: 72),
+                SwitchListTile(
+                  title: const Text('Include Letters'),
+                  subtitle: const Text('A-Z, a-z'),
+                  secondary: const Icon(Icons.abc),
+                  value: _alphaCharacters,
+                  onChanged: (value) async {
+                    sharedPrefs.setBool(AlphaCharactersPrefKey, value);
+                    setState(() {
+                      _alphaCharacters = value;
+                    });
+                  },
                 ),
-              ),
-              ListTile(
-                enabled: canCheckBiometrics,
-                title: const Text('Lock Screen'),
-                subtitle: const Text(
-                    'If on, an auth screen will be prompted everytime you load the app and upon returning from background (tacking into account the Background Lock Timeout), otherwise no authentication will be required to access your secrets.'),
-                trailing: Switch(
-                    value: !canCheckBiometrics ? false : _authOnLoad,
-                    onChanged: !canCheckBiometrics
-                        ? null
-                        : (value) {
-                            sharedPrefs
-                                .setBool(AuthOnLoadPrefKey, value)
-                                .then((worked) {
-                              // TODO: causes a refresh of the screen and therefore requires better routing support to maintain current screen
-                              // AppLock.of(context).setEnabled(value);
-                              setState(() {
-                                _authOnLoad = value;
-                              });
+                const Divider(height: 1, indent: 72),
+                SwitchListTile(
+                  title: const Text('Include Numbers'),
+                  subtitle: const Text('0-9'),
+                  secondary: const Icon(Icons.pin),
+                  value: _numericCharacters,
+                  onChanged: (value) async {
+                    sharedPrefs.setBool(NumericCharactersPrefKey, value);
+                    setState(() {
+                      _numericCharacters = value;
+                    });
+                  },
+                ),
+                const Divider(height: 1, indent: 72),
+                SwitchListTile(
+                  title: const Text('Include Symbols'),
+                  subtitle: const Text('!@#\$%^&*'),
+                  secondary: const Icon(Icons.alternate_email),
+                  value: _symbolCharacters,
+                  onChanged: (value) async {
+                    sharedPrefs.setBool(SymbolCharactersPrefKey, value);
+                    setState(() {
+                      _symbolCharacters = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _SectionHeader(
+            title: 'App Security',
+            icon: Icons.security,
+          ),
+          Card(
+            child: Column(
+              children: [
+                SwitchListTile(
+                  title: const Text('Lock Screen'),
+                  subtitle: Text(
+                    canCheckBiometrics
+                        ? 'Require authentication on app launch'
+                        : 'Biometric authentication not available',
+                  ),
+                  secondary: Icon(
+                    canCheckBiometrics
+                        ? Icons.fingerprint
+                        : Icons.fingerprint_outlined,
+                  ),
+                  value: canCheckBiometrics && _authOnLoad,
+                  onChanged: !canCheckBiometrics
+                      ? null
+                      : (value) {
+                          sharedPrefs.setBool(AuthOnLoadPrefKey, value).then((worked) {
+                            setState(() {
+                              _authOnLoad = value;
                             });
-                          }),
-                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
-              ),
-              ListTile(
-                enabled: canCheckBiometrics,
-                title: const Text('Background Lock Timeout'),
-                subtitle: const Text(
-                  'The number of seconds the app is allowed to be in the background before requiring the lock screen to be shown. (Note: this will take effect on the next launch of the app)',
+                          });
+                        },
                 ),
-                trailing: SizedBox(
-                  width: 50,
-                  child: TextFormField(
-                      enabled: canCheckBiometrics,
-                      textAlign: TextAlign.end,
-                      keyboardType: TextInputType.number,
-                      initialValue: !canCheckBiometrics
-                          ? "--"
-                          : doubleToString(_authTimeoutSeconds),
-                      autocorrect: true,
-                      onChanged: (value) async {
-                        double tempVal = -1.0;
-                        try {
-                          tempVal = double.parse(value);
-                        } catch (e) {}
-                        if (tempVal < 1) tempVal = _authTimeoutSeconds;
-                        sharedPrefs.setDouble(
-                            AuthTimeoutSecondsPrefKey, tempVal);
-                        setState(() {
-                          _authTimeoutSeconds = tempVal;
-                        });
-                      },
-                      decoration: const InputDecoration(border: InputBorder.none)),
+                if (canCheckBiometrics) ...[
+                  const Divider(height: 1, indent: 72),
+                  _SettingsTile(
+                    title: 'Background Timeout',
+                    subtitle: 'Lock after ${_authTimeoutSeconds.toInt()} seconds',
+                    icon: Icons.timer_outlined,
+                    enabled: canCheckBiometrics,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle_outline),
+                          onPressed: !canCheckBiometrics || _authTimeoutSeconds <= 30
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _authTimeoutSeconds -= 30;
+                                    sharedPrefs.setDouble(
+                                      AuthTimeoutSecondsPrefKey,
+                                      _authTimeoutSeconds,
+                                    );
+                                  });
+                                },
+                        ),
+                        SizedBox(
+                          width: 50,
+                          child: Text(
+                            canCheckBiometrics
+                                ? '${_authTimeoutSeconds.toInt()}s'
+                                : '--',
+                            style: theme.textTheme.titleMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline),
+                          onPressed: !canCheckBiometrics || _authTimeoutSeconds >= 3600
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _authTimeoutSeconds += 30;
+                                    sharedPrefs.setDouble(
+                                      AuthTimeoutSecondsPrefKey,
+                                      _authTimeoutSeconds,
+                                    );
+                                  });
+                                },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _SectionHeader(
+            title: 'App Preferences',
+            icon: Icons.tune,
+          ),
+          Card(
+            child: Column(
+              children: [
+                _SettingsTile(
+                  title: 'Password Preview Size',
+                  subtitle: 'Font size: $_passwordPreviewFontSize',
+                  icon: Icons.format_size,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.remove_circle_outline),
+                        onPressed: _passwordPreviewFontSize <= 12
+                            ? null
+                            : () {
+                                setState(() {
+                                  _passwordPreviewFontSize--;
+                                  sharedPrefs.setInt(
+                                    PasswordPreviewSizePrefKey,
+                                    _passwordPreviewFontSize,
+                                  );
+                                });
+                              },
+                      ),
+                      SizedBox(
+                        width: 50,
+                        child: Text(
+                          _passwordPreviewFontSize.toString(),
+                          style: theme.textTheme.titleMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline),
+                        onPressed: _passwordPreviewFontSize >= 32
+                            ? null
+                            : () {
+                                setState(() {
+                                  _passwordPreviewFontSize++;
+                                  sharedPrefs.setInt(
+                                    PasswordPreviewSizePrefKey,
+                                    _passwordPreviewFontSize,
+                                  );
+                                });
+                              },
+                      ),
+                    ],
+                  ),
                 ),
-                contentPadding: const EdgeInsets.fromLTRB(15, 5, 20, 10),
-              ),
-              Container(
-                color: Colors.blueGrey[100],
-                padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
-                child: const Text(
-                  'App Specifics',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-              ),
-              ListTile(
-                title: const Text('Password Font Size'),
-                subtitle: const Text(
-                  'This will be the font size when password preview (the popup from long pressing on the password item in the details screens)',
-                ),
-                trailing: SizedBox(
-                  width: 50,
-                  child: TextFormField(
-                      textAlign: TextAlign.end,
-                      keyboardType: TextInputType.number,
-                      initialValue: _passwordPreviewFontSize.toString(),
-                      autocorrect: true,
-                      onChanged: (value) async {
-                        int tempVal = -1;
-                        try {
-                          tempVal = int.parse(value);
-                        } catch (e) {}
-                        if (tempVal < 1) tempVal = _passwordPreviewFontSize;
-                        sharedPrefs.setInt(PasswordPreviewSizePrefKey, tempVal);
-                        setState(() {
-                          _passwordPreviewFontSize = tempVal;
-                        });
-                      },
-                      decoration: const InputDecoration(border: InputBorder.none)),
-                ),
-                contentPadding: const EdgeInsets.fromLTRB(15, 5, 20, 10),
-              ),
-              ListTile(
-                title: const Text('Open websites in app'),
-                subtitle: const Text(
-                    'If on, launching websites will be opened in the app, otherwise they will be opened externally.'),
-                trailing: Switch(
-                    value: _inAppWebpages,
-                    onChanged: (value) {
-                      sharedPrefs
-                          .setBool(InAppWebpagesPrefKey, value)
-                          .then((worked) {
-                        setState(() {
-                          _inAppWebpages = value;
-                        });
+                const Divider(height: 1, indent: 72),
+                SwitchListTile(
+                  title: const Text('Open Websites In-App'),
+                  subtitle: const Text('Use in-app browser for websites'),
+                  secondary: const Icon(Icons.web),
+                  value: _inAppWebpages,
+                  onChanged: (value) {
+                    sharedPrefs.setBool(InAppWebpagesPrefKey, value).then((worked) {
+                      setState(() {
+                        _inAppWebpages = value;
                       });
-                    }),
-                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
-              ),
-              Container(
-                color: Colors.blueGrey[100],
-                padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
-                child: const Text(
-                  'Device Syncing',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    });
+                  },
                 ),
-              ),
-              ListTile(
-                title: const Text('Notifications'),
-                subtitle: const Text(
-                    "Show me a notification everytime a password I have shared with another device is accessed. (Notes: This is when the password is edited, copied, or viewed; This occurs for vaults that are set to be 'Manage' or 'Read-Only')"),
-                trailing: Switch(
-                    value: _syncAccessNotifications,
-                    onChanged: (value) {
-                      sharedPrefs
-                          .setBool(SyncdDataNotificationsPrefKey, value)
-                          .then((worked) {
-                        setState(() {
-                          _syncAccessNotifications = value;
-                        });
+                const Divider(height: 1, indent: 72),
+                SwitchListTile(
+                  title: const Text('Sync Notifications'),
+                  subtitle: const Text('Get notified when synced secrets are accessed'),
+                  secondary: const Icon(Icons.notifications_outlined),
+                  value: _syncAccessNotifications,
+                  onChanged: (value) {
+                    sharedPrefs.setBool(SyncdDataNotificationsPrefKey, value).then((worked) {
+                      setState(() {
+                        _syncAccessNotifications = value;
                       });
-                    }),
-                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
-              ),
-              Container(
-                  color: Colors.blueGrey[100],
-                  padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
-                  child: const Text(
-                    'Data Management',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                  )),
-              ListTile(
-                title: const Text('Import Passwords'),
-                subtitle: const Text(
-                    'Import password data that has been backed up or extracted from an external source. The file must be a NullPass JSON export or a csv format with the header row.'),
-                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
-                trailing: IconButton(
-                  icon: const Icon(FontAwesomeIcons.fileDownload,
-                      size: 20, color: Colors.blue),
-                  onPressed: () async {
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _SectionHeader(
+            title: 'Data Management',
+            icon: Icons.storage,
+          ),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      FontAwesomeIcons.fileImport,
+                      size: 20,
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  title: const Text('Import Data'),
+                  subtitle: const Text('Import secrets from JSON backup'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
                     showDialog<void>(
                       context: context,
                       // uncomment below to force user to tap button and not just tap outside the alert!
@@ -366,16 +516,24 @@ class _SettingsState extends State<Settings> {
                     );
                   },
                 ),
-              ),
-              ListTile(
-                title: const Text('Export NullPass Data'),
-                subtitle: const Text(
-                    'Export your NullPass data in JSON fromat and save it to a file. (NOTE: at this time this is not encrypted and is considered insecure)'),
-                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
-                trailing: IconButton(
-                  icon: const Icon(FontAwesomeIcons.fileUpload,
-                      size: 20, color: Colors.blue),
-                  onPressed: () async {
+                const Divider(height: 1, indent: 72),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      FontAwesomeIcons.fileExport,
+                      size: 20,
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  title: const Text('Export Data'),
+                  subtitle: const Text('Backup all secrets to clipboard'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
                     showDialog<void>(
                       context: context,
                       // uncomment below to force user to tap button and not just tap outside the alert!
@@ -403,32 +561,70 @@ class _SettingsState extends State<Settings> {
                     );
                   },
                 ),
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
-                title: const Text("Create Default Vault"),
-                subtitle: const Text(
-                  "If there is no default vault, then create one. This is only needed if you delete all data and do not run an import from a NullPass export",
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.add_circle, color: Colors.blue),
-                  onPressed: () async {
+                const Divider(height: 1, indent: 72),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: colorScheme.tertiaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.add_circle_outline,
+                      size: 24,
+                      color: colorScheme.onTertiaryContainer,
+                    ),
+                  ),
+                  title: const Text('Create Default Vault'),
+                  subtitle: const Text('Initialize vault structure'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
                     var v = await NullPassDB.instance.createDefaultVault();
                     if (v != null) {
                       sharedPrefs.setString(DefaultVaultIDPrefKey, v.uid);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Default vault created')),
+                        );
+                      }
                     }
                   },
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Card(
+            color: colorScheme.errorContainer,
+            child: ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.error,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.delete_forever,
+                  size: 24,
+                  color: colorScheme.onError,
+                ),
               ),
-              ListTile(
-                title: const Text('Delete All Data'),
-                subtitle: const Text(
-                    'Permanantly delete all data. (NOTE: THIS IS NOT RECOVERABLE)'),
-                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
-                // trailing: IconButton(icon: Icon(FontAwesomeIcons.trash, size: 18, color: Colors.red)),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
+              title: Text(
+                'Delete All Data',
+                style: TextStyle(
+                  color: colorScheme.onErrorContainer,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                'Permanently delete all secrets and vaults',
+                style: TextStyle(color: colorScheme.onErrorContainer),
+              ),
+              trailing: Icon(
+                Icons.chevron_right,
+                color: colorScheme.onErrorContainer,
+              ),
+              onTap: () async {
                     showDialog<void>(
                       context: context,
                       // uncomment below to force user to tap button and not just tap outside the alert!
@@ -463,13 +659,93 @@ class _SettingsState extends State<Settings> {
                         );
                       },
                     );
-                  },
-                ),
-              ),
-            ],
+              },
+            ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final IconData icon;
+
+  const _SectionHeader({
+    required this.title,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 20,
+            color: colorScheme.primary,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Widget? trailing;
+  final bool enabled;
+
+  const _SettingsTile({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    this.trailing,
+    this.enabled = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return ListTile(
+      enabled: enabled,
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: enabled
+              ? colorScheme.secondaryContainer
+              : colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: enabled
+              ? colorScheme.onSecondaryContainer
+              : colorScheme.onSurfaceVariant.withOpacity(0.5),
         ),
       ),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: trailing,
     );
   }
 }

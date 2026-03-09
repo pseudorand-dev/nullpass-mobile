@@ -131,12 +131,12 @@ class _SecretGenerateState extends State<SecretGenerate> {
           ListTile(
             title: const Text('Password Length'),
             trailing: SizedBox(
-              width: 50,
+              width: 100,
               child: TextFormField(
                   textAlign: TextAlign.end,
                   keyboardType: TextInputType.number,
                   initialValue: _secretLength.toString(),
-                  autocorrect: true,
+                  autocorrect: false,
                   onChanged: (value) {
                     int tempVal = -1;
                     try {
