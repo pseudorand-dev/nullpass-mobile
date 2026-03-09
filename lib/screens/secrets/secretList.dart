@@ -4,9 +4,7 @@
  */
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:nullpass/common.dart';
 import 'package:nullpass/models/auditRecord.dart';
 import 'package:nullpass/models/secret.dart';
 import 'package:nullpass/screens/appDrawer.dart';
@@ -22,19 +20,18 @@ class SecretList extends StatelessWidget {
   final bool loading;
   final Function reloadSecretList;
 
-  SecretList(
-      {Key key,
-      @required this.items,
-      @required this.loading,
-      @required this.reloadSecretList})
-      : super(key: key);
+  const SecretList(
+      {super.key,
+      required this.items,
+      required this.loading,
+      required this.reloadSecretList});
 
   @override
   Widget build(BuildContext context) {
     if (loading) {
       return _SecretListContainer(
           bodyWidget: _SecretLoading(), reloadSecretList: (dynamic d) {});
-    } else if (items != null && items.length > 0) {
+    } else if (items.isNotEmpty) {
       return _SecretListContainer(
           bodyWidget: SecretListWidget(
               items: items, reloadSecretList: reloadSecretList),
@@ -48,31 +45,29 @@ class SecretList extends StatelessWidget {
 }
 
 class _SecretListContainer extends StatelessWidget {
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Widget bodyWidget;
   final Function reloadSecretList;
-  static Size screenSize;
-  static Rect screenRect;
+  static Size? screenSize;
+  static Rect? screenRect;
 
   _SecretListContainer(
-      {Key key, @required this.bodyWidget, @required this.reloadSecretList})
-      : super(key: key);
+      {required this.bodyWidget, required this.reloadSecretList});
 
   void visibilityHasChanged(VisibilityInfo info) {
     if (info.size != Size.zero &&
         info.size != screenSize &&
         info.visibleBounds != Rect.zero &&
-        info.visibleBounds != screenRect &&
-        reloadSecretList != null) {
+        info.visibleBounds != screenRect) {
       reloadSecretList('true');
     }
-    if (screenSize == null) screenSize = info.size;
-    if (screenRect == null) screenRect = info.visibleBounds;
+    screenSize ??= info.size;
+    screenRect ??= info.visibleBounds;
   }
 
   @override
   Widget build(BuildContext context) {
-    final title = 'NullPass';
+    const title = 'NullPass';
 
     return VisibilityDetector(
       key: _scaffoldKey,
@@ -81,16 +76,16 @@ class _SecretListContainer extends StatelessWidget {
         title: title,
         home: Scaffold(
           appBar: AppBar(
-            title: Text(title),
+            title: const Text(title),
             actions: <Widget>[
               IconButton(
-                  icon: Icon(Icons.search),
+                  icon: const Icon(Icons.search),
                   onPressed: () async {
                     await Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => SecretSearch()),
+                      MaterialPageRoute(builder: (context) => const SecretSearch()),
                     );
-                    await this.reloadSecretList('true');
+                    await reloadSecretList('true');
                   }),
             ],
           ),
@@ -106,16 +101,16 @@ class _SecretListContainer extends StatelessWidget {
                       // builder: (context) => SecretEdit(edit: SecretEditType.Create, // SecretNew(
                       builder: (context) => SecretEdit(
                           edit: SecretEditType.Create, // SecretNew(
-                          secret: new Secret(
+                          secret: Secret(
                             nickname: '',
                             website: '',
                             username: '',
                             message: '',
                           ))));
-              await this.reloadSecretList(result);
+              await reloadSecretList(result);
             },
             tooltip: 'Increment',
-            child: Icon(Icons.add),
+            child: const Icon(Icons.add),
           ),
         ),
       ),
@@ -127,9 +122,8 @@ class SecretListWidget extends StatelessWidget {
   final List<Secret> items;
   final Function reloadSecretList;
 
-  SecretListWidget(
-      {Key key, @required this.items, @required this.reloadSecretList})
-      : super(key: key);
+  const SecretListWidget(
+      {super.key, required this.items, required this.reloadSecretList});
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +134,7 @@ class SecretListWidget extends StatelessWidget {
           leading: Thumbnail(items[index].thumbnailURI),
           title: Text(items[index].nickname),
           subtitle: Text(items[index].username),
-          trailing: Icon(Icons.arrow_forward_ios),
+          trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () async {
             await NullPassDB.instance.addAuditRecord(AuditRecord(
               type: AuditType.SecretViewed,
@@ -154,7 +148,7 @@ class SecretListWidget extends StatelessWidget {
               MaterialPageRoute(
                   builder: (context) => SecretView(secret: items[index])),
             );
-            await this.reloadSecretList('true');
+            await reloadSecretList('true');
           },
         );
       },
@@ -165,7 +159,7 @@ class SecretListWidget extends StatelessWidget {
 class _SecretEmptyListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -181,7 +175,7 @@ class _SecretEmptyListView extends StatelessWidget {
 class _SecretLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[CircularProgressIndicator()],
@@ -193,7 +187,7 @@ class _SecretLoading extends StatelessWidget {
 class Thumbnail extends StatelessWidget {
   final String _imageUrl;
 
-  Thumbnail(this._imageUrl, {Key key}) : super(key: key);
+  const Thumbnail(this._imageUrl, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -206,10 +200,10 @@ class Thumbnail extends StatelessWidget {
         width: 40,
         height: 40,
         imageUrl: _imageUrl,
-        placeholder: (context, url) => DefaultThumbnnail(),
-        errorWidget: (context, url, error) => DefaultThumbnnail(),
-        fadeInDuration: Duration(),
-        fadeOutDuration: Duration(),
+        placeholder: (context, url) => const DefaultThumbnnail(),
+        errorWidget: (context, url, error) => const DefaultThumbnnail(),
+        fadeInDuration: const Duration(),
+        fadeOutDuration: const Duration(),
       ),
       //*/
       /*

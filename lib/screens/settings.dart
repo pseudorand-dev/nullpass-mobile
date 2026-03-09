@@ -18,6 +18,9 @@ import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/setup.dart';
 
 class Settings extends StatefulWidget {
+  const Settings({super.key});
+
+  @override
   _SettingsState createState() => _SettingsState();
 }
 
@@ -39,8 +42,8 @@ class _SettingsState extends State<Settings> {
   void initState() {
     super.initState();
 
-    bool spSet = sharedPrefs.getBool(SharedPrefSetupKey);
-    if (spSet == null || !spSet) setupSharedPreferences();
+    bool spSet = sharedPrefs.getBool(SharedPrefSetupKey) ?? false;
+    if (!spSet) setupSharedPreferences(encryptionKeyCallback: () {});
 
     _secretLength = sharedPrefs.getInt(SecretLengthPrefKey) ?? 512;
     _alphaCharacters = sharedPrefs.getBool(AlphaCharactersPrefKey) ?? true;
@@ -86,16 +89,16 @@ class _SettingsState extends State<Settings> {
             children: <Widget>[
               Container(
                   color: Colors.blueGrey[100],
-                  child: Text(
+                  padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
+                  child: const Text(
                     'Default Password Generation',
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
-                  padding: new EdgeInsets.fromLTRB(10, 20, 20, 20)),
+                  )),
               ListTile(
-                title: Text('Password Length'),
+                title: const Text('Password Length'),
                 subtitle: Text(
                     'By default when generating a new password, make that password $_secretLength characters long.'),
-                trailing: Container(
+                trailing: SizedBox(
                   width: 50,
                   child: TextFormField(
                     textAlign: TextAlign.end,
@@ -113,65 +116,65 @@ class _SettingsState extends State<Settings> {
                         _secretLength = tempVal;
                       });
                     },
-                    decoration: InputDecoration(border: InputBorder.none),
+                    decoration: const InputDecoration(border: InputBorder.none),
                   ),
                 ),
-                contentPadding: new EdgeInsets.fromLTRB(15, 10, 20, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 10, 20, 10),
               ),
               ListTile(
-                title: Text('Include Alpha Characters'),
-                subtitle: Text(
+                title: const Text('Include Alpha Characters'),
+                subtitle: const Text(
                     'Should alphabet characters be included into passwords by default.'),
                 trailing: Switch(
                     value: _alphaCharacters,
                     onChanged: (value) async {
                       sharedPrefs.setBool(AlphaCharactersPrefKey, value);
                       setState(() {
-                        this._alphaCharacters = value;
+                        _alphaCharacters = value;
                       });
                     }),
-                contentPadding: new EdgeInsets.fromLTRB(15, 10, 10, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 10, 10, 10),
               ),
               ListTile(
-                title: Text('Include Numeric Characters'),
-                subtitle: Text(
+                title: const Text('Include Numeric Characters'),
+                subtitle: const Text(
                     'Should numeric characters be included into passwords by default.'),
                 trailing: Switch(
                     value: _numericCharacters,
                     onChanged: (value) async {
                       sharedPrefs.setBool(NumericCharactersPrefKey, value);
                       setState(() {
-                        this._numericCharacters = value;
+                        _numericCharacters = value;
                       });
                     }),
-                contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
               ),
               ListTile(
-                title: Text('Include Symbol Characters'),
-                subtitle: Text(
+                title: const Text('Include Symbol Characters'),
+                subtitle: const Text(
                     'Should symbol characters be included into passwords by default.'),
                 trailing: Switch(
                     value: _symbolCharacters,
                     onChanged: (value) async {
                       sharedPrefs.setBool(SymbolCharactersPrefKey, value);
                       setState(() {
-                        this._symbolCharacters = value;
+                        _symbolCharacters = value;
                       });
                     }),
-                contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
               ),
               Container(
                 color: Colors.blueGrey[100],
-                child: Text(
+                padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
+                child: const Text(
                   'App Security',
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                 ),
-                padding: new EdgeInsets.fromLTRB(10, 20, 20, 20),
               ),
               ListTile(
                 enabled: canCheckBiometrics,
-                title: Text('Lock Screen'),
-                subtitle: Text(
+                title: const Text('Lock Screen'),
+                subtitle: const Text(
                     'If on, an auth screen will be prompted everytime you load the app and upon returning from background (tacking into account the Background Lock Timeout), otherwise no authentication will be required to access your secrets.'),
                 trailing: Switch(
                     value: !canCheckBiometrics ? false : _authOnLoad,
@@ -184,19 +187,19 @@ class _SettingsState extends State<Settings> {
                               // TODO: causes a refresh of the screen and therefore requires better routing support to maintain current screen
                               // AppLock.of(context).setEnabled(value);
                               setState(() {
-                                this._authOnLoad = value;
+                                _authOnLoad = value;
                               });
                             });
                           }),
-                contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
               ),
               ListTile(
                 enabled: canCheckBiometrics,
-                title: Text('Background Lock Timeout'),
-                subtitle: Text(
+                title: const Text('Background Lock Timeout'),
+                subtitle: const Text(
                   'The number of seconds the app is allowed to be in the background before requiring the lock screen to be shown. (Note: this will take effect on the next launch of the app)',
                 ),
-                trailing: Container(
+                trailing: SizedBox(
                   width: 50,
                   child: TextFormField(
                       enabled: canCheckBiometrics,
@@ -218,24 +221,24 @@ class _SettingsState extends State<Settings> {
                           _authTimeoutSeconds = tempVal;
                         });
                       },
-                      decoration: InputDecoration(border: InputBorder.none)),
+                      decoration: const InputDecoration(border: InputBorder.none)),
                 ),
-                contentPadding: new EdgeInsets.fromLTRB(15, 5, 20, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 5, 20, 10),
               ),
               Container(
                 color: Colors.blueGrey[100],
-                child: Text(
+                padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
+                child: const Text(
                   'App Specifics',
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                 ),
-                padding: new EdgeInsets.fromLTRB(10, 20, 20, 20),
               ),
               ListTile(
-                title: Text('Password Font Size'),
-                subtitle: Text(
+                title: const Text('Password Font Size'),
+                subtitle: const Text(
                   'This will be the font size when password preview (the popup from long pressing on the password item in the details screens)',
                 ),
-                trailing: Container(
+                trailing: SizedBox(
                   width: 50,
                   child: TextFormField(
                       textAlign: TextAlign.end,
@@ -253,13 +256,13 @@ class _SettingsState extends State<Settings> {
                           _passwordPreviewFontSize = tempVal;
                         });
                       },
-                      decoration: InputDecoration(border: InputBorder.none)),
+                      decoration: const InputDecoration(border: InputBorder.none)),
                 ),
-                contentPadding: new EdgeInsets.fromLTRB(15, 5, 20, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 5, 20, 10),
               ),
               ListTile(
-                title: Text('Open websites in app'),
-                subtitle: Text(
+                title: const Text('Open websites in app'),
+                subtitle: const Text(
                     'If on, launching websites will be opened in the app, otherwise they will be opened externally.'),
                 trailing: Switch(
                     value: _inAppWebpages,
@@ -268,23 +271,23 @@ class _SettingsState extends State<Settings> {
                           .setBool(InAppWebpagesPrefKey, value)
                           .then((worked) {
                         setState(() {
-                          this._inAppWebpages = value;
+                          _inAppWebpages = value;
                         });
                       });
                     }),
-                contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
               ),
               Container(
                 color: Colors.blueGrey[100],
-                child: Text(
+                padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
+                child: const Text(
                   'Device Syncing',
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                 ),
-                padding: new EdgeInsets.fromLTRB(10, 20, 20, 20),
               ),
               ListTile(
-                title: Text('Notifications'),
-                subtitle: Text(
+                title: const Text('Notifications'),
+                subtitle: const Text(
                     "Show me a notification everytime a password I have shared with another device is accessed. (Notes: This is when the password is edited, copied, or viewed; This occurs for vaults that are set to be 'Manage' or 'Read-Only')"),
                 trailing: Switch(
                     value: _syncAccessNotifications,
@@ -293,26 +296,26 @@ class _SettingsState extends State<Settings> {
                           .setBool(SyncdDataNotificationsPrefKey, value)
                           .then((worked) {
                         setState(() {
-                          this._syncAccessNotifications = value;
+                          _syncAccessNotifications = value;
                         });
                       });
                     }),
-                contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
               ),
               Container(
                   color: Colors.blueGrey[100],
-                  child: Text(
+                  padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
+                  child: const Text(
                     'Data Management',
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
-                  padding: new EdgeInsets.fromLTRB(10, 20, 20, 20)),
+                  )),
               ListTile(
-                title: Text('Import Passwords'),
-                subtitle: Text(
+                title: const Text('Import Passwords'),
+                subtitle: const Text(
                     'Import password data that has been backed up or extracted from an external source. The file must be a NullPass JSON export or a csv format with the header row.'),
-                contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
                 trailing: IconButton(
-                  icon: Icon(FontAwesomeIcons.fileDownload,
+                  icon: const Icon(FontAwesomeIcons.fileDownload,
                       size: 20, color: Colors.blue),
                   onPressed: () async {
                     showDialog<void>(
@@ -321,11 +324,11 @@ class _SettingsState extends State<Settings> {
                       // barrierDismissible: false,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: Text('Import Data'),
+                          title: const Text('Import Data'),
                           content: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              Text(
+                              const Text(
                                   'Paste a JSON blob containing a list of NullPass Secrets.'),
                               TextFormField(
                                 maxLines: 10,
@@ -340,13 +343,13 @@ class _SettingsState extends State<Settings> {
                             ],
                           ),
                           actions: <Widget>[
-                            FlatButton(
-                                child: Text('Cancel'),
+                            TextButton(
+                                child: const Text('Cancel'),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 }),
-                            FlatButton(
-                                child: Text('Import'),
+                            TextButton(
+                                child: const Text('Import'),
                                 onPressed: () async {
                                   await importSecretsAndVaults(_importText);
                                   var v = await NullPassDB.instance
@@ -365,12 +368,12 @@ class _SettingsState extends State<Settings> {
                 ),
               ),
               ListTile(
-                title: Text('Export NullPass Data'),
-                subtitle: Text(
+                title: const Text('Export NullPass Data'),
+                subtitle: const Text(
                     'Export your NullPass data in JSON fromat and save it to a file. (NOTE: at this time this is not encrypted and is considered insecure)'),
-                contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
                 trailing: IconButton(
-                  icon: Icon(FontAwesomeIcons.fileUpload,
+                  icon: const Icon(FontAwesomeIcons.fileUpload,
                       size: 20, color: Colors.blue),
                   onPressed: () async {
                     showDialog<void>(
@@ -379,17 +382,17 @@ class _SettingsState extends State<Settings> {
                       // barrierDismissible: false,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: Text('Export Data'),
-                          content: Text(
+                          title: const Text('Export Data'),
+                          content: const Text(
                               'This will export all of your password data. Be sure before proceeding as this will decrypt all data and copy it to your clipboard which can be available to many applications and services.'),
                           actions: <Widget>[
-                            FlatButton(
-                                child: Text('Cancel'),
+                            TextButton(
+                                child: const Text('Cancel'),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 }),
-                            FlatButton(
-                                child: Text('Export'),
+                            TextButton(
+                                child: const Text('Export'),
                                 onPressed: () async {
                                   await exportSecretsAndVaults();
                                   Navigator.of(context).pop();
@@ -402,27 +405,29 @@ class _SettingsState extends State<Settings> {
                 ),
               ),
               ListTile(
-                contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
-                title: Text("Create Default Vault"),
-                subtitle: Text(
+                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
+                title: const Text("Create Default Vault"),
+                subtitle: const Text(
                   "If there is no default vault, then create one. This is only needed if you delete all data and do not run an import from a NullPass export",
                 ),
                 trailing: IconButton(
-                  icon: Icon(Icons.add_circle, color: Colors.blue),
+                  icon: const Icon(Icons.add_circle, color: Colors.blue),
                   onPressed: () async {
                     var v = await NullPassDB.instance.createDefaultVault();
-                    sharedPrefs.setString(DefaultVaultIDPrefKey, v.uid);
+                    if (v != null) {
+                      sharedPrefs.setString(DefaultVaultIDPrefKey, v.uid);
+                    }
                   },
                 ),
               ),
               ListTile(
-                title: Text('Delete All Data'),
-                subtitle: Text(
+                title: const Text('Delete All Data'),
+                subtitle: const Text(
                     'Permanantly delete all data. (NOTE: THIS IS NOT RECOVERABLE)'),
-                contentPadding: new EdgeInsets.fromLTRB(15, 5, 10, 10),
+                contentPadding: const EdgeInsets.fromLTRB(15, 5, 10, 10),
                 // trailing: IconButton(icon: Icon(FontAwesomeIcons.trash, size: 18, color: Colors.red)),
                 trailing: IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
+                  icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () async {
                     showDialog<void>(
                       context: context,
@@ -430,17 +435,17 @@ class _SettingsState extends State<Settings> {
                       // barrierDismissible: false,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: Text('Delete All Data'),
-                          content: Text(
+                          title: const Text('Delete All Data'),
+                          content: const Text(
                               'This will delete all password data. Be sure before proceeding as this is not undoable or recoverable.'),
                           actions: <Widget>[
-                            FlatButton(
-                                child: Text('Cancel'),
+                            TextButton(
+                                child: const Text('Cancel'),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 }),
-                            FlatButton(
-                                child: Text(
+                            TextButton(
+                                child: const Text(
                                   'Delete',
                                   style: TextStyle(color: Colors.red),
                                 ),
@@ -479,16 +484,16 @@ Future<void> exportSecretsAndVaults() async {
   Set<String> vids = <String>{};
 
   List<Map<String, dynamic>> secretsJsonList = <Map<String, dynamic>>[];
-  secretsList.forEach((s) {
+  for (var s in secretsList) {
     secretsJsonList.add(s.toJson());
     sids.add(s.uuid);
-  });
+  }
 
   List<Map<String, dynamic>> vaultsJsonList = <Map<String, dynamic>>[];
-  vaultsList.forEach((v) {
+  for (var v in vaultsList) {
     vaultsJsonList.add(v.toJson());
     vids.add(v.uid);
-  });
+  }
 
   await Clipboard.setData(ClipboardData(
     text: jsonEncode(<String, dynamic>{
@@ -520,16 +525,16 @@ Future<void> importSecretsAndVaults(String input) async {
   Set<String> sids = <String>{};
   Set<String> vids = <String>{};
 
-  (decodedInput["secrets"] as List).forEach((sMap) {
+  for (var sMap in (decodedInput["secrets"] as List)) {
     var s = Secret.fromJson(sMap);
     secretsList.add(s);
     sids.add(s.uuid);
-  });
-  (decodedInput["vaults"] as List).forEach((vMap) {
+  }
+  for (var vMap in (decodedInput["vaults"] as List)) {
     var v = Vault.fromMap(vMap);
     vaultsList.add(v);
     vids.add(v.uid);
-  });
+  }
 
   // await npDB.bulkInsertSecrets(secretsListFromJsonString(input));
   await npDB.bulkInsertVaults(vaultsList);

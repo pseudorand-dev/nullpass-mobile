@@ -3,27 +3,26 @@
  * Copyright (c) 2020 Pseudorand Development. All rights reserved.
  */
 
-import 'package:flutter/foundation.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
 
-final String syncTableName = 'device_sync';
-final String columnSyncId = "_id";
-final String columnSyncDeviceId = "device_id";
-final String columnSyncDeviceConnectionId = "device_sync_id";
+const String syncTableName = 'device_sync';
+const String columnSyncId = "_id";
+const String columnSyncDeviceId = "device_id";
+const String columnSyncDeviceConnectionId = "device_sync_id";
 // does this record represent a sync from our device to another device
-final String columnSyncFromInternal = "sync_from_internal";
-final String columnSyncVaultId = "vault_id";
-final String columnSyncVaultName = "vault_name";
-final String columnSyncVaultAccess = "vault_access";
-final String columnSyncStatus = "status";
+const String columnSyncFromInternal = "sync_from_internal";
+const String columnSyncVaultId = "vault_id";
+const String columnSyncVaultName = "vault_name";
+const String columnSyncVaultAccess = "vault_access";
+const String columnSyncStatus = "status";
 // device type info (macos / ios / android / chrome / etc.)
-final String columnSyncNotes = "notes";
-final String columnSyncCreated = "created_at";
-final String columnSyncModified = "modified_at";
-final String columnSyncLastPerformed = "last_synced";
+const String columnSyncNotes = "notes";
+const String columnSyncCreated = "created_at";
+const String columnSyncModified = "modified_at";
+const String columnSyncLastPerformed = "last_synced";
 
 class DeviceAccess {
   static const DeviceAccess None = DeviceAccess._("None");
@@ -43,10 +42,11 @@ class DeviceAccess {
 
   static dynamic fromString(String deviceAccess) {
     if (values.contains(deviceAccess) ||
-        values.contains(deviceAccess.replaceAll("-", "")))
+        values.contains(deviceAccess.replaceAll("-", ""))) {
       return DeviceAccess._(deviceAccess);
-    else
+    } else {
       return DeviceAccess.None;
+    }
   }
 
   @override
@@ -56,7 +56,7 @@ class DeviceAccess {
 
   @override
   bool operator ==(dynamic other) {
-    if (other is DeviceAccess && this._name == other._name) {
+    if (other is DeviceAccess && _name == other._name) {
       return true;
     }
     return false;
@@ -86,38 +86,38 @@ SyncStatus parseSyncStatusFromString(String status) {
 }
 
 class DeviceSync {
-  String id;
-  String deviceID;
-  String deviceSyncID;
-  bool syncFromInternal;
-  String vaultID;
-  String vaultName;
-  DeviceAccess vaultAccess;
-  String notes;
-  SyncStatus status;
-  DateTime created;
-  DateTime lastModified;
-  DateTime lastSync;
+  late String id;
+  late String deviceID;
+  String? deviceSyncID;
+  late bool syncFromInternal;
+  late String vaultID;
+  late String vaultName;
+  late DeviceAccess vaultAccess;
+  late String notes;
+  late SyncStatus status;
+  late DateTime created;
+  late DateTime lastModified;
+  late DateTime lastSync;
 
   factory DeviceSync.fromJson(Map<String, dynamic> json) =>
       DeviceSync.deviceFromJson(json);
 
   DeviceSync({
-    String id,
-    @required String deviceID,
-    String deviceSyncID,
-    @required bool syncFromInternal,
-    @required String vaultID,
-    @required String vaultName,
-    @required DeviceAccess vaultAccess,
-    SyncStatus status,
-    String notes,
-    DateTime created,
-    DateTime lastModified,
-    DateTime lastSync,
+    String? id,
+    required String deviceID,
+    String? deviceSyncID,
+    required bool syncFromInternal,
+    required String vaultID,
+    required String vaultName,
+    DeviceAccess vaultAccess = DeviceAccess.None,
+    SyncStatus status = SyncStatus.Unknown,
+    String notes = '',
+    DateTime? created,
+    DateTime? lastModified,
+    DateTime? lastSync,
   }) {
     if (id == null || id.trim() == '' || !isUUID(id, 4)) {
-      id = (new Uuid()).v4();
+      id = (const Uuid()).v4();
     }
 
     DateTime now = DateTime.now().toUtc();
@@ -125,13 +125,11 @@ class DeviceSync {
     this.id = id;
     this.deviceID = deviceID;
     this.deviceSyncID = deviceSyncID;
-    this.syncFromInternal = syncFromInternal != null
-        ? isTrue(syncFromInternal)
-        : (throw ArgumentError.notNull("syncFromInternal"));
+    this.syncFromInternal = isTrue(syncFromInternal);
     this.vaultID = vaultID;
     this.vaultName = vaultName;
-    this.vaultAccess = vaultAccess ?? DeviceAccess.None;
-    this.status = status ?? SyncStatus.Unknown;
+    this.vaultAccess = vaultAccess;
+    this.status = status;
     this.notes = notes;
     this.created = created ?? now;
     this.lastModified = lastModified ?? now;
@@ -139,23 +137,23 @@ class DeviceSync {
   }
 
   Map<String, dynamic> toMap() => {
-        columnSyncId: this.id,
-        columnSyncDeviceId: this.deviceID,
-        columnSyncDeviceConnectionId: this.deviceSyncID,
-        columnSyncFromInternal: this.syncFromInternal,
-        columnSyncVaultId: this.vaultID,
-        columnSyncVaultName: this.vaultName,
-        columnSyncVaultAccess: this.vaultAccess.toString(),
-        columnSyncStatus: syncStatusToString(this.status),
-        columnSyncNotes: this.notes,
-        columnSyncCreated: (this.created != null)
-            ? this.created.toIso8601String()
+        columnSyncId: id,
+        columnSyncDeviceId: deviceID,
+        columnSyncDeviceConnectionId: deviceSyncID,
+        columnSyncFromInternal: syncFromInternal,
+        columnSyncVaultId: vaultID,
+        columnSyncVaultName: vaultName,
+        columnSyncVaultAccess: vaultAccess.toString(),
+        columnSyncStatus: syncStatusToString(status),
+        columnSyncNotes: notes,
+        columnSyncCreated: (created != null)
+            ? created.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
-        columnSyncModified: (this.lastModified != null)
-            ? this.lastModified.toIso8601String()
+        columnSyncModified: (lastModified != null)
+            ? lastModified.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
-        columnSyncLastPerformed: (this.lastSync != null)
-            ? this.lastSync.toIso8601String()
+        columnSyncLastPerformed: (lastSync != null)
+            ? lastSync.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
       };
 
@@ -178,28 +176,28 @@ class DeviceSync {
       return newDevice;
     } catch (e) {
       Log.debug("error creating sync record from map: ${e.toString()}");
-      throw e;
+      rethrow;
     }
   }
 
   Map<String, dynamic> toJson() => {
-        columnSyncId: this.id,
-        columnSyncDeviceId: this.deviceID,
-        columnSyncDeviceConnectionId: this.deviceSyncID,
-        columnSyncFromInternal: this.syncFromInternal,
-        columnSyncVaultId: this.vaultID,
-        columnSyncVaultName: this.vaultName,
-        columnSyncVaultAccess: this.vaultAccess.toString(),
-        columnSyncStatus: syncStatusToString(this.status),
-        columnSyncNotes: this.notes,
-        columnSyncCreated: (this.created != null)
-            ? this.created.toIso8601String()
+        columnSyncId: id,
+        columnSyncDeviceId: deviceID,
+        columnSyncDeviceConnectionId: deviceSyncID,
+        columnSyncFromInternal: syncFromInternal,
+        columnSyncVaultId: vaultID,
+        columnSyncVaultName: vaultName,
+        columnSyncVaultAccess: vaultAccess.toString(),
+        columnSyncStatus: syncStatusToString(status),
+        columnSyncNotes: notes,
+        columnSyncCreated: (created != null)
+            ? created.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
-        columnSyncModified: (this.lastModified != null)
-            ? this.lastModified.toIso8601String()
+        columnSyncModified: (lastModified != null)
+            ? lastModified.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
-        columnSyncLastPerformed: (this.lastSync != null)
-            ? this.lastSync.toIso8601String()
+        columnSyncLastPerformed: (lastSync != null)
+            ? lastSync.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
       };
 
@@ -222,24 +220,24 @@ class DeviceSync {
       return newDevice;
     } catch (e) {
       Log.debug("error creating sync record from json: ${e.toString()}");
-      throw e;
+      rethrow;
     }
   }
 
   DeviceSync clone() {
     return DeviceSync(
-      id: this.id,
-      deviceID: this.deviceID,
-      deviceSyncID: this.deviceSyncID,
-      syncFromInternal: this.syncFromInternal,
-      vaultID: this.vaultID,
-      vaultName: this.vaultName,
-      vaultAccess: this.vaultAccess,
-      status: this.status,
-      notes: this.notes,
-      created: this.created,
-      lastModified: this.lastModified,
-      lastSync: this.lastSync,
+      id: id,
+      deviceID: deviceID,
+      deviceSyncID: deviceSyncID,
+      syncFromInternal: syncFromInternal,
+      vaultID: vaultID,
+      vaultName: vaultName,
+      vaultAccess: vaultAccess,
+      status: status,
+      notes: notes,
+      created: created,
+      lastModified: lastModified,
+      lastSync: lastSync,
     );
   }
 }

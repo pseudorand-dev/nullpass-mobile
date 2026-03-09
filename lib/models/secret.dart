@@ -6,7 +6,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:nullpass/common.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:otp/otp.dart';
@@ -14,21 +13,21 @@ import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
 
 // database table and column names that correlate to the map keys
-final String secretTableName = 'secrets';
-final String columnSecretId = '_id';
-final String columnSecretNickname = 'nickname';
-final String columnSecretUsername = 'username';
-final String columnSecretType = 'type';
-final String columnSecretWebsite = 'website';
-final String columnSecretAppName = 'appName';
-final String columnSecretGenericEndpoint = 'genericEndpoint';
-final String columnSecretThumbnailURI = 'thumbnailURI';
-final String columnSecretNotes = 'notes';
-final String columnSecretTags = 'tags';
-final String columnSecretVaults = 'vaults';
-final String columnSecretCreated = 'created';
-final String columnSecretLastModified = 'lastModified';
-final String columnSecretSortKey = 'sortKey';
+const String secretTableName = 'secrets';
+const String columnSecretId = '_id';
+const String columnSecretNickname = 'nickname';
+const String columnSecretUsername = 'username';
+const String columnSecretType = 'type';
+const String columnSecretWebsite = 'website';
+const String columnSecretAppName = 'appName';
+const String columnSecretGenericEndpoint = 'genericEndpoint';
+const String columnSecretThumbnailURI = 'thumbnailURI';
+const String columnSecretNotes = 'notes';
+const String columnSecretTags = 'tags';
+const String columnSecretVaults = 'vaults';
+const String columnSecretCreated = 'created';
+const String columnSecretLastModified = 'lastModified';
+const String columnSecretSortKey = 'sortKey';
 
 enum SecretType { Website, App, Generic }
 
@@ -36,21 +35,24 @@ SecretType parseSecretTypeFromString(String str) {
   String strToLower = str.toLowerCase();
 
   if (SecretType.App.toString().toLowerCase() == strToLower ||
-      SecretType.App.toString().substring(7).toLowerCase() == strToLower)
+      SecretType.App.toString().substring(7).toLowerCase() == strToLower) {
     return SecretType.App;
+  }
 
   if (SecretType.Generic.toString().toLowerCase() == strToLower ||
-      SecretType.Generic.toString().substring(7).toLowerCase() == strToLower)
+      SecretType.Generic.toString().substring(7).toLowerCase() == strToLower) {
     return SecretType.Generic;
+  }
 
   if (SecretType.Website.toString().toLowerCase() == strToLower ||
-      SecretType.Website.toString().substring(7).toLowerCase() == strToLower)
+      SecretType.Website.toString().substring(7).toLowerCase() == strToLower) {
     return SecretType.Website;
+  }
 
-  throw new Exception("Unknown SecretType");
+  throw Exception("Unknown SecretType");
 }
 
-SecretType tryParseSecretTypeFromString(String str) {
+SecretType? tryParseSecretTypeFromString(String str) {
   try {
     return parseSecretTypeFromString(str);
   } catch (e) {
@@ -63,23 +65,23 @@ String secretTypeToString(SecretType st) {
 }
 
 class Secret {
-  String uuid;
-  String nickname;
-  String username;
-  SecretType type;
-  String website;
-  String appName;
-  String genericEndpoint;
-  String message;
-  String otpCode;
+  late String uuid;
+  late String nickname;
+  late String username;
+  late SecretType type;
+  late String website;
+  late String appName;
+  late String genericEndpoint;
+  String? message;
+  String? otpCode;
   String get thumbnailURI => _getThumbnail();
-  String notes;
-  List<String> tags;
-  List<String> vaults;
-  DateTime created;
-  DateTime lastModified;
-  String get sortKey => this.nickname.toLowerCase();
-  int get strength => this._secretStrength();
+  late String notes;
+  late List<String> tags;
+  late List<String> vaults;
+  late DateTime created;
+  late DateTime lastModified;
+  String get sortKey => nickname.toLowerCase();
+  int get strength => _secretStrength();
 
   /*
   String uuid
@@ -102,26 +104,26 @@ class Secret {
   factory Secret.fromJson(Map<String, dynamic> json) =>
       Secret.secretFromJson(json);
 
-  // TODO: move password to secure storage and remove @required
+  // TODO: move password to secure storage and remove required
   Secret({
-    @required String nickname,
-    @required String username,
-    @required String message,
-    String uuid,
+    required String nickname,
+    required String username,
+    String? message,
+    String? uuid,
     SecretType type = SecretType.Website,
     String website = '',
     String appName = '',
     String genericEndpoint = '',
-    String otpCode = '',
+    String? otpCode,
     String thumbnailURI = '',
     String notes = '',
-    List<String> tags,
-    List<String> vaults,
-    DateTime created,
-    DateTime lastModified,
+    List<String>? tags,
+    List<String>? vaults,
+    DateTime? created,
+    DateTime? lastModified,
   }) {
     if (uuid == null || uuid.trim() == '' || !isUUID(uuid, 4)) {
-      uuid = (new Uuid()).v4();
+      uuid = (const Uuid()).v4();
     }
     DateTime now = DateTime.now().toUtc();
 
@@ -146,36 +148,58 @@ class Secret {
   }
 
   String _getThumbnail() {
-    Uri uri;
-    if (this.website.startsWith("http"))
-      uri = Uri.parse(this.website);
-    else
-      uri = Uri.parse('http://${this.website}');
+    // Return empty string if website is empty or null
+    if (website == null || website.isEmpty || website.trim().isEmpty) {
+      return '';
+    }
 
-    //"https://logo.clearbit.com/slack.com"
-    return 'https://logo.clearbit.com/${uri.host}';
+    try {
+      Uri uri;
+      if (website.startsWith("http")) {
+        uri = Uri.parse(website);
+      } else {
+        uri = Uri.parse('http://$website');
+      }
 
-    // 'https://api.faviconkit.com/soundcloud.com/144';
-    // return 'https://api.faviconkit.com/${uri.host}/144';
+      // Return empty if host is empty or invalid
+      if (uri.host.isEmpty) {
+        return '';
+      }
+
+      // Using Google's favicon service (more reliable than Clearbit)
+      // sz parameter: 16, 32, 64, 128, 256
+      return 'https://www.google.com/s2/favicons?domain=${uri.host}&sz=128';
+      
+      // Alternative services:
+      // Clearbit: 'https://logo.clearbit.com/${uri.host}';
+      // FaviconKit: 'https://api.faviconkit.com/${uri.host}/144';
+    } catch (e) {
+      // If parsing fails, return empty string
+      return '';
+    }
   }
 
   int _secretStrength() {
-    Map<String, double> entropyMap = new Map<String, double>();
-    this.message.split('').forEach((String character) {
+    final msg = message ?? '';
+    Map<String, double> entropyMap = <String, double>{};
+    msg.split('').forEach((String character) {
       entropyMap[character] =
-          entropyMap[character] != null ? entropyMap[character] + 1.0 : 1.0;
+          (entropyMap[character] ?? 0.0) + 1.0;
     });
 
     var score = 0.0;
+    final msgLength = msg.length;
+    if (msgLength == 0) return 0;
+    
     if (entropyMap.length == 1) {
       var val = entropyMap.values.first;
       score =
-          0 - ((val / this.message.length) * log(val / this.message.length));
+          0 - ((val / msgLength) * log(val / msgLength));
     } else {
       // var result = 0.0;
       score = entropyMap.values.reduce((result, val) =>
           result -
-          ((val / this.message.length) * log(val / this.message.length)));
+          ((val / msgLength) * log(val / msgLength)));
     }
     if ((score >= 3.5 && score < 4) || (score >= 4.5 && score < 5)) {
       return score.ceil();
@@ -184,7 +208,7 @@ class Secret {
   }
 
   Color strengthColor() {
-    switch (this.strength) {
+    switch (strength) {
       case 5:
         {
           return Colors.blue;
@@ -213,14 +237,14 @@ class Secret {
     uuid = map[columnSecretId] ?? map['uuid'] ?? map['_id'] ?? map['gid'] ?? '';
     message = map['message'] ?? map['password'];
     otpCode = map['otpCode'] ?? map['otp'];
-    nickname = map[columnSecretNickname];
-    username = map[columnSecretUsername];
-    type = tryParseSecretTypeFromString(map[columnSecretType]);
-    website = map[columnSecretWebsite];
-    appName = map[columnSecretAppName];
-    genericEndpoint = map[columnSecretGenericEndpoint];
+    nickname = map[columnSecretNickname] ?? '';
+    username = map[columnSecretUsername] ?? '';
+    type = tryParseSecretTypeFromString(map[columnSecretType]) ?? SecretType.Website;
+    website = map[columnSecretWebsite] ?? '';
+    appName = map[columnSecretAppName] ?? '';
+    genericEndpoint = map[columnSecretGenericEndpoint] ?? '';
     // thumbnailURI = map[columnSecretThumbnailURI];
-    notes = map[columnSecretNotes];
+    notes = map[columnSecretNotes] ?? '';
 
     tags = <String>[];
     if (map[columnSecretTags] is String &&
@@ -228,7 +252,9 @@ class Secret {
       tags = (map[columnSecretTags] as String).split(',');
     } else if (map[columnSecretTags] is List &&
         (map[columnSecretTags] as List).isNotEmpty) {
-      (map[columnSecretTags] as List).forEach((v) => tags.add(v as String));
+      for (var v in (map[columnSecretTags] as List)) {
+        tags.add(v as String);
+      }
     }
 
     vaults = <String>[];
@@ -237,7 +263,9 @@ class Secret {
       vaults = (map[columnSecretVaults] as String).split(',');
     } else if (map[columnSecretVaults] is List &&
         (map[columnSecretVaults] as List).isNotEmpty) {
-      (map[columnSecretVaults] as List).forEach((v) => vaults.add(v as String));
+      for (var v in (map[columnSecretVaults] as List)) {
+        vaults.add(v as String);
+      }
     }
 
     created = DateTime.tryParse(map[columnSecretCreated]) ?? DateTime.now();
@@ -247,8 +275,8 @@ class Secret {
 
   // convenience method to create a Map from this Secret object
   Map<String, dynamic> toMap() {
-    if (uuid == null || uuid.trim() == '' || !isUUID(uuid, 4)) {
-      uuid = (new Uuid()).v4();
+    if (uuid.trim() == '' || !isUUID(uuid, 4)) {
+      uuid = (const Uuid()).v4();
     }
     var map = <String, dynamic>{
       columnSecretId: uuid,
@@ -297,16 +325,20 @@ class Secret {
   static Secret secretFromJson(Map<String, dynamic> jsonBlob) {
     var now = DateTime.now();
     var created = now;
-    if (jsonBlob.containsKey('created'))
+    if (jsonBlob.containsKey('created')) {
       created = DateTime.tryParse(jsonBlob['created']) ?? now;
-    if (jsonBlob.containsKey('createdOn'))
+    }
+    if (jsonBlob.containsKey('createdOn')) {
       created = DateTime.tryParse(jsonBlob['createdOn']) ?? now;
+    }
 
     var lastModified = now;
-    if (jsonBlob.containsKey('lastModified'))
+    if (jsonBlob.containsKey('lastModified')) {
       lastModified = DateTime.tryParse(jsonBlob['lastModified']) ?? now;
-    if (jsonBlob.containsKey('lastUpdatedOn'))
+    }
+    if (jsonBlob.containsKey('lastUpdatedOn')) {
       lastModified = DateTime.tryParse(jsonBlob['lastUpdatedOn']) ?? now;
+    }
 
     return Secret(
       uuid: jsonBlob['uuid'] ?? jsonBlob['_id'] ?? jsonBlob['gid'] ?? '',
@@ -321,9 +353,9 @@ class Secret {
       genericEndpoint: jsonBlob['genericEndpoint'],
       thumbnailURI: jsonBlob['thumbnailURI'] ?? jsonBlob['thumbnailUri'],
       notes: jsonBlob['notes'],
-      tags: new List.from(jsonBlob['tags']) ?? <String>[],
+      tags: List.from(jsonBlob['tags']) ?? <String>[],
       vaults: jsonBlob.containsKey('vaults')
-          ? new List.from(jsonBlob['vaults']) ?? <String>[]
+          ? List.from(jsonBlob['vaults']) ?? <String>[]
           : <String>[],
       created: created,
       lastModified: lastModified,
@@ -333,68 +365,42 @@ class Secret {
   @override
   String toString() {
     var sec = "{";
-    sec = "$sec\"gid\":\"${this.uuid}\"";
+    sec = "$sec\"gid\":\"$uuid\"";
 
-    if (this.nickname != null) {
-      sec = "$sec,\"nickname\":\"${this.nickname}\"";
+    sec = "$sec,\"nickname\":\"$nickname\"";
+  
+    sec = "$sec,\"username\":\"$username\"";
+  
+    if (message != null) {
+      sec = "$sec,\"message\":\"$message\"";
     }
 
-    if (this.username != null) {
-      sec = "$sec,\"username\":\"${this.username}\"";
+    if (otpCode != null) {
+      sec = "$sec,\"otpCode\":\"$otpCode\"";
     }
 
-    if (this.message != null) {
-      sec = "$sec,\"message\":\"${this.message}\"";
-    }
-
-    if (this.otpCode != null) {
-      sec = "$sec,\"otpCode\":\"${this.otpCode}\"";
-    }
-
-    if (this.type != null) {
-      sec = "$sec,\"type\":\"${secretTypeToString(this.type)}\"";
-    }
-
-    if (this.website != null) {
-      sec = "$sec,\"website\":\"${this.website}\"";
-    }
-
-    if (this.appName != null) {
-      sec = "$sec,\"appName\":\"${this.appName}\"";
-    }
-
-    if (this.genericEndpoint != null) {
-      sec = "$sec,\"genericEndpoint\":\"${this.genericEndpoint}\"";
-    }
-
-    if (this.thumbnailURI != null) {
-      sec = "$sec,\"thumbnailURI\":\"${this.thumbnailURI}\"";
-    }
-
-    if (this.notes != null) {
-      sec = "$sec,\"notes\":\"${this.notes}\"";
-    }
-
-    if (this.tags != null) {
-      sec = "$sec,\"tags\":${stringListToString(this.tags)}";
-    }
-
-    if (this.vaults != null) {
-      sec = "$sec,\"vaults\":${stringListToString(this.vaults)}";
-    }
-
-    if (this.created != null) {
-      sec = "$sec,\"created\":\"${this.created.toIso8601String()}\"";
-    }
-
-    if (this.lastModified != null) {
-      sec = "$sec,\"lastModified\":\"${this.lastModified.toIso8601String()}\"";
-    }
-
-    if (this.sortKey != null) {
-      sec = "$sec,\"sortKey\":\"${this.sortKey}\"";
-    }
-
+    sec = "$sec,\"type\":\"${secretTypeToString(type)}\"";
+  
+    sec = "$sec,\"website\":\"$website\"";
+  
+    sec = "$sec,\"appName\":\"$appName\"";
+  
+    sec = "$sec,\"genericEndpoint\":\"$genericEndpoint\"";
+  
+    sec = "$sec,\"thumbnailURI\":\"$thumbnailURI\"";
+  
+    sec = "$sec,\"notes\":\"$notes\"";
+  
+    sec = "$sec,\"tags\":${stringListToString(tags)}";
+  
+    sec = "$sec,\"vaults\":${stringListToString(vaults)}";
+  
+    sec = "$sec,\"created\":\"${created.toIso8601String()}\"";
+  
+    sec = "$sec,\"lastModified\":\"${lastModified.toIso8601String()}\"";
+  
+    sec = "$sec,\"sortKey\":\"$sortKey\"";
+  
     sec = "$sec}";
 
     return sec;
@@ -402,34 +408,38 @@ class Secret {
 
   Secret clone() {
     var s = Secret(
-      uuid: this.uuid,
-      nickname: this.nickname,
-      username: this.username,
-      type: this.type,
-      website: this.website,
-      appName: this.appName,
-      genericEndpoint: this.genericEndpoint,
-      message: this.message,
-      otpCode: this.otpCode,
-      notes: this.notes,
+      uuid: uuid,
+      nickname: nickname,
+      username: username,
+      type: type,
+      website: website,
+      appName: appName,
+      genericEndpoint: genericEndpoint,
+      message: message,
+      otpCode: otpCode,
+      notes: notes,
       tags: <String>[],
       vaults: <String>[],
-      created: this.created,
-      lastModified: this.lastModified,
+      created: created,
+      lastModified: lastModified,
     );
 
-    this.tags.forEach((t) => s.tags.add(t));
-    this.vaults.forEach((v) => s.vaults.add(v));
+    for (var t in tags) {
+      s.tags.add(t);
+    }
+    for (var v in vaults) {
+      s.vaults.add(v);
+    }
 
     return s;
   }
 
   String getOnetimePasscode() {
-    return generateOnetimePasscode(this.otpCode);
+    return generateOnetimePasscode(otpCode ?? '');
   }
 
   static String generateOnetimePasscode(String otpCode) {
-    if (otpCode == null || otpCode.trim().isEmpty) {
+    if (otpCode.trim().isEmpty) {
       return '';
     }
 

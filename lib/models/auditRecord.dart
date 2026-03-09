@@ -3,19 +3,18 @@
  * Copyright (c) 2020 Pseudorand Development. All rights reserved.
  */
 
-import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
 
-final String auditTableName = "audit_log";
-final String columnAuditId = "_id";
-final String columnAuditType = "type";
-final String columnAuditMessage = "message";
-final String columnAuditDevicesReferenceId = "device_ids";
-final String columnAuditSecretsReferenceId = "secret_ids";
-final String columnAuditSyncsReferenceId = "sync_ids";
-final String columnAuditVaultsReferenceId = "vault_ids";
-final String columnAuditDate = "date";
+const String auditTableName = "audit_log";
+const String columnAuditId = "_id";
+const String columnAuditType = "type";
+const String columnAuditMessage = "message";
+const String columnAuditDevicesReferenceId = "device_ids";
+const String columnAuditSecretsReferenceId = "secret_ids";
+const String columnAuditSyncsReferenceId = "sync_ids";
+const String columnAuditVaultsReferenceId = "vault_ids";
+const String columnAuditDate = "date";
 
 class AuditType {
   static const AuditType Unknown = AuditType._("Unknown");
@@ -90,10 +89,11 @@ class AuditType {
   ];
 
   static dynamic fromString(String auditType) {
-    if (_values.contains(auditType))
+    if (_values.contains(auditType)) {
       return AuditType._(auditType);
-    else
+    } else {
       return AuditType.Unknown;
+    }
   }
 
   @override
@@ -103,27 +103,27 @@ class AuditType {
 }
 
 class AuditRecord {
-  String id;
-  AuditType type;
-  String message;
-  Set<String> devicesReferenceId;
-  Set<String> secretsReferenceId;
-  Set<String> syncsReferenceId;
-  Set<String> vaultsReferenceId;
-  DateTime date;
+  late String id;
+  late AuditType type;
+  late String message;
+  late Set<String> devicesReferenceId;
+  late Set<String> secretsReferenceId;
+  late Set<String> syncsReferenceId;
+  late Set<String> vaultsReferenceId;
+  late DateTime date;
 
   AuditRecord({
-    String id,
-    @required AuditType type,
-    @required String message,
-    Set<String> devicesReferenceId,
-    Set<String> secretsReferenceId,
-    Set<String> syncsReferenceId,
-    Set<String> vaultsReferenceId,
-    DateTime date,
+    String? id,
+    required AuditType type,
+    required String message,
+    Set<String>? devicesReferenceId,
+    Set<String>? secretsReferenceId,
+    Set<String>? syncsReferenceId,
+    Set<String>? vaultsReferenceId,
+    DateTime? date,
   }) {
     if (id == null || id.trim() == '' || !isUUID(id, 4)) {
-      id = (new Uuid()).v4();
+      id = (const Uuid()).v4();
     }
     DateTime now = DateTime.now().toUtc();
 
@@ -138,25 +138,25 @@ class AuditRecord {
   }
 
   Map<String, dynamic> toMap() => {
-        columnAuditId: this.id,
-        columnAuditType: this.type.toString(),
-        columnAuditMessage: this.message,
-        columnAuditDate: this.date.toIso8601String(),
-        columnAuditDevicesReferenceId: this.devicesReferenceId.join(','),
-        columnAuditSecretsReferenceId: this.secretsReferenceId.join(','),
-        columnAuditSyncsReferenceId: this.syncsReferenceId.join(','),
-        columnAuditVaultsReferenceId: this.vaultsReferenceId.join(','),
+        columnAuditId: id,
+        columnAuditType: type.toString(),
+        columnAuditMessage: message,
+        columnAuditDate: date.toIso8601String(),
+        columnAuditDevicesReferenceId: devicesReferenceId.join(','),
+        columnAuditSecretsReferenceId: secretsReferenceId.join(','),
+        columnAuditSyncsReferenceId: syncsReferenceId.join(','),
+        columnAuditVaultsReferenceId: vaultsReferenceId.join(','),
       };
 
   Map<String, dynamic> toJson() => {
-        columnAuditId: this.id,
-        columnAuditType: this.type.toString(),
-        columnAuditMessage: this.message,
-        columnAuditDate: this.date.toIso8601String(),
-        columnAuditDevicesReferenceId: this.devicesReferenceId,
-        columnAuditSecretsReferenceId: this.secretsReferenceId,
-        columnAuditSyncsReferenceId: this.syncsReferenceId,
-        columnAuditVaultsReferenceId: this.vaultsReferenceId,
+        columnAuditId: id,
+        columnAuditType: type.toString(),
+        columnAuditMessage: message,
+        columnAuditDate: date.toIso8601String(),
+        columnAuditDevicesReferenceId: devicesReferenceId,
+        columnAuditSecretsReferenceId: secretsReferenceId,
+        columnAuditSyncsReferenceId: syncsReferenceId,
+        columnAuditVaultsReferenceId: vaultsReferenceId,
       };
 
   AuditRecord.fromMap(Map map) {

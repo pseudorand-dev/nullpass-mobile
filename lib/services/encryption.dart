@@ -14,7 +14,7 @@ class Crypto {
 
   bool _hasKeyPair = false;
 
-  static final Crypto _singleton = new Crypto._internal();
+  static final Crypto _singleton = Crypto._internal();
   Crypto._internal();
 
   static Future<Crypto> instance = _init();
@@ -31,10 +31,8 @@ class Crypto {
     return _singleton;
   }
 
-  static bool isKeyPairValid(KeyPair kp) {
+  static bool isKeyPairValid(KeyPair? kp) {
     if (kp != null &&
-        kp.publicKey != null &&
-        kp.privateKey != null &&
         kp.publicKey.isNotEmpty &&
         kp.privateKey.isNotEmpty) {
       return true;
@@ -44,7 +42,7 @@ class Crypto {
   }
 }
 
-Future<KeyPair> _setupEncryptionKeyPair() async {
+Future<KeyPair?> _setupEncryptionKeyPair() async {
   try {
     var kp = await OpenPGP.generate(
         options: Options()

@@ -20,16 +20,15 @@ import 'package:qr_flutter/qr_flutter.dart' as qr;
 import 'package:uuid/uuid.dart';
 
 class QrCode extends StatefulWidget {
-  final Function fabPressFunction;
+  final void Function()? fabPressFunction;
   final Function(BuildContext) nextStep;
   final Function(Device) setDevice;
 
-  QrCode(
-      {Key key,
-      @required this.fabPressFunction,
-      @required this.nextStep,
-      @required this.setDevice})
-      : super(key: key);
+  const QrCode(
+      {super.key,
+      required this.fabPressFunction,
+      required this.nextStep,
+      required this.setDevice});
 
   @override
   _QrCodeState createState() => _QrCodeState();
@@ -37,17 +36,17 @@ class QrCode extends StatefulWidget {
 
 class _QrCodeState extends State<QrCode> {
   final String _title = "NullPass Syncing";
-  Function _fabPressFunction;
-  Function(Device) _setDevice;
-  Function(BuildContext) _nextStep;
+  late void Function()? _fabPressFunction;
+  late Function(Device) _setDevice;
+  late Function(BuildContext) _nextStep;
 
-  QrData _qrData;
-  String _responseNonce;
-  KeyPair _encryptionKeyPair;
-  String _scannerDeviceId;
-  String _scannerPubKey;
-  String _errorText = "";
-  BuildContext _context;
+  late QrData _qrData;
+  late String _responseNonce;
+  KeyPair? _encryptionKeyPair;
+  late String _scannerDeviceId;
+  late String _scannerPubKey;
+  final String _errorText = "";
+  late BuildContext _context;
 
   String _debugLog = "DEBUG LOG";
 
@@ -60,36 +59,39 @@ class _QrCodeState extends State<QrCode> {
     });
     try {
       var decryptedMsg = await OpenPGP.decryptSymmetric(
-          param as String, _qrData.generatedNonce);
+          param as String, _qrData.generatedNonce ?? '');
       var syncRegMap = jsonDecode(decryptedMsg);
       var scannerInfo = SyncRegistration.fromMap(syncRegMap);
 
       if (_qrData.generatedNonce == scannerInfo.receivedNonce) {
         setState(() {
-          _scannerPubKey = scannerInfo.pgpPubKey;
+          _scannerPubKey = scannerInfo.pgpPubKey ?? '';
         });
 
-        if (_encryptionKeyPair == null) {
-          _encryptionKeyPair = await NullPassDB.instance.getEncryptionKeyPair();
-        }
+        _encryptionKeyPair ??= await NullPassDB.instance.getEncryptionKeyPair();
+        if (_encryptionKeyPair == null) return;
 
         var sd = SyncRegistration(
           deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
-          pgpPubKey: _encryptionKeyPair.publicKey,
+          pgpPubKey: _encryptionKeyPair!.publicKey,
           generatedNonce: _responseNonce,
           receivedNonce: scannerInfo.generatedNonce,
         );
 
         var encryptedMsg = await OpenPGP.encrypt(sd.toString(), _scannerPubKey);
         var tmpNote = np.Notification(np.NotificationType.SyncInitStepTwo,
-            data: encryptedMsg);
+            data: encryptedMsg,
+            parts: 1,
+            position: 1,
+            deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey) ?? '',
+            notificationID: const Uuid().v4());
         await notify.sendMessageToAnotherDevice(
-            deviceIDs: <String>[scannerInfo.deviceId], message: tmpNote);
+            deviceIDs: <String>[scannerInfo.deviceId ?? ''], message: tmpNote);
 
         Log.debug("sending: $encryptedMsg");
 
         setState(() {
-          _scannerDeviceId = scannerInfo.deviceId;
+          _scannerDeviceId = scannerInfo.deviceId ?? '';
           _debugLog = "$_debugLog\nsent response";
         });
       }
@@ -109,7 +111,7 @@ class _QrCodeState extends State<QrCode> {
 
     try {
       var decryptedMsg = await OpenPGP.decrypt(
-          param as String, _encryptionKeyPair.privateKey, "");
+          param as String, _encryptionKeyPair!.privateKey, "");
       var syncRegMap = jsonDecode(decryptedMsg);
       var scannerInfo = SyncRegistration.fromMap(syncRegMap);
 
@@ -123,9 +125,13 @@ class _QrCodeState extends State<QrCode> {
 
         Log.debug(encryptedMsg);
         var tmpNote = np.Notification(np.NotificationType.SyncInitStepFour,
-            data: encryptedMsg);
+            data: encryptedMsg,
+            parts: 1,
+            position: 1,
+            deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey) ?? '',
+            notificationID: const Uuid().v4());
         notify.sendMessageToAnotherDevice(
-            deviceIDs: <String>[scannerInfo.deviceId], message: tmpNote);
+            deviceIDs: <String>[scannerInfo.deviceId ?? ''], message: tmpNote);
 
         Log.debug("success");
         setState(() {
@@ -135,7 +141,7 @@ class _QrCodeState extends State<QrCode> {
         // TODO: make sure this sets and resets handlers properly as folks move through pages
         notify.setDefaultNotificationHandlers();
 
-        _setDevice(new Device(
+        _setDevice(Device(
             deviceID: _scannerDeviceId, encryptionKey: _scannerPubKey));
         _nextStep(_context);
       }
@@ -148,12 +154,12 @@ class _QrCodeState extends State<QrCode> {
   void initState() {
     super.initState();
     Log.debug("in initState");
-    _fabPressFunction = this.widget.fabPressFunction;
-    _nextStep = this.widget.nextStep;
-    _setDevice = this.widget.setDevice;
+    _fabPressFunction = widget.fabPressFunction;
+    _nextStep = widget.nextStep;
+    _setDevice = widget.setDevice;
 
     _qrData = QrData.generate();
-    _responseNonce = Uuid().v4();
+    _responseNonce = const Uuid().v4();
 
     Log.debug(_qrData.toString());
     // Log.debug(base64.encode(utf8.encode(_qrData.toString())));
@@ -187,7 +193,7 @@ class _QrCodeState extends State<QrCode> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              qr.QrImage(
+              qr.QrImageView(
                 data: _qrData.toString(),
                 version: qr.QrVersions.auto,
                 errorCorrectionLevel: qr.QrErrorCorrectLevel.Q,
@@ -195,10 +201,10 @@ class _QrCodeState extends State<QrCode> {
                 size: 0.5152 * bodyHeight,
               ),
               // TODO: add valuable error details in release
-              if (_debugLog == null || _debugLog.isEmpty)
+              if (_debugLog.isEmpty)
                 Text(
                   _errorText,
-                  style: TextStyle(color: Colors.red),
+                  style: const TextStyle(color: Colors.red),
                 ),
             ],
           ),

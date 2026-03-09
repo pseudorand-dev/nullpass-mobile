@@ -5,9 +5,11 @@
 import 'package:flutter/material.dart';
 
 class DefaultThumbnnail extends StatelessWidget {
+  const DefaultThumbnnail({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return CircleAvatar(
+    return const CircleAvatar(
       backgroundColor: Colors.transparent,
       backgroundImage:
           AssetImage('assets/images/null_iosScaledDown_1500_Transparent.png'),
@@ -16,9 +18,11 @@ class DefaultThumbnnail extends StatelessWidget {
 }
 
 class FormDivider extends StatelessWidget {
+  const FormDivider({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Divider(
+    return const Divider(
       height: 0.5,
       thickness: 1,
       indent: 16,
@@ -28,9 +32,11 @@ class FormDivider extends StatelessWidget {
 }
 
 class CenterLoader extends StatelessWidget {
+  const CenterLoader({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: CircularProgressIndicator(),
     );
   }
@@ -39,7 +45,7 @@ class CenterLoader extends StatelessWidget {
 class CenterText extends StatelessWidget {
   final String _text;
 
-  CenterText(this._text);
+  const CenterText(this._text, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +53,7 @@ class CenterText extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text(this._text),
+          Text(_text),
         ],
       ),
     );
@@ -59,26 +65,26 @@ class NullPassFilterChip extends StatelessWidget {
   final bool isSelected;
   final Function(bool) onSelected;
 
-  NullPassFilterChip(
-      {@required this.label,
-      @required this.isSelected,
-      @required this.onSelected});
+  const NullPassFilterChip(
+      {super.key, required this.label,
+      required this.isSelected,
+      required this.onSelected});
 
   @override
   Widget build(BuildContext context) {
     return FilterChip(
       label: Text(
-        this.label,
-        style: TextStyle(color: this.isSelected ? Colors.white : Colors.black),
+        label,
+        style: TextStyle(color: isSelected ? Colors.white : Colors.black),
       ),
-      onSelected: this.onSelected,
-      selected: this.isSelected,
+      onSelected: onSelected,
+      selected: isSelected,
       backgroundColor: Colors.white,
       checkmarkColor: Colors.white,
       shape: StadiumBorder(
-          side: this.isSelected
-              ? BorderSide(color: Colors.white)
-              : BorderSide(color: Colors.blue)),
+          side: isSelected
+              ? const BorderSide(color: Colors.white)
+              : const BorderSide(color: Colors.blue)),
       selectedColor: Colors.blue,
     );
   }

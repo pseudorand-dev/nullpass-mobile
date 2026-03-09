@@ -23,33 +23,32 @@ class SecretEdit extends StatefulWidget {
   final Secret secret;
   final SecretEditType edit;
 
-  SecretEdit({Key key, @required this.secret, @required this.edit})
-      : super(key: key);
+  const SecretEdit({super.key, required this.secret, required this.edit});
 
   @override
   _CreateSecretState createState() => _CreateSecretState();
 }
 
 class _CreateSecretState extends State<SecretEdit> {
-  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-  Secret _secret;
-  TextEditingController _passwordController = new TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late Secret _secret;
+  final TextEditingController _passwordController = TextEditingController();
 
   bool _loading = true;
-  Map<String, Vault> vaults;
-  Map<String, bool> selectedVaults;
-  String defaultVault;
-  String newVaultName;
+  late Map<String, Vault> vaults;
+  late Map<String, bool> selectedVaults;
+  String? defaultVault;
+  String? newVaultName;
 
   // Submit sends the new password data to the db to be saved then pop's up one level
   void submit(BuildContext context) async {
     // First validate form.
-    if (this._formKey.currentState.validate()) {
-      _formKey.currentState.save(); // Save our form now.
+    if (_formKey.currentState?.validate() ?? false) {
+      _formKey.currentState?.save(); // Save our form now.
 
       // SAVE
-      if (_secret.uuid == null || !isUUID(_secret.uuid.trim(), '4')) {
-        _secret.uuid = (new Uuid()).v4();
+      if (!isUUID(_secret.uuid.trim(), '4')) {
+        _secret.uuid = (const Uuid()).v4();
       }
       _secret.vaults = [];
       selectedVaults.forEach((f, val) {
@@ -105,11 +104,7 @@ class _CreateSecretState extends State<SecretEdit> {
   @override
   void initState() {
     super.initState();
-    if (_secret == null) {
-      _secret = (widget.secret != null
-          ? widget.secret
-          : new Secret(nickname: '', website: '', username: '', message: ''));
-    }
+    _secret = widget.secret;
 
     vaults = <String, Vault>{};
     selectedVaults = <String, bool>{};
@@ -119,13 +114,13 @@ class _CreateSecretState extends State<SecretEdit> {
     defaultVault = sharedPrefs.getString(DefaultVaultIDPrefKey) ?? "";
 
     NullPassDB.instance.getAllInternallyManagedVaults().then((vaultsList) {
-      vaultsList.forEach((v) {
+      for (var v in vaultsList) {
         vaults[v.uid] = v;
         selectedVaults[v.uid] =
-            (((this._secret.vaults == null || this._secret.vaults.isEmpty) &&
+            (((_secret.vaults.isEmpty) &&
                     v.uid == defaultVault) ||
                 _secret.vaults.contains(v.uid));
-      });
+      }
       setState(() {
         _loading = false;
       });
@@ -142,13 +137,13 @@ class _CreateSecretState extends State<SecretEdit> {
   List<Widget> _generateChips(BuildContext context) {
     var widgetList = <Widget>[];
 
-    this.vaults.forEach((uid, vault) {
+    vaults.forEach((uid, vault) {
       widgetList.add(NullPassFilterChip(
         label: vault.nickname,
-        isSelected: this.selectedVaults[uid],
+        isSelected: selectedVaults[uid] ?? false,
         onSelected: (isSelected) {
           setState(() {
-            this.selectedVaults[uid] = isSelected;
+            selectedVaults[uid] = isSelected;
           });
         },
       ));
@@ -156,16 +151,16 @@ class _CreateSecretState extends State<SecretEdit> {
 
     // /*
     widgetList.add(ActionChip(
-      label: Text(
+      label: const Text(
         "Add",
         style: TextStyle(color: Colors.black),
       ),
-      avatar: CircleAvatar(
+      avatar: const CircleAvatar(
+        backgroundColor: Colors.blue,
         child: Text(
           "+",
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.blue,
       ),
       onPressed: () async {
         showDialog<void>(
@@ -174,28 +169,28 @@ class _CreateSecretState extends State<SecretEdit> {
           // barrierDismissible: false,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Add a new Vault'),
+              title: const Text('Add a new Vault'),
               content: TextFormField(
                 initialValue: "",
-                decoration: InputDecoration(labelText: 'New Vault'),
+                decoration: const InputDecoration(labelText: 'New Vault'),
                 onChanged: (input) {
                   newVaultName = input;
                 },
               ),
               actions: <Widget>[
-                FlatButton(
-                    child: Text('Cancel'),
+                TextButton(
+                    child: const Text('Cancel'),
                     onPressed: () {
                       newVaultName = "";
                       Navigator.of(context).pop();
                     }),
-                FlatButton(
-                    child: Text('Add'),
+                TextButton(
+                    child: const Text('Add'),
                     onPressed: () async {
                       // NullPassDB npDB = NullPassDB.instance;
                       // await npDB.deleteAllSecrets();
                       var v = Vault(
-                          nickname: newVaultName,
+                          nickname: newVaultName ?? '',
                           manager: VaultManager.Internal,
                           managerId: Vault.InternalSourceID,
                           isDefault: false);
@@ -209,8 +204,8 @@ class _CreateSecretState extends State<SecretEdit> {
                           date: DateTime.now().toUtc(),
                         ));
                         setState(() {
-                          this.vaults[v.uid] = v;
-                          this.selectedVaults[v.uid] = true;
+                          vaults[v.uid] = v;
+                          selectedVaults[v.uid] = true;
                         });
                       }
                       Navigator.of(context).pop();
@@ -221,7 +216,7 @@ class _CreateSecretState extends State<SecretEdit> {
         );
       },
       backgroundColor: Colors.white,
-      shape: StadiumBorder(side: BorderSide(color: Colors.blue)),
+      shape: const StadiumBorder(side: BorderSide(color: Colors.blue)),
     ));
     // */
 
@@ -234,51 +229,51 @@ class _CreateSecretState extends State<SecretEdit> {
       return Scaffold(
         appBar: AppBar(
           title: (widget.edit == SecretEditType.Create)
-              ? Text('New Secret')
+              ? const Text('New Secret')
               : ((widget.edit == SecretEditType.Update)
-                  ? Text('Update Secret')
-                  : Text('Secret Action')),
+                  ? const Text('Update Secret')
+                  : const Text('Secret Action')),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text(
+              child: const Text(
                 'Cancel',
                 style: TextStyle(color: Colors.white),
               ),
             ),
           ],
         ),
-        body: new Container(
-          child: CenterLoader(),
+        body: Container(
+          child: const CenterLoader(),
         ),
       );
     } else {
       return Scaffold(
         appBar: AppBar(
           title: (widget.edit == SecretEditType.Create)
-              ? Text('New Secret')
+              ? const Text('New Secret')
               : ((widget.edit == SecretEditType.Update)
-                  ? Text('Update Secret')
-                  : Text('Secret Action')),
+                  ? const Text('Update Secret')
+                  : const Text('Secret Action')),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text(
+              child: const Text(
                 'Cancel',
                 style: TextStyle(color: Colors.white),
               ),
             ),
           ],
         ),
-        body: new Container(
-          padding: new EdgeInsets.all(20.0),
-          child: new Form(
-            key: this._formKey,
-            child: new ListView(
+        body: Container(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: ListView(
               children: <Widget>[
                 ListTile(
                   title: TextFormField(
@@ -289,17 +284,17 @@ class _CreateSecretState extends State<SecretEdit> {
                       Log.debug('new nickname ${_secret.nickname}');
                     },
                     initialValue: _secret.nickname,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                         labelText: 'Nickname', border: InputBorder.none),
                     validator: (value) {
-                      if (value.isEmpty) {
+                      if (value?.isEmpty ?? true) {
                         return 'The Nickname field cannot be empty';
                       }
                       return null;
                     },
                   ),
                 ),
-                FormDivider(),
+                const FormDivider(),
                 ListTile(
                   title: TextFormField(
                     onChanged: (value) {
@@ -309,18 +304,18 @@ class _CreateSecretState extends State<SecretEdit> {
                       Log.debug('new website ${_secret.website}');
                     },
                     initialValue: _secret.website,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                         labelText: 'Website', border: InputBorder.none),
                     keyboardType: TextInputType.url,
                     validator: (value) {
-                      if (value.isEmpty) {
+                      if (value?.isEmpty ?? true) {
                         return 'The Website field cannot be empty';
                       }
                       return null;
                     },
                   ),
                 ),
-                FormDivider(),
+                const FormDivider(),
                 ListTile(
                   title: TextFormField(
                     onChanged: (value) {
@@ -330,20 +325,20 @@ class _CreateSecretState extends State<SecretEdit> {
                       Log.debug('new username ${_secret.username}');
                     },
                     initialValue: _secret.username,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Username',
                       border: InputBorder.none,
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value.isEmpty) {
+                      if (value?.isEmpty ?? true) {
                         return 'The Username field cannot be empty';
                       }
                       return null;
                     },
                   ),
                 ),
-                FormDivider(),
+                const FormDivider(),
                 PasswordInput(
                   onChange: (value) {
                     setState(() {
@@ -352,10 +347,10 @@ class _CreateSecretState extends State<SecretEdit> {
                     Log.debug('new password ${_secret.message}');
                   },
                   controller: _passwordController,
-                  initialValue: _secret.message,
+                  initialValue: _secret.message ?? '',
                   setPassword: setPassword,
                 ),
-                FormDivider(),
+                const FormDivider(),
                 ListTile(
                   title: TextFormField(
                     onChanged: (value) {
@@ -365,11 +360,11 @@ class _CreateSecretState extends State<SecretEdit> {
                       Log.debug('new otpCode ${_secret.otpCode}');
                     },
                     initialValue: _secret.otpCode?.toUpperCase(),
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                         labelText: 'One-Time Passcode',
                         border: InputBorder.none),
                     validator: (value) {
-                      if (value.trim().isNotEmpty &&
+                      if ((value?.trim().isNotEmpty ?? false) &&
                           _secret.getOnetimePasscode().trim() == '') {
                         return 'The One-Time Passcode provided is invalid';
                       }
@@ -377,7 +372,7 @@ class _CreateSecretState extends State<SecretEdit> {
                     },
                   ),
                 ),
-                FormDivider(),
+                const FormDivider(),
                 ListTile(
                   title: TextFormField(
                     onChanged: (value) {
@@ -387,14 +382,14 @@ class _CreateSecretState extends State<SecretEdit> {
                       Log.debug('new notes ${_secret.notes}');
                     },
                     initialValue: _secret.notes,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                         labelText: 'Notes', border: InputBorder.none),
                   ),
                 ),
-                FormDivider(),
+                const FormDivider(),
                 FormField(
                   builder: (fieldState) => ListTile(
-                    contentPadding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                    contentPadding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
                     title: Text(
                       "Vaults",
                       style: TextStyle(
@@ -403,9 +398,9 @@ class _CreateSecretState extends State<SecretEdit> {
                       ),
                     ),
                     subtitle: Wrap(
-                      children: _generateChips(context),
                       spacing: 5.0,
                       runSpacing: 5.0,
+                      children: _generateChips(context),
                     ),
                   ),
                   validator: (value) {
@@ -416,17 +411,19 @@ class _CreateSecretState extends State<SecretEdit> {
                     return null;
                   },
                 ),
-                FormDivider(),
+                const FormDivider(),
                 ListTile(
-                  title: RaisedButton(
+                  title: ElevatedButton(
                     onPressed: () {
                       submit(context);
                     },
-                    child: Text(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: const Text(
                       'Save',
                       style: TextStyle(color: Colors.white),
                     ),
-                    color: Colors.blue,
                   ),
                 ),
               ],
@@ -439,15 +436,15 @@ class _CreateSecretState extends State<SecretEdit> {
             final result = await showModalBottomSheet(
                 context: context,
                 builder: (BuildContext context) {
-                  return new SecretGenerate(inEditor: true);
+                  return const SecretGenerate(inEditor: true);
                 });
             if (result != null && result.toString().trim() != '') {
               _secret.message = result.toString();
-              setPassword(_secret.message);
+              setPassword(_secret.message ?? '');
             }
           },
           tooltip: 'Generate',
-          child: Icon(Icons.lock),
+          child: const Icon(Icons.lock),
         ),
       );
     }
@@ -460,13 +457,12 @@ class PasswordInput extends StatefulWidget {
   final TextEditingController controller;
   final Function setPassword;
 
-  PasswordInput(
-      {Key key,
-      @required this.onChange,
-      @required this.controller,
-      @required this.setPassword,
-      this.initialValue = ''})
-      : super(key: key);
+  const PasswordInput(
+      {super.key,
+      required this.onChange,
+      required this.controller,
+      required this.setPassword,
+      this.initialValue = ''});
 
   @override
   _PasswordInputState createState() => _PasswordInputState();
@@ -474,18 +470,16 @@ class PasswordInput extends StatefulWidget {
 
 class _PasswordInputState extends State<PasswordInput> {
   bool _visible = false;
-  String _initialValue;
-  TextEditingController _controller;
-  Function _setPassword;
+  String? _initialValue;
+  late TextEditingController _controller;
+  late Function _setPassword;
 
   @override
   void initState() {
     super.initState();
-    if (_initialValue == null) {
-      _initialValue = (widget.initialValue != null ? widget.initialValue : '');
-    }
+    _initialValue ??= (widget.initialValue ?? '');
     _controller = widget.controller;
-    _controller.text = _initialValue;
+    _controller.text = _initialValue ?? '';
     _setPassword = widget.setPassword;
   }
 
@@ -497,27 +491,27 @@ class _PasswordInputState extends State<PasswordInput> {
         onChanged: (value) {
           widget.onChange(value);
         },
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           labelText: 'Password',
           border: InputBorder.none,
         ),
         // initialValue: _initialValue,
         obscureText: !_visible,
         validator: (value) {
-          if (value.isEmpty) {
+          if (value?.isEmpty ?? true) {
             return 'The Password field cannot be empty';
           }
           return null;
         },
       ),
-      trailing: Container(
+      trailing: SizedBox(
         width: 100,
         child: Row(
           children: <Widget>[
             IconButton(
               icon: _visible
-                  ? new Icon(FontAwesomeIcons.solidEye, size: 20)
-                  : new Icon(FontAwesomeIcons.solidEyeSlash, size: 20),
+                  ? const Icon(FontAwesomeIcons.solidEye, size: 20)
+                  : const Icon(FontAwesomeIcons.solidEyeSlash, size: 20),
               onPressed: () {
                 // _initialValue = this.widget.
                 setState(() {
@@ -527,12 +521,12 @@ class _PasswordInputState extends State<PasswordInput> {
             ),
             IconButton(
               // icon: new Icon(FontAwesomeIcons.lock, size: 20),
-              icon: new Icon(Icons.lock),
+              icon: const Icon(Icons.lock),
               onPressed: () async {
                 final result = await showModalBottomSheet(
                     context: context,
                     builder: (BuildContext context) {
-                      return new SecretGenerate(inEditor: true);
+                      return const SecretGenerate(inEditor: true);
                     });
                 if (result != null && result.toString().trim() != '') {
                   _setPassword(result.toString());

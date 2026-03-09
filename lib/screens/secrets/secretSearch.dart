@@ -12,20 +12,23 @@ import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/widgets.dart';
 
 class SecretSearch extends StatefulWidget {
+  const SecretSearch({super.key});
+
+  @override
   _SecretSearchState createState() => _SecretSearchState();
 }
 
 class _SecretSearchState extends State<SecretSearch> {
-  TextEditingController _tec;
-  String _searchText;
-  List<Secret> _secrets;
+  TextEditingController? _tec;
+  String _searchText = '';
+  List<Secret> _secrets = [];
 
   @override
   void initState() {
     super.initState();
     _searchText = '';
     // _tec = new TextEditingController(text: _searchText);
-    _tec = new TextEditingController();
+    _tec = TextEditingController();
     _secrets = <Secret>[];
   }
 
@@ -34,7 +37,7 @@ class _SecretSearchState extends State<SecretSearch> {
     return Scaffold(
       appBar: AppBar(
         title: // _SearchField(_searchText, (value) {
-            _SearchField(_tec, (value) async {
+            _SearchField(_tec!, (value) async {
           setState(() {
             _searchText = value;
             // _tec.text = value;
@@ -42,7 +45,7 @@ class _SecretSearchState extends State<SecretSearch> {
           List<Secret> tempSecrets = <Secret>[];
           if ((value as String).trim().isNotEmpty) {
             NullPassDB npDB = NullPassDB.instance;
-            tempSecrets = await npDB.findSecret(value);
+            tempSecrets = await npDB.findSecret(value) ?? <Secret>[];
           }
           setState(() {
             _secrets = tempSecrets;
@@ -51,11 +54,11 @@ class _SecretSearchState extends State<SecretSearch> {
         }),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.clear),
+            icon: const Icon(Icons.clear),
             onPressed: () {
               Log.debug("clear");
               setState(() {
-                _tec.clear();
+                _tec?.clear();
                 // _searchText = '';
               });
             },
@@ -76,7 +79,7 @@ class _SecretSearchState extends State<SecretSearch> {
             List<Secret> tempSecrets = <Secret>[];
             if ((_searchText).trim().isNotEmpty) {
               NullPassDB npDB = NullPassDB.instance;
-              tempSecrets = await npDB.findSecret(_searchText);
+              tempSecrets = await npDB.findSecret(_searchText) ?? <Secret>[];
             }
             setState(() {
               _secrets = tempSecrets;
@@ -88,12 +91,12 @@ class _SecretSearchState extends State<SecretSearch> {
 }
 
 class _SearchField extends StatelessWidget {
-  final Function _onChanged;
+  final void Function(String) _onChanged;
   // String _searchText;
   final TextEditingController _tec;
 
-  // _SearchField(this._searchText, this._onChanged, {Key key}) : super(key: key);
-  _SearchField(this._tec, this._onChanged, {Key key}) : super(key: key);
+  // _SearchField(this._searchText, this._onChanged, {Key? key}) : super(key: key);
+  const _SearchField(this._tec, this._onChanged);
 
   @override
   Widget build(BuildContext context) {
@@ -103,38 +106,39 @@ class _SearchField extends StatelessWidget {
       // initialValue: _searchText,
       onChanged: _onChanged,
       autofocus: true,
-      decoration: InputDecoration(border: InputBorder.none),
+      decoration: const InputDecoration(border: InputBorder.none),
       cursorColor: Colors.white,
-      style: TextStyle(fontSize: 25, color: Colors.white),
+      style: const TextStyle(fontSize: 25, color: Colors.white),
     );
   }
 }
 
 class _SecretListWidget extends StatelessWidget {
   final List<Secret> items;
-  final Function reloadSecretList;
+  final void Function(String)? reloadSecretList;
 
-  _SecretListWidget(
-      {Key key, @required this.items, @required this.reloadSecretList})
-      : super(key: key);
+  const _SecretListWidget(
+      {required this.items, required this.reloadSecretList});
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: items != null ? items.length : 0,
+      itemCount: items.length,
       itemBuilder: (context, index) {
         return ListTile(
           leading: Thumbnail(items[index].thumbnailURI),
           title: Text(items[index].nickname),
           subtitle: Text(items[index].username),
-          trailing: Icon(Icons.arrow_forward_ios),
+          trailing: const Icon(Icons.arrow_forward_ios),
           onTap: () async {
             await Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => SecretView(secret: items[index])),
             );
-            await this.reloadSecretList('true');
+            if (reloadSecretList != null) {
+              reloadSecretList!('true');
+            }
           },
         );
       },
@@ -145,7 +149,7 @@ class _SecretListWidget extends StatelessWidget {
 class Thumbnail extends StatelessWidget {
   final String _imageUrl;
 
-  Thumbnail(this._imageUrl, {Key key}) : super(key: key);
+  const Thumbnail(this._imageUrl, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -156,10 +160,10 @@ class Thumbnail extends StatelessWidget {
         width: 40,
         height: 40,
         imageUrl: _imageUrl,
-        placeholder: (context, url) => DefaultThumbnnail(),
-        errorWidget: (context, url, error) => DefaultThumbnnail(),
-        fadeInDuration: Duration(),
-        fadeOutDuration: Duration(),
+        placeholder: (context, url) => const DefaultThumbnnail(),
+        errorWidget: (context, url, error) => const DefaultThumbnnail(),
+        fadeInDuration: const Duration(),
+        fadeOutDuration: const Duration(),
       ),
     );
   }

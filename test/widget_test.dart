@@ -13,13 +13,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:nullpass/main.dart';
 import 'package:nullpass/screens/app.dart';
 
 void main() {
   testWidgets('Count NullPass smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(NullPassApp());
+    await tester.pumpWidget(const NullPassApp());
 
     // Verify that our counter starts at 0.
     expect(find.text('NullPass'), findsOneWidget);

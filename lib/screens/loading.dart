@@ -10,7 +10,7 @@ class LoadingPage extends StatelessWidget {
   final String title;
   final NullPassRoute route;
 
-  LoadingPage({this.title, this.route});
+  const LoadingPage({super.key, required this.title, required this.route});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class LoadingPage extends StatelessWidget {
         ),
         drawer: AppDrawer(currentPage: route, reloadSecretList: (dynamic) {}),
         body: Container(
-          child: CenterLoader(),
+          child: const CenterLoader(),
         ),
       ),
     );

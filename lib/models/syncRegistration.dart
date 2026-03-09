@@ -15,19 +15,19 @@ const String _GENERATEDNONCE_KEY = "generated_nonce";
 const String _RECIEVEDNONCE_KEY = "recevied_nonce";
 
 class SyncRegistration {
-  String deviceId;
-  String pgpPubKey;
-  String generatedNonce;
-  String receivedNonce;
+  String? deviceId;
+  String? pgpPubKey;
+  String? generatedNonce;
+  String? receivedNonce;
   // bool received;
 
   SyncRegistration(
       {this.deviceId, this.pgpPubKey, this.generatedNonce, this.receivedNonce});
 
-  static Future<SyncRegistration> generate({String receivedNonce}) async {
+  static Future<SyncRegistration> generate({String? receivedNonce}) async {
     var dID = sharedPrefs.getString(DeviceNotificationIdPrefKey);
     var pubKey = await NullPassDB.instance.getEncryptionPublicKey();
-    var genNonce = Uuid().v4();
+    var genNonce = const Uuid().v4();
     return SyncRegistration(
         deviceId: dID,
         pgpPubKey: pubKey,
@@ -39,16 +39,16 @@ class SyncRegistration {
   String toString() {
     var tmpStr = "{\"$_DEVICEID_KEY\":\"$deviceId\"";
 
-    if (pgpPubKey != null && pgpPubKey.isNotEmpty) {
-      var tmpPGP = pgpPubKey.replaceAll("\n", "\\n");
+    if (pgpPubKey != null && pgpPubKey!.isNotEmpty) {
+      var tmpPGP = pgpPubKey!.replaceAll("\n", "\\n");
       tmpStr = "$tmpStr,\"$_PUBKEY_KEY\":\"$tmpPGP\"";
     }
 
-    if (generatedNonce != null && generatedNonce.isNotEmpty) {
+    if (generatedNonce != null && generatedNonce!.isNotEmpty) {
       tmpStr = "$tmpStr,\"$_GENERATEDNONCE_KEY\":\"$generatedNonce\"";
     }
 
-    if (receivedNonce != null && receivedNonce.isNotEmpty) {
+    if (receivedNonce != null && receivedNonce!.isNotEmpty) {
       tmpStr = "$tmpStr,\"$_RECIEVEDNONCE_KEY\":\"$receivedNonce\"";
     }
 
@@ -93,17 +93,19 @@ class SyncRegistration {
   }
 
   String toJsonString() {
-    return this.toJson().toString();
+    return toJson().toString();
   }
 
   bool isValid() {
     if (deviceId != null &&
-        deviceId.isNotEmpty &&
+        deviceId!.isNotEmpty &&
         // pgpPubKey != null &&
         // pgpPubKey.isNotEmpty &&
         receivedNonce != null &&
         isUUID(receivedNonce) &&
-        (generatedNonce == null || isUUID(generatedNonce))) return true;
+        (generatedNonce == null || isUUID(generatedNonce))) {
+      return true;
+    }
     return false;
   }
 }

@@ -14,28 +14,29 @@ import 'package:nullpass/setup.dart';
 
 class SecretGenerate extends StatefulWidget {
   final bool inEditor;
-  SecretGenerate({Key key, this.inEditor = false}) : super(key: key);
+  const SecretGenerate({super.key, this.inEditor = false});
+  @override
   _SecretGenerateState createState() => _SecretGenerateState();
 }
 
 class _SecretGenerateState extends State<SecretGenerate> {
   String _secretText = 'randomlylongtextfieldthatisnotactuallychangingyet';
-  int _secretLength;
-  bool _alphaCharacters;
-  bool _numericCharacters;
-  bool _symbolCharacters;
+  late int _secretLength;
+  late bool _alphaCharacters;
+  late bool _numericCharacters;
+  late bool _symbolCharacters;
 
   @override
   void initState() {
     super.initState();
 
-    bool spSet = sharedPrefs.getBool(SharedPrefSetupKey);
-    if (spSet == null || !spSet) setupSharedPreferences();
+    bool spSet = sharedPrefs.getBool(SharedPrefSetupKey) ?? false;
+    if (!spSet) setupSharedPreferences(encryptionKeyCallback: () {});
 
-    _secretLength = sharedPrefs.getInt(SecretLengthPrefKey);
-    _alphaCharacters = sharedPrefs.getBool(AlphaCharactersPrefKey);
-    _numericCharacters = sharedPrefs.getBool(NumericCharactersPrefKey);
-    _symbolCharacters = sharedPrefs.getBool(SymbolCharactersPrefKey);
+    _secretLength = sharedPrefs.getInt(SecretLengthPrefKey) ?? 32;
+    _alphaCharacters = sharedPrefs.getBool(AlphaCharactersPrefKey) ?? true;
+    _numericCharacters = sharedPrefs.getBool(NumericCharactersPrefKey) ?? true;
+    _symbolCharacters = sharedPrefs.getBool(SymbolCharactersPrefKey) ?? true;
   }
 
   String generateSecretMessage([int length = 32]) {
@@ -43,7 +44,7 @@ class _SecretGenerateState extends State<SecretGenerate> {
       return 'At least one character set must be selected';
     }
 
-    Set<int> invalidCodes = Set<int>();
+    Set<int> invalidCodes = <int>{};
 
     if (!_alphaCharacters) {
       // TODO: just do an AddAll on a static charCode set
@@ -88,13 +89,13 @@ class _SecretGenerateState extends State<SecretGenerate> {
       }
     }
 
-    final Random _random = Random.secure();
+    final Random random = Random.secure();
     List<int> charCodes = <int>[];
     int attempts = 0;
     int pos = 0;
     while (pos < length) {
       attempts = 1;
-      int rInt = (_random.nextInt(93)) + 33;
+      int rInt = (random.nextInt(93)) + 33;
       if (!invalidCodes.contains(rInt)) {
         charCodes.add(rInt);
         pos++;
@@ -122,14 +123,14 @@ class _SecretGenerateState extends State<SecretGenerate> {
               maxLines: 1,
             ),
             trailing: IconButton(
-                icon: Icon(Icons.content_copy),
+                icon: const Icon(Icons.content_copy),
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: _secretText));
                 }),
           ),
           ListTile(
-            title: Text('Password Length'),
-            trailing: Container(
+            title: const Text('Password Length'),
+            trailing: SizedBox(
               width: 50,
               child: TextFormField(
                   textAlign: TextAlign.end,
@@ -148,44 +149,44 @@ class _SecretGenerateState extends State<SecretGenerate> {
                       _secretText = generateSecretMessage(tempVal);
                     });
                   },
-                  decoration: InputDecoration(border: InputBorder.none)),
+                  decoration: const InputDecoration(border: InputBorder.none)),
             ),
           ),
           ListTile(
-            title: Text('Alpha Characters'),
+            title: const Text('Alpha Characters'),
             trailing: Switch(
                 value: _alphaCharacters,
                 onChanged: (value) {
                   setState(() {
-                    this._alphaCharacters = value;
+                    _alphaCharacters = value;
                     _secretText = generateSecretMessage(_secretLength);
                   });
                 }),
           ),
           ListTile(
-            title: Text('Numeric Characters'),
+            title: const Text('Numeric Characters'),
             trailing: Switch(
                 value: _numericCharacters,
                 onChanged: (value) {
                   setState(() {
-                    this._numericCharacters = value;
+                    _numericCharacters = value;
                     _secretText = generateSecretMessage(_secretLength);
                   });
                 }),
           ),
           ListTile(
-            title: Text('Symbol Characters'),
+            title: const Text('Symbol Characters'),
             trailing: Switch(
                 value: _symbolCharacters,
                 onChanged: (value) {
                   setState(() {
-                    this._symbolCharacters = value;
+                    _symbolCharacters = value;
                     _secretText = generateSecretMessage(_secretLength);
                   });
                 }),
           ),
           ListTile(
-            title: RaisedButton(
+            title: ElevatedButton(
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: _secretText));
                 Navigator.pop(context, _secretText);
@@ -196,7 +197,7 @@ class _SecretGenerateState extends State<SecretGenerate> {
                           // builder: (context) => SecretEdit(edit: SecretEditType.Create, // SecretNew(
                           builder: (context) => SecretEdit(
                               edit: SecretEditType.Create, // SecretNew(
-                              secret: new Secret(
+                              secret: Secret(
                                 nickname: '',
                                 website: '',
                                 username: '',
@@ -204,11 +205,13 @@ class _SecretGenerateState extends State<SecretGenerate> {
                               ))));
                 }
               },
-              child: Text(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+              ),
+              child: const Text(
                 'Use',
                 style: TextStyle(color: Colors.white),
               ),
-              color: Colors.blue,
             ),
           ),
         ],

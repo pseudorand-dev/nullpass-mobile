@@ -11,35 +11,38 @@ import 'package:local_auth/local_auth.dart';
 import 'package:nullpass/screens/app.dart';
 import 'package:nullpass/screens/lockScreen.dart';
 import 'package:nullpass/services/logging.dart';
-import 'package:secure_screen_switcher/secure_screen_switcher.dart';
+// TODO: Re-enable after secure_screen_switcher is updated for AGP 8.1+
+// import 'package:secure_screen_switcher/secure_screen_switcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'common.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SecureScreenSwitcher.secureApp();
+  // TODO: Re-enable after secure_screen_switcher is updated for AGP 8.1+
+  // await SecureScreenSwitcher.secureApp();
 
   assert((isDebug = true) || true);
 
-  canCheckBiometrics = await LocalAuthentication().canCheckBiometrics;
+  final localAuth = LocalAuthentication();
+  canCheckBiometrics = await localAuth.canCheckBiometrics || await localAuth.isDeviceSupported();
 
   // await getAppPreLoadSharedPreferences();
-  var sp = await SharedPreferences.getInstance();
-  bool showLoginScreen = ((sp.containsKey(AuthOnLoadPrefKey))
-      ? sp.getBool(AuthOnLoadPrefKey)
+  sharedPrefs = await SharedPreferences.getInstance();
+  bool showLoginScreen = ((sharedPrefs.containsKey(AuthOnLoadPrefKey))
+      ? sharedPrefs.getBool(AuthOnLoadPrefKey) ?? false
       : false);
   Duration loginTimeout = Duration(
-    seconds: ((sp.containsKey(AuthTimeoutSecondsPrefKey))
-        ? sp.getDouble(AuthTimeoutSecondsPrefKey).round()
+    seconds: ((sharedPrefs.containsKey(AuthTimeoutSecondsPrefKey))
+        ? sharedPrefs.getDouble(AuthTimeoutSecondsPrefKey)?.round() ?? 300
         : 300),
   );
 
   await runZonedGuarded(
     () async => runApp(AppLock(
-      builder: (args) => NullPassApp(),
+      builder: (args) => const NullPassApp(),
       // lockScreen: _TmpLockScreen(),
-      lockScreen: LockScreen(),
+      lockScreen: const LockScreen(),
       enabled: canCheckBiometrics && showLoginScreen,
       backgroundLockLatency: loginTimeout,
     )),
@@ -62,7 +65,10 @@ class _TmpLockScreen extends StatefulWidget {
 
 class _TmpLockScreenState extends State<_TmpLockScreen> {
   void unlock() {
-    AppLock.of(context).didUnlock();
+    final appLock = AppLock.of(context);
+    if (appLock != null) {
+      appLock.didUnlock();
+    }
   }
 
   @override
@@ -79,8 +85,8 @@ class _TmpLockScreenState extends State<_TmpLockScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                RaisedButton(
-                  child: Text("Login"),
+                ElevatedButton(
+                  child: const Text("Login"),
                   onPressed: () async {
                     unlock();
                   },

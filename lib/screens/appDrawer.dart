@@ -35,9 +35,8 @@ class AppDrawer extends StatelessWidget {
   final NullPassRoute currentPage;
   final Function reloadSecretList;
 
-  AppDrawer(
-      {Key key, @required this.currentPage, @required this.reloadSecretList})
-      : super(key: key);
+  const AppDrawer(
+      {super.key, required this.currentPage, required this.reloadSecretList});
 
   @override
   Widget build(BuildContext context) {
@@ -58,46 +57,46 @@ class AppDrawer extends StatelessWidget {
               decoration: BoxDecoration(color: Colors.blue),
             ),
             */
-            UserAccountsDrawerHeader(
+            const UserAccountsDrawerHeader(
                 accountName: Text('NullPass Test'),
                 accountEmail: Text('nullpass-dev@gmail.com')),
             ListTile(
               selected: (currentPage == NullPassRoute.ViewSecretsList),
-              leading: Icon(Icons.dehaze),
+              leading: const Icon(Icons.dehaze),
               title: Text('View Secrets',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.ViewSecretsList)
-                          ? ThemeData.light().accentColor
+                          ? ThemeData.light().colorScheme.secondary
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
                 if (currentPage != NullPassRoute.ViewSecretsList) {
                   Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => NullPassApp()));
+                      MaterialPageRoute(builder: (context) => const NullPassApp()));
                 }
               },
             ),
             ListTile(
               selected: (currentPage == NullPassRoute.FindSecret),
-              leading: Icon(Icons.search),
+              leading: const Icon(Icons.search),
               title: Text('Find Secrets',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.FindSecret)
-                          ? ThemeData.light().accentColor
+                          ? ThemeData.light().colorScheme.secondary
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SecretSearch()));
+                    MaterialPageRoute(builder: (context) => const SecretSearch()));
               },
             ),
             ListTile(
               selected: (currentPage == NullPassRoute.NewSecret),
-              leading: Icon(Icons.edit),
+              leading: const Icon(Icons.edit),
               title: Text('New Secret',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.NewSecret)
-                          ? ThemeData.light().accentColor
+                          ? ThemeData.light().colorScheme.secondary
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () async {
                 Navigator.pop(context);
@@ -108,18 +107,18 @@ class AppDrawer extends StatelessWidget {
                           // builder: (context) => SecretEdit(edit: SecretEditType.Create, // SecretNew(
                           builder: (context) => SecretEdit(
                               edit: SecretEditType.Create,
-                              secret: new Secret(
+                              secret: Secret(
                                   nickname: '',
                                   website: '',
                                   username: '',
                                   message: ''))));
-                  this.reloadSecretList('true');
+                  reloadSecretList('true');
                 }
               },
             ),
             ListTile(
               selected: (currentPage == NullPassRoute.GenerateSecret),
-              leading: Icon(Icons.lock),
+              leading: const Icon(Icons.lock),
               title: Text('Generate Secret',
                   style: TextStyle(
                       color: ThemeData.light().unselectedWidgetColor)),
@@ -128,7 +127,7 @@ class AppDrawer extends StatelessWidget {
                 await showModalBottomSheet(
                     context: context,
                     builder: (BuildContext context) {
-                      return new SecretGenerate(inEditor: false);
+                      return const SecretGenerate(inEditor: false);
                     });
                 /*
                 if (result != null && result.toString().trim() != '') {
@@ -154,27 +153,27 @@ class AppDrawer extends StatelessWidget {
               title: Text('Manage Vault',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.ManageVault)
-                          ? ThemeData.light().accentColor
+                          ? ThemeData.light().colorScheme.secondary
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () async {
                 Navigator.pop(context);
                 if (currentPage != NullPassRoute.ManageVault) {
                   await Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ManageVault()),
+                    MaterialPageRoute(builder: (context) => const ManageVault()),
                   );
-                  this.reloadSecretList('true');
+                  reloadSecretList('true');
                 }
               },
             ),
-            FormDivider(),
+            const FormDivider(),
             ListTile(
               selected: (currentPage == NullPassRoute.QrCode),
-              leading: new Icon(MdiIcons.qrcodeEdit),
+              leading: Icon(MdiIcons.qrcodeEdit),
               title: Text('Sync To This Device',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.QrCode)
-                          ? ThemeData.light().accentColor
+                          ? ThemeData.light().colorScheme.secondary
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
@@ -183,17 +182,17 @@ class AppDrawer extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              SyncDevices(syncState: SyncState.qrcode)));
+                              const SyncDevices(syncState: SyncState.qrcode)));
                 }
               },
             ),
             ListTile(
               selected: (currentPage == NullPassRoute.QrScanner),
-              leading: new Icon(MdiIcons.qrcodeScan),
+              leading: Icon(MdiIcons.qrcodeScan),
               title: Text('Sync To New Device',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.QrScanner)
-                          ? ThemeData.light().accentColor
+                          ? ThemeData.light().colorScheme.secondary
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
@@ -202,68 +201,68 @@ class AppDrawer extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              SyncDevices(syncState: SyncState.scan)));
+                              const SyncDevices(syncState: SyncState.scan)));
                 }
               },
             ),
             ListTile(
               selected: (currentPage == NullPassRoute.ManageDevices),
-              leading: Icon(Icons.devices_other),
+              leading: const Icon(Icons.devices_other),
               title: Text('Manage Devices',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.ManageDevices)
-                          ? ThemeData.light().accentColor
+                          ? ThemeData.light().colorScheme.secondary
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
                 if (currentPage != NullPassRoute.ManageDevices) {
                   Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => ManageDevices()));
+                      MaterialPageRoute(builder: (context) => const ManageDevices()));
                 }
               },
             ),
-            FormDivider(),
+            const FormDivider(),
             ListTile(
               selected: (currentPage == NullPassRoute.Settings),
-              leading: Icon(Icons.settings),
+              leading: const Icon(Icons.settings),
               title: Text('Settings',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.Settings)
-                          ? ThemeData.light().accentColor
+                          ? ThemeData.light().colorScheme.secondary
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
                 if (currentPage != NullPassRoute.Settings) {
                   Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => Settings()));
+                      MaterialPageRoute(builder: (context) => const Settings()));
                   // Navigator.push(context, MaterialPageRoute(builder: (context) => Settings()));
                 }
               },
             ),
             ListTile(
               selected: (currentPage == NullPassRoute.AuditLog),
-              leading: Icon(Icons.dehaze),
+              leading: const Icon(Icons.dehaze),
               title: Text('Audit Log',
                   style: TextStyle(
                       color: (currentPage == NullPassRoute.AuditLog)
-                          ? ThemeData.light().accentColor
+                          ? ThemeData.light().colorScheme.secondary
                           : ThemeData.light().unselectedWidgetColor)),
               onTap: () {
                 Navigator.pop(context);
                 if (currentPage != NullPassRoute.AuditLog) {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => AuditLog()));
+                      MaterialPageRoute(builder: (context) => const AuditLog()));
                 }
               },
             ),
             ListTile(
               selected: (currentPage == NullPassRoute.HelpAndFeedback),
-              leading: Icon(Icons.feedback),
+              leading: const Icon(Icons.feedback),
               title: Text(
                 'Help & Feedback',
                 style: TextStyle(
                     color: (currentPage == NullPassRoute.HelpAndFeedback)
-                        ? ThemeData.light().accentColor
+                        ? ThemeData.light().colorScheme.secondary
                         : ThemeData.light().unselectedWidgetColor),
               ),
               onTap: () {
@@ -275,7 +274,7 @@ class AppDrawer extends StatelessWidget {
             ),
             ListTile(
               selected: false,
-              leading: Icon(Icons.info),
+              leading: const Icon(Icons.info),
               title: Text('About NullPass',
                   style: TextStyle(
                       color: ThemeData.light().unselectedWidgetColor)),
@@ -286,7 +285,7 @@ class AppDrawer extends StatelessWidget {
                     applicationName: 'NullPass',
                     applicationVersion: '0.1.0',
                     applicationLegalese: 'Pseudorand Development',
-                    applicationIcon: new Container(
+                    applicationIcon: SizedBox(
                         height: 50.0,
                         width: 50.0,
                         child: Image.asset(

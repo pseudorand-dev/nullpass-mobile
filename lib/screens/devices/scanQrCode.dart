@@ -25,16 +25,15 @@ const String _invalidDataType = "invalid data type";
 const String _noDeviceID = "no_device_id";
 
 class QrScanner extends StatefulWidget {
-  final Function fabPressFunction;
+  final void Function()? fabPressFunction;
   final Function(BuildContext) nextStep;
   final Function(Device) setDevice;
 
-  QrScanner(
-      {Key key,
-      @required this.fabPressFunction,
-      @required this.nextStep,
-      @required this.setDevice})
-      : super(key: key);
+  const QrScanner(
+      {super.key,
+      required this.fabPressFunction,
+      required this.nextStep,
+      required this.setDevice});
 
   @override
   _QrScannerState createState() => _QrScannerState();
@@ -42,44 +41,43 @@ class QrScanner extends StatefulWidget {
 
 class _QrScannerState extends State<QrScanner> {
   final String _title = "NullPass Syncing";
-  Function _fabPressFunction;
-  Function(BuildContext) _nextStep;
-  Function(Device) _setDevice;
+  late void Function()? _fabPressFunction;
+  late Function(BuildContext) _nextStep;
+  late Function(Device) _setDevice;
   String _errorText = "";
-  BuildContext _context;
+  late BuildContext _context;
 
-  String _responseNonce;
-  KeyPair _encryptionKeyPair;
+  late String _responseNonce;
+  KeyPair? _encryptionKeyPair;
 
   String _barcodeData = "";
   bool _initiated = false;
-  QrData _scannedQrData;
-  String _recipient;
-  String _scannedPublicKey;
+  late QrData _scannedQrData;
+  late String _recipient;
+  late String _scannedPublicKey;
 
   Future<void> _initiateHandshake() async {
     if (_scannedQrData.isValid()) {
       Log.debug("sending initiation message");
 
       setState(() {
-        _recipient = _scannedQrData.deviceId;
+        _recipient = _scannedQrData.deviceId ?? '';
       });
 
-      if (_encryptionKeyPair == null) {
-        _encryptionKeyPair = await NullPassDB.instance.getEncryptionKeyPair();
-      }
+      _encryptionKeyPair ??= await NullPassDB.instance.getEncryptionKeyPair();
+      if (_encryptionKeyPair == null) return;
 
       var receivedNonce = _scannedQrData.generatedNonce;
 
       var sd = SyncRegistration(
         deviceId: sharedPrefs.getString(DeviceNotificationIdPrefKey),
-        pgpPubKey: _encryptionKeyPair.publicKey,
+        pgpPubKey: _encryptionKeyPair!.publicKey,
         generatedNonce: _responseNonce,
         receivedNonce: receivedNonce,
       );
 
       var encryptedMsg = await OpenPGP.encryptSymmetric(
-          sd.toString(), receivedNonce,
+          sd.toString(), receivedNonce ?? '',
           options: KeyOptions()..cipher = Cipher.AES256);
 
       // var tmpMap = await sd.toEncryptedMap(_scannedQrData.pgpPubKey);
@@ -98,7 +96,11 @@ class _QrScannerState extends State<QrScanner> {
       Log.debug(encryptedMsg.length);
 
       var tmpNotification = np.Notification(np.NotificationType.SyncInitStepOne,
-          data: encryptedMsg);
+          data: encryptedMsg,
+          parts: 1,
+          position: 1,
+          deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey) ?? '',
+          notificationID: const Uuid().v4());
 
       await notify.sendMessageToAnotherDevice(
           deviceIDs: <String>[_recipient], message: tmpNotification);
@@ -110,14 +112,14 @@ class _QrScannerState extends State<QrScanner> {
     Log.debug("recieved: $param");
     try {
       var decryptedMsg = await OpenPGP.decrypt(
-          param as String, _encryptionKeyPair.privateKey, "");
+          param as String, _encryptionKeyPair!.privateKey, "");
       var syncRegMap = jsonDecode(decryptedMsg);
       var scannedResp = SyncRegistration.fromMap(syncRegMap);
 
       if (scannedResp.receivedNonce == _responseNonce) {
         setState(() {
-          _scannedPublicKey = scannedResp.pgpPubKey;
-          _responseNonce = Uuid().v4();
+          _scannedPublicKey = scannedResp.pgpPubKey ?? '';
+          _responseNonce = const Uuid().v4();
         });
 
         var sd = SyncRegistration(
@@ -127,11 +129,15 @@ class _QrScannerState extends State<QrScanner> {
         );
 
         var encryptedMsg =
-            await OpenPGP.encrypt(sd.toString(), scannedResp.pgpPubKey);
+            await OpenPGP.encrypt(sd.toString(), scannedResp.pgpPubKey ?? '');
 
         Log.debug(encryptedMsg);
         var tmpNote = np.Notification(np.NotificationType.SyncInitStepThree,
-            data: encryptedMsg);
+            data: encryptedMsg,
+            parts: 1,
+            position: 1,
+            deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey) ?? '',
+            notificationID: const Uuid().v4());
         notify.sendMessageToAnotherDevice(
             deviceIDs: <String>[_recipient], message: tmpNote);
 
@@ -155,7 +161,7 @@ class _QrScannerState extends State<QrScanner> {
     Log.debug("recieved: $param");
     try {
       var decryptedMsg = await OpenPGP.decrypt(
-          param as String, _encryptionKeyPair.privateKey, "");
+          param as String, _encryptionKeyPair!.privateKey, "");
       var syncRegMap = jsonDecode(decryptedMsg);
       var scannedResp = SyncRegistration.fromMap(syncRegMap);
 
@@ -165,7 +171,7 @@ class _QrScannerState extends State<QrScanner> {
         notify.setDefaultNotificationHandlers();
 
         _setDevice(
-            new Device(deviceID: _recipient, encryptionKey: _scannedPublicKey));
+            Device(deviceID: _recipient, encryptionKey: _scannedPublicKey));
         _nextStep(_context);
       }
     } catch (e) {
@@ -177,11 +183,11 @@ class _QrScannerState extends State<QrScanner> {
   void initState() {
     super.initState();
     Log.debug("in initState");
-    _fabPressFunction = this.widget.fabPressFunction;
-    _nextStep = this.widget.nextStep;
-    _setDevice = this.widget.setDevice;
+    _fabPressFunction = widget.fabPressFunction;
+    _nextStep = widget.nextStep;
+    _setDevice = widget.setDevice;
 
-    _responseNonce = Uuid().v4();
+    _responseNonce = const Uuid().v4();
     Log.debug(_responseNonce);
 
     notify.syncInitHandshakeStepTwoHandler = _syncInitHandshakeStepTwoHandler;
@@ -189,9 +195,11 @@ class _QrScannerState extends State<QrScanner> {
 
     scan();
     NullPassDB.instance.getEncryptionKeyPair().then((kp) {
-      setState(() {
-        _encryptionKeyPair = kp;
-      });
+      if (kp != null) {
+        setState(() {
+          _encryptionKeyPair = kp;
+        });
+      }
     });
   }
 
@@ -203,9 +211,7 @@ class _QrScannerState extends State<QrScanner> {
 
     // check state of barcode and error string
     // if the qr is a valid QrData start processing
-    if (_barcodeData != null &&
-        _barcodeData.isNotEmpty &&
-        _scannedQrData != null &&
+    if (_barcodeData.isNotEmpty &&
         _scannedQrData.isValid()) {
       if (!_initiated) {
         _initiateHandshake();
@@ -229,15 +235,17 @@ class _QrScannerState extends State<QrScanner> {
                 Text(
                   "Barcode: ${_scannedQrData.toString()}",
                 ),
-              CenterLoader(),
+              const CenterLoader(),
               ListTile(
-                title: RaisedButton(
+                title: ElevatedButton(
                   onPressed: scan,
-                  child: Text(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                  ),
+                  child: const Text(
                     "Rescan QR Code",
                     style: TextStyle(color: Colors.white),
                   ),
-                  color: Colors.blue,
                 ),
               ),
             ],
@@ -267,16 +275,18 @@ class _QrScannerState extends State<QrScanner> {
             children: <Widget>[
               Text(
                 "Error: $_errorText",
-                style: TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red),
               ),
               ListTile(
-                title: RaisedButton(
+                title: ElevatedButton(
                   onPressed: scan,
-                  child: Text(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                  ),
+                  child: const Text(
                     "Rescan QR Code",
                     style: TextStyle(color: Colors.white),
                   ),
-                  color: Colors.blue,
                 ),
               ),
             ],
@@ -305,19 +315,21 @@ class _QrScannerState extends State<QrScanner> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    if (_errorText != null && _errorText.isNotEmpty)
+                    if (_errorText.isNotEmpty)
                       Text(
                         "Error: $_errorText",
-                        style: TextStyle(color: Colors.red),
+                        style: const TextStyle(color: Colors.red),
                       ),
                     ListTile(
-                      title: RaisedButton(
+                      title: ElevatedButton(
                         onPressed: scan,
-                        child: Text(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                        ),
+                        child: const Text(
                           "Rescan QR Code",
                           style: TextStyle(color: Colors.white),
                         ),
-                        color: Colors.blue,
                       ),
                     ),
                   ],
@@ -340,32 +352,22 @@ class _QrScannerState extends State<QrScanner> {
     try {
       _initiated = false;
       var scanResult = await BarcodeScanner.scan(
-        options: ScanOptions(
+        options: const ScanOptions(
           restrictFormat: [BarcodeFormat.qr],
         ),
       );
       if (scanResult.type != ResultType.Barcode) {
         if (scanResult.type == ResultType.Error) {
-          throw Exception("The barcode scan returned an error:\n" +
-              "Raw Content - ${scanResult.rawContent}" +
-              "Scan Result - $scanResult");
+          throw Exception("The barcode scan returned an error:\n" "Raw Content - ${scanResult.rawContent}" "Scan Result - $scanResult");
         }
         if (scanResult.type == ResultType.Cancelled) {
-          throw FormatException("The scan was cancelled:\n" +
-              "Raw Content - ${scanResult.rawContent}" +
-              "Scan Result - $scanResult");
+          throw FormatException("The scan was cancelled:\n" "Raw Content - ${scanResult.rawContent}" "Scan Result - $scanResult");
         }
-        throw Exception("The barcode was not scanned:\n" +
-            "Raw Content - ${scanResult.rawContent}" +
-            "Scan Result - $scanResult");
+        throw Exception("The barcode was not scanned:\n" "Raw Content - ${scanResult.rawContent}" "Scan Result - $scanResult");
       }
 
       if (scanResult.format != BarcodeFormat.qr) {
-        throw BarcodeFormatError("The barcode scanned was invalid:\n" +
-            "Format Type - ${scanResult.format.name}\n" +
-            "Format Note - ${scanResult.formatNote}\n" +
-            "Raw Content - ${scanResult.rawContent}" +
-            "Scan Result - $scanResult");
+        throw BarcodeFormatError("The barcode scanned was invalid:\n" "Format Type - ${scanResult.format.name}\n" "Format Note - ${scanResult.formatNote}\n" "Raw Content - ${scanResult.rawContent}" "Scan Result - $scanResult");
       }
 
       String barcode = scanResult.rawContent;
@@ -374,47 +376,47 @@ class _QrScannerState extends State<QrScanner> {
       var tmpData = QrData.fromMap(qrd);
       if (tmpData.isValid()) {
         setState(() {
-          this._errorText = "";
-          this._barcodeData = barcode;
+          _errorText = "";
+          _barcodeData = barcode;
           // _scannedQrData = QrData.fromMap(qrd);
           _scannedQrData = tmpData;
         });
-      } else if (tmpData.deviceId == null || tmpData.deviceId.isEmpty) {
+      } else if (tmpData.deviceId == null || tmpData.deviceId!.isEmpty) {
         setState(() {
-          this._errorText = _noDeviceID;
-          this._barcodeData = "";
-          _scannedQrData = null;
+          _errorText = _noDeviceID;
+          _barcodeData = "";
+          _scannedQrData = QrData();
         });
       }
     } on TypeError catch (e) {
       setState(() {
-        this._errorText = "$_invalidDataType: $e";
-        this._barcodeData = "";
+        _errorText = "$_invalidDataType: $e";
+        _barcodeData = "";
       });
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.cameraAccessDenied) {
         setState(() {
-          this._errorText = "The user did not grant the camera permission!";
-          this._barcodeData = "";
+          _errorText = "The user did not grant the camera permission!";
+          _barcodeData = "";
         });
       } else {
         setState(() {
-          this._errorText = "Unknown error: $e";
-          this._barcodeData = "";
+          _errorText = "Unknown error: $e";
+          _barcodeData = "";
         });
       }
     } on FormatException catch (e) {
       Log.debug("format exception ${e.toString()}");
       setState(() {
-        this._errorText =
+        _errorText =
             "null (User returned using the 'back'-button before scanning anything)";
-        this._barcodeData = "";
+        _barcodeData = "";
       });
     } catch (e) {
       Log.debug(e.runtimeType);
       setState(() {
-        this._errorText = "Unknown error: $e";
-        this._barcodeData = "";
+        _errorText = "Unknown error: $e";
+        _barcodeData = "";
       });
     }
   }
@@ -425,11 +427,12 @@ class BarcodeFormatError implements Exception {
 
   BarcodeFormatError([this.message]);
 
+  @override
   String toString() {
-    if (this.message == null ||
-        (this.message is String && this.message.trim().isEmpty)) {
+    if (message == null ||
+        (message is String && message.trim().isEmpty)) {
       return "BarcodeFormatError";
     }
-    return "BarcodeFormatError: ${this.message}";
+    return "BarcodeFormatError: $message";
   }
 }

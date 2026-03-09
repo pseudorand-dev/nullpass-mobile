@@ -22,28 +22,27 @@ class ManageSync extends StatefulWidget {
   final Device device;
   final bool inSetup;
 
-  ManageSync(this.device, {Key key, inSetup})
-      : this.inSetup = inSetup ?? false,
-        super(key: key);
+  const ManageSync(this.device, {super.key, inSetup})
+      : inSetup = inSetup ?? false;
 
   @override
   _ManageSyncState createState() => _ManageSyncState();
 }
 
 class _ManageSyncState extends State<ManageSync> {
-  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _loading = true;
-  String _title;
-  Device _device;
-  bool _inSetup;
-  Map<String, DeviceSync> _deviceSyncMap;
-  Map<String, DeviceSync> _originalSyncMap;
-  List<Vault> _vaults;
-  Map<String, Vault> _vaultMap;
+  late String _title;
+  late Device _device;
+  late bool _inSetup;
+  late Map<String, DeviceSync> _deviceSyncMap;
+  late Map<String, DeviceSync> _originalSyncMap;
+  late List<Vault> _vaults;
+  late Map<String, Vault> _vaultMap;
 
   void onSave(BuildContext context) async {
-    if (this._formKey.currentState.validate()) {
-      _formKey.currentState.save();
+    if (_formKey.currentState?.validate() ?? false) {
+      _formKey.currentState?.save();
 
       // validate changes against original and update vault sync
       NullPassDB helper = NullPassDB.instance;
@@ -82,7 +81,7 @@ class _ManageSyncState extends State<ManageSync> {
       if (success) {
         await Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => ManageDevices()),
+          MaterialPageRoute(builder: (context) => const ManageDevices()),
         );
       }
     }
@@ -92,7 +91,7 @@ class _ManageSyncState extends State<ManageSync> {
     _deviceSyncMap.forEach((vid, ds) async {
       var ods = _originalSyncMap[vid];
       // np.Notification tmpNotification;
-      np.NotificationType tmpNotificationType;
+      np.NotificationType? tmpNotificationType;
       dynamic tmpNotificationData;
 
       // if the vault doesnt have a sync for this device already and the
@@ -141,10 +140,12 @@ class _ManageSyncState extends State<ManageSync> {
               accessLevel: ds.vaultAccess,
               secrets: secretsList,
             ),
+            receivedNonce: '',
+            generatedNonce: const Uuid().v4(),
           );
         }
       } else if (ods != null &&
-          _vaultMap[vid].manager == VaultManager.Internal &&
+          _vaultMap[vid]?.manager == VaultManager.Internal &&
           ds.vaultAccess != DeviceAccess.None) {
         // update access
         if (await NullPassDB.instance.updateSync(ds)) {
@@ -165,6 +166,8 @@ class _ManageSyncState extends State<ManageSync> {
               vaultName: ds.vaultName,
               accessLevel: ds.vaultAccess,
             ),
+            receivedNonce: '',
+            generatedNonce: const Uuid().v4(),
           );
         }
       } else if (ods != null && ds.vaultAccess == DeviceAccess.None) {
@@ -183,21 +186,25 @@ class _ManageSyncState extends State<ManageSync> {
           tmpNotificationData = SyncDataWrapper(
             type: SyncType.VaultRemove,
             data: SyncVaultRemove(vid),
+            receivedNonce: '',
+            generatedNonce: const Uuid().v4(),
           );
         }
       }
 
       // Send Notification
-      if (tmpNotificationType != null && tmpNotificationData != null) {
-        if (_device.encryptionKey != null && _device.encryptionKey.isNotEmpty) {
+      if (tmpNotificationData != null && tmpNotificationType != null) {
+        if (_device.encryptionKey.isNotEmpty) {
           var encryptedMsg = await OpenPGP.encrypt(
               tmpNotificationData.toString(), _device.encryptionKey);
 
           var tmpNotification = np.Notification(
-            tmpNotificationType,
+            tmpNotificationType!,
             data: encryptedMsg,
-            deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey),
-            notificationID: Uuid().v4(),
+            parts: 1,
+            position: 1,
+            deviceID: sharedPrefs.getString(DeviceNotificationIdPrefKey) ?? '',
+            notificationID: const Uuid().v4(),
           );
 
           await notify.sendMessageToAnotherDevice(
@@ -214,17 +221,19 @@ class _ManageSyncState extends State<ManageSync> {
   Future<void> setupData() async {
     var vaultList = await NullPassDB.instance.getAllVaults();
     var tmpVMap = <String, Vault>{};
-    vaultList?.forEach((v) => tmpVMap[v.uid] = v);
+    for (var v in vaultList) {
+      tmpVMap[v.uid] = v;
+    }
 
     var tmpDeviceSyncs =
         await NullPassDB.instance.getAllSyncsWithADevice(_device.deviceID);
     var tmpDeviceSyncMap = <String, DeviceSync>{};
     var tmpOrigDeviceSyncMap = <String, DeviceSync>{};
     // var tmpDeviceAccessMap = <String, DeviceAccess>{};
-    tmpDeviceSyncs.forEach((ds) {
+    for (var ds in tmpDeviceSyncs) {
       tmpDeviceSyncMap[ds.vaultID] = ds.clone();
       tmpOrigDeviceSyncMap[ds.vaultID] = ds;
-    });
+    }
 
     setState(() {
       _vaults = vaultList;
@@ -237,8 +246,8 @@ class _ManageSyncState extends State<ManageSync> {
   @override
   void initState() {
     super.initState();
-    _device = this.widget.device;
-    _inSetup = this.widget.inSetup ?? false;
+    _device = widget.device;
+    _inSetup = widget.inSetup ?? false;
     _title = (_inSetup) ? 'Setup Sync Rules' : 'Manage Sync Rules';
     _vaults = <Vault>[];
     _vaultMap = <String, Vault>{};
@@ -249,7 +258,8 @@ class _ManageSyncState extends State<ManageSync> {
     });
   }
 
-  void changeVaultAccess(String vid, DeviceAccess vaultAccess) {
+  void changeVaultAccess(String vid, DeviceAccess? vaultAccess) {
+    if (vaultAccess == null) return;
     var ds = _deviceSyncMap[vid] ??
         DeviceSync(
             deviceID: _device.deviceID,
@@ -267,15 +277,15 @@ class _ManageSyncState extends State<ManageSync> {
 
   Future<void> updateVaultAccessDialog(String vid,
       {DeviceAccess vaultAccess = DeviceAccess.None}) async {
-    var _radioGroup = vaultAccess;
+    var radioGroup = vaultAccess;
     await showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(_vaultMap[vid]?.nickname ?? "Update Sync Access"),
           actions: <Widget>[
-            FlatButton(
-              child: Text('Cancel'),
+            TextButton(
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -292,13 +302,13 @@ class _ManageSyncState extends State<ManageSync> {
                 leading: Radio(
                   activeColor: Colors.blue,
                   value: DeviceAccess.None,
-                  groupValue: _radioGroup,
+                  groupValue: radioGroup,
                   onChanged: (newVal) async {
                     changeVaultAccess(vid, newVal);
                     Navigator.of(context).pop();
                   },
                 ),
-                title: Text(
+                title: const Text(
                   "None",
                   textAlign: TextAlign.start,
                 ),
@@ -311,13 +321,13 @@ class _ManageSyncState extends State<ManageSync> {
                 leading: Radio(
                   activeColor: Colors.blue,
                   value: DeviceAccess.Backup,
-                  groupValue: _radioGroup,
+                  groupValue: radioGroup,
                   onChanged: (newVal) async {
                     changeVaultAccess(vid, newVal);
                     Navigator.of(context).pop();
                   },
                 ),
-                title: Text(
+                title: const Text(
                   "Backup",
                   textAlign: TextAlign.start,
                 ),
@@ -330,13 +340,13 @@ class _ManageSyncState extends State<ManageSync> {
                 leading: Radio(
                   activeColor: Colors.blue,
                   value: DeviceAccess.ReadOnly,
-                  groupValue: _radioGroup,
+                  groupValue: radioGroup,
                   onChanged: (newVal) async {
                     changeVaultAccess(vid, newVal);
                     Navigator.of(context).pop();
                   },
                 ),
-                title: Text(
+                title: const Text(
                   "Read-Only",
                   textAlign: TextAlign.start,
                 ),
@@ -349,13 +359,13 @@ class _ManageSyncState extends State<ManageSync> {
                 leading: Radio(
                   activeColor: Colors.blue,
                   value: DeviceAccess.Manage,
-                  groupValue: _radioGroup,
+                  groupValue: radioGroup,
                   onChanged: (newVal) async {
                     changeVaultAccess(vid, newVal);
                     Navigator.of(context).pop();
                   },
                 ),
-                title: Text(
+                title: const Text(
                   "Manage",
                   textAlign: TextAlign.start,
                 ),
@@ -369,27 +379,29 @@ class _ManageSyncState extends State<ManageSync> {
 
   List<Widget> generateSyncWidgets() {
     List<Widget> wList = <Widget>[];
-    _vaults.forEach((v) {
-      Widget trailingWidget;
+    for (var v in _vaults) {
+      Widget? trailingWidget;
 
       var ds = _deviceSyncMap[v.uid];
 
       if (v.manager == VaultManager.External && ds != null) {
-        trailingWidget = FlatButton(
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textTheme: ButtonTextTheme.primary,
+        trailingWidget = TextButton(
+          style: TextButton.styleFrom(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            foregroundColor: Colors.grey,
+          ),
+          onPressed: null,
           child: Text(
             ds.vaultAccess.toString(),
             textAlign: TextAlign.end,
           ),
-          onPressed: null,
-          textColor: Colors.blue,
-          disabledTextColor: Colors.grey,
         );
       } else if (v.manager == VaultManager.Internal && ds != null) {
-        trailingWidget = FlatButton(
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textTheme: ButtonTextTheme.primary,
+        trailingWidget = TextButton(
+          style: TextButton.styleFrom(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            foregroundColor: Colors.blue,
+          ),
           child: Text(
             ds.vaultAccess.toString(),
             textAlign: TextAlign.end,
@@ -397,13 +409,13 @@ class _ManageSyncState extends State<ManageSync> {
           onPressed: () async {
             await updateVaultAccessDialog(v.uid, vaultAccess: ds.vaultAccess);
           },
-          textColor: Colors.blue,
-          disabledTextColor: Colors.grey,
         );
       } else if (v.manager == VaultManager.Internal) {
-        trailingWidget = trailingWidget = FlatButton(
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textTheme: ButtonTextTheme.primary,
+        trailingWidget = trailingWidget = TextButton(
+          style: TextButton.styleFrom(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            foregroundColor: Colors.blue,
+          ),
           child: Text(
             DeviceAccess.None.toString(),
             textAlign: TextAlign.end,
@@ -411,8 +423,6 @@ class _ManageSyncState extends State<ManageSync> {
           onPressed: () async {
             await updateVaultAccessDialog(v.uid);
           },
-          textColor: Colors.blue,
-          disabledTextColor: Colors.grey,
         );
       }
 
@@ -423,7 +433,7 @@ class _ManageSyncState extends State<ManageSync> {
             : null),
         trailing: trailingWidget,
       ));
-    });
+    }
 
     return wList;
   }
@@ -435,7 +445,7 @@ class _ManageSyncState extends State<ManageSync> {
         appBar: AppBar(
           title: Text(_title),
         ),
-        body: CenterLoader(),
+        body: const CenterLoader(),
       );
     }
 
@@ -445,11 +455,11 @@ class _ManageSyncState extends State<ManageSync> {
         actions: <Widget>[
           if (!_inSetup)
             IconButton(
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               onPressed: () async {
                 // TODO: ensure delete of device and all connected syncs removes vault data and sends notifications to sync devices
                 await NullPassDB.instance
-                    .deleteAllSyncsToDevice(this._device.deviceID);
+                    .deleteAllSyncsToDevice(_device.deviceID);
 
                 Set<String> vids = <String>{};
                 Set<String> sids = <String>{};
@@ -466,7 +476,7 @@ class _ManageSyncState extends State<ManageSync> {
                   date: DateTime.now().toUtc(),
                 ));
 
-                await NullPassDB.instance.deleteDevice(this._device.id);
+                await NullPassDB.instance.deleteDevice(_device.id);
                 await NullPassDB.instance.addAuditRecord(AuditRecord(
                   type: AuditType.DeviceDeleted,
                   message:
@@ -480,34 +490,34 @@ class _ManageSyncState extends State<ManageSync> {
             ),
         ],
       ),
-      body: new Container(
-        padding: new EdgeInsets.all(20.0),
-        child: new Form(
-          key: this._formKey,
+      body: Container(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
           child: CustomScrollView(
             slivers: <Widget>[
               SliverList(
                 delegate: SliverChildListDelegate.fixed([
                   Container(
+                    padding: const EdgeInsets.only(bottom: 25.0),
                     child: Column(
                       children: <Widget>[
                         ListTile(
                           title: TextFormField(
                             onChanged: (value) {
                               setState(() {
-                                this._device.nickname = value;
+                                _device.nickname = value;
                               });
                             },
-                            initialValue: this._device.nickname,
-                            decoration: InputDecoration(
+                            initialValue: _device.nickname,
+                            decoration: const InputDecoration(
                                 labelText: 'Device Nickname',
                                 border: InputBorder.none),
                           ),
                         ),
-                        FormDivider(),
+                        const FormDivider(),
                       ],
                     ),
-                    padding: EdgeInsets.only(bottom: 25.0),
                   ),
                 ]),
               ),
@@ -517,17 +527,19 @@ class _ManageSyncState extends State<ManageSync> {
               SliverList(
                   delegate: SliverChildListDelegate.fixed([
                 Container(
-                  padding: EdgeInsets.only(top: 25.0),
+                  padding: const EdgeInsets.only(top: 25.0),
                   child: ListTile(
-                    title: RaisedButton(
+                    title: ElevatedButton(
                       onPressed: () {
                         onSave(context);
                       },
-                      child: Text(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                      ),
+                      child: const Text(
                         'Save',
                         style: TextStyle(color: Colors.white),
                       ),
-                      color: Colors.blue,
                     ),
                   ),
                 ),

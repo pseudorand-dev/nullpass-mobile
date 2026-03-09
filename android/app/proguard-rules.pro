@@ -11,3 +11,7 @@
 # https://github.com/flutter/flutter/issues/66232
 # https://github.com/flutter/flutter/issues/72185
 -keep class io.flutter.plugin.editing.** { *; }
+
+# Google Play Core (for deferred components)
+-keep class com.google.android.play.core.** { *; }
+-dontwarn com.google.android.play.core.**

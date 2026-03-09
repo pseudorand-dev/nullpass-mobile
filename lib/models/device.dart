@@ -3,21 +3,20 @@
  * Copyright (c) 2020 Pseudorand Development. All rights reserved.
  */
 
-import 'package:flutter/foundation.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:uuid/uuid.dart';
 import 'package:validators/validators.dart';
 
-final String deviceTableName = 'devices';
-final String columnDeviceId = "_id";
-final String columnDeviceSyncId = "device_id";
-final String columnDeviceNickname = "nickname";
-final String columnDeviceEncryptionKey = "encryption_key";
-final String columnDeviceType = "device_type";
-final String columnDeviceNotes = "notes";
-final String columnDeviceCreated = "created_at";
-final String columnDeviceModified = "modified_at";
-final String columnDeviceSortKey = "sort_key";
+const String deviceTableName = 'devices';
+const String columnDeviceId = "_id";
+const String columnDeviceSyncId = "device_id";
+const String columnDeviceNickname = "nickname";
+const String columnDeviceEncryptionKey = "encryption_key";
+const String columnDeviceType = "device_type";
+const String columnDeviceNotes = "notes";
+const String columnDeviceCreated = "created_at";
+const String columnDeviceModified = "modified_at";
+const String columnDeviceSortKey = "sort_key";
 
 enum DeviceType { MacOS, iOS, Android, Unknown }
 
@@ -42,54 +41,54 @@ DeviceType parseDeviceTypeFromString(String dType) {
 }
 
 class Device {
-  String id;
-  String deviceID;
-  String nickname;
-  String encryptionKey;
-  DeviceType type;
-  String notes;
-  DateTime created;
-  DateTime lastModified;
+  late String id;
+  late String deviceID;
+  late String nickname;
+  late String encryptionKey;
+  late DeviceType type;
+  late String notes;
+  late DateTime created;
+  late DateTime lastModified;
   String get sortKey => (nickname != null) ? nickname.trim().toLowerCase() : "";
 
   Device({
-    String id,
-    @required String deviceID,
-    String nickname,
-    String encryptionKey,
-    DeviceType type,
-    String notes,
-    DateTime created,
-    DateTime lastModified,
+    String? id,
+    required String deviceID,
+    String? nickname,
+    String? encryptionKey,
+    DeviceType? type,
+    String? notes,
+    DateTime? created,
+    DateTime? lastModified,
   }) {
     if (id == null || id.trim() == '' || !isUUID(id, 4)) {
-      id = (new Uuid()).v4();
+      id = (const Uuid()).v4();
     }
 
     DateTime now = DateTime.now().toUtc();
 
-    this.id = id;
+    this.id = id ?? (const Uuid()).v4();
     this.deviceID = deviceID;
-    this.nickname = nickname;
+    this.nickname = nickname ?? "";
     this.encryptionKey = encryptionKey ?? "";
     this.type = type ?? DeviceType.Unknown;
-    this.notes = notes;
+    this.notes = notes ?? "";
     this.created = created ?? now;
     this.lastModified = lastModified ?? now;
   }
 
   Map<String, dynamic> toMap() => {
-        columnDeviceId: this.id,
-        columnDeviceSyncId: this.deviceID,
-        columnDeviceNickname: this.nickname,
-        columnDeviceEncryptionKey: this.encryptionKey ?? "",
-        columnDeviceType: deviceTypeToString(this.type),
-        columnDeviceNotes: this.notes,
-        columnDeviceCreated: (this.created != null)
-            ? this.created.toIso8601String()
+        columnDeviceId: id,
+        columnDeviceSyncId: deviceID,
+        columnDeviceNickname: nickname,
+        columnDeviceEncryptionKey: encryptionKey ?? "",
+        columnDeviceType: deviceTypeToString(type),
+        columnDeviceNotes: notes,
+        columnDeviceCreated: (created != null)
+            ? created.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
-        columnDeviceModified: (this.lastModified != null)
-            ? this.lastModified.toIso8601String()
+        columnDeviceModified: (lastModified != null)
+            ? lastModified.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         columnDeviceSortKey: sortKey,
       };
@@ -109,22 +108,22 @@ class Device {
       return newDevice;
     } catch (e) {
       Log.debug("error creating device from map: ${e.toString()}");
-      throw e;
+      rethrow;
     }
   }
 
   Map<String, dynamic> toJson() => {
-        columnDeviceId: this.id,
-        columnDeviceSyncId: this.deviceID,
-        columnDeviceNickname: this.nickname,
-        columnDeviceEncryptionKey: this.encryptionKey ?? "",
-        columnDeviceType: deviceTypeToString(this.type),
-        columnDeviceNotes: this.notes,
-        columnDeviceCreated: (this.created != null)
-            ? this.created.toIso8601String()
+        columnDeviceId: id,
+        columnDeviceSyncId: deviceID,
+        columnDeviceNickname: nickname,
+        columnDeviceEncryptionKey: encryptionKey ?? "",
+        columnDeviceType: deviceTypeToString(type),
+        columnDeviceNotes: notes,
+        columnDeviceCreated: (created != null)
+            ? created.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
-        columnDeviceModified: (this.lastModified != null)
-            ? this.lastModified.toIso8601String()
+        columnDeviceModified: (lastModified != null)
+            ? lastModified.toIso8601String()
             : DateTime.now().toUtc().toIso8601String(),
         columnDeviceSortKey: sortKey,
       };
@@ -144,7 +143,7 @@ class Device {
       return newDevice;
     } catch (e) {
       Log.debug("error creating device from json: ${e.toString()}");
-      throw e;
+      rethrow;
     }
   }
 }

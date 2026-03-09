@@ -22,7 +22,7 @@ import 'package:url_launcher/url_launcher.dart';
 class SecretView extends StatefulWidget {
   final Secret secret;
 
-  SecretView({Key key, @required this.secret}) : super(key: key);
+  const SecretView({super.key, required this.secret});
 
   @override
   _SecretViewState createState() => _SecretViewState();
@@ -30,16 +30,16 @@ class SecretView extends StatefulWidget {
 
 class _SecretViewState extends State<SecretView> {
   // TODO: evaluate replacing this expensive scaffold key with a better more efficient method - examples https://medium.com/@ksheremet/flutter-showing-snackbar-within-the-widget-that-builds-a-scaffold-3a817635aeb2
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  Secret secret;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  late Secret secret;
   bool _loading = true;
-  Map<String, Vault> selectedVaults;
+  late Map<String, Vault> selectedVaults;
   bool _editable = false;
 
   @override
   void initState() {
     super.initState();
-    this.secret = this.widget.secret ??
+    secret = widget.secret ??
         Secret(nickname: '', website: '', username: '', message: '');
 
     selectedVaults = <String, Vault>{};
@@ -51,16 +51,18 @@ class _SecretViewState extends State<SecretView> {
   }
 
   Future<void> _getSecretsVault() async {
-    for (var vid in this.secret.vaults) {
+    for (var vid in secret.vaults) {
       var v = await NullPassDB.instance.getVaultByID(vid);
-      selectedVaults[vid] = v;
+      if (v != null) {
+        selectedVaults[vid] = v;
 
-      // FIXME: need a better way to determine if editing is allowed on a secret
-      // If the secret is in any vaults that are managed internally than It can be edited
-      if (v.manager == VaultManager.Internal) {
-        setState(() {
-          _editable = true;
-        });
+        // FIXME: need a better way to determine if editing is allowed on a secret
+        // If the secret is in any vaults that are managed internally than It can be edited
+        if (v.manager == VaultManager.Internal) {
+          setState(() {
+            _editable = true;
+          });
+        }
       }
     }
   }
@@ -68,13 +70,16 @@ class _SecretViewState extends State<SecretView> {
   List<Widget> _generateChips(BuildContext context) {
     var widgetList = <Widget>[];
 
-    this.secret.vaults.forEach((vid) {
-      widgetList.add(NullPassFilterChip(
-        label: this.selectedVaults[vid].nickname,
-        isSelected: true,
-        onSelected: (isSelected) {},
-      ));
-    });
+    for (var vid in secret.vaults) {
+      var vault = selectedVaults[vid];
+      if (vault != null) {
+        widgetList.add(NullPassFilterChip(
+          label: vault.nickname,
+          isSelected: true,
+          onSelected: (isSelected) {},
+        ));
+      }
+    }
     return widgetList;
   }
 
@@ -86,7 +91,7 @@ class _SecretViewState extends State<SecretView> {
         appBar: AppBar(
           title: Text(secret.nickname),
         ),
-        body: CenterLoader(),
+        body: const CenterLoader(),
       );
     }
 
@@ -97,7 +102,7 @@ class _SecretViewState extends State<SecretView> {
         actions: <Widget>[
           if (_editable)
             IconButton(
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               onPressed: () async {
                 var deleted = await showDialog<bool>(
                       context: context,
@@ -105,19 +110,19 @@ class _SecretViewState extends State<SecretView> {
                       // barrierDismissible: false,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: Text('Delete Secret'),
+                          title: const Text('Delete Secret'),
                           content: Text(
-                            'Are you sure you want to delete "${this.secret.nickname}"?\nPlease be sure before proceeding as you will not be able to undo this.',
+                            'Are you sure you want to delete "${secret.nickname}"?\nPlease be sure before proceeding as you will not be able to undo this.',
                           ),
                           actions: <Widget>[
-                            FlatButton(
-                              child: Text('Cancel'),
+                            TextButton(
+                              child: const Text('Cancel'),
                               onPressed: () {
                                 Navigator.of(context).pop(false);
                               },
                             ),
-                            FlatButton(
-                              child: Text(
+                            TextButton(
+                              child: const Text(
                                 'Delete',
                                 style: TextStyle(color: Colors.red),
                               ),
@@ -135,7 +140,7 @@ class _SecretViewState extends State<SecretView> {
                                   date: DateTime.now().toUtc(),
                                 ));
                                 if (success) {
-                                  Sync.instance.sendSecretDeleted(this.secret);
+                                  Sync.instance.sendSecretDeleted(secret);
                                 }
                                 Log.debug(success.toString());
                                 Navigator.of(context).pop(true);
@@ -153,14 +158,14 @@ class _SecretViewState extends State<SecretView> {
             ),
           if (_editable)
             IconButton(
-              icon: Icon(Icons.edit),
+              icon: const Icon(Icons.edit),
               onPressed: () async {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => SecretEdit(
                       edit: SecretEditType.Update,
-                      secret: new Secret(
+                      secret: Secret(
                           nickname: secret.nickname,
                           website: secret.website,
                           username: secret.username,
@@ -178,11 +183,13 @@ class _SecretViewState extends State<SecretView> {
                   setState(() {
                     _loading = true;
                   });
-                  Secret s =
+                  Secret? s =
                       await NullPassDB.instance.getSecretByID(secret.uuid);
-                  setState(() {
-                    secret = s;
-                  });
+                  if (s != null) {
+                    setState(() {
+                      secret = s;
+                    });
+                  }
                   await _getSecretsVault();
                   setState(() {
                     _loading = false;
@@ -196,10 +203,10 @@ class _SecretViewState extends State<SecretView> {
         child: ListView(
           children: <Widget>[
             ListTile(
-                title: Text('Website'),
+                title: const Text('Website'),
                 subtitle: Text(secret.website ?? ''),
                 trailing: IconButton(
-                    icon: Icon(Icons.launch),
+                    icon: const Icon(Icons.launch),
                     onPressed: () async {
                       await NullPassDB.instance.addAuditRecord(AuditRecord(
                         type: AuditType.SecretUrlOpened,
@@ -211,14 +218,15 @@ class _SecretViewState extends State<SecretView> {
                       ));
 
                       bool openWebpagesInApp =
-                          sharedPrefs.getBool(InAppWebpagesPrefKey);
-                      var webpage = secret.website;
+                          sharedPrefs.getBool(InAppWebpagesPrefKey) ?? false;
+                      var webpage = secret.website ?? '';
                       if (!webpage.startsWith('http') &&
-                          !webpage.contains('://'))
-                        webpage = 'https://' + webpage;
+                          !webpage.contains('://')) {
+                        webpage = 'https://$webpage';
+                      }
                       if (await canLaunch(webpage)) {
                         await Clipboard.setData(
-                            ClipboardData(text: secret.message));
+                            ClipboardData(text: secret.message ?? ''));
                         await launch(
                           webpage,
                           forceSafariVC: openWebpagesInApp,
@@ -227,12 +235,12 @@ class _SecretViewState extends State<SecretView> {
                           enableDomStorage: true,
                         );
                       } else {
-                        _scaffoldKey.currentState.showSnackBar(SnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                             content: Text('Can\'t launch this website')));
                       }
                     }),
                 onLongPress: () async {
-                  await Clipboard.setData(ClipboardData(text: secret.website));
+                  await Clipboard.setData(ClipboardData(text: secret.website ?? ''));
                   await NullPassDB.instance.addAuditRecord(AuditRecord(
                     type: AuditType.SecretUrlCopied,
                     message:
@@ -244,13 +252,13 @@ class _SecretViewState extends State<SecretView> {
                   showSnackBar(_scaffoldKey, 'Website Copied');
                 }),
             ListTile(
-              title: Text('Username'),
+              title: const Text('Username'),
               subtitle: Text(secret.username ?? ''),
               trailing: IconButton(
-                  icon: Icon(Icons.content_copy),
+                  icon: const Icon(Icons.content_copy),
                   onPressed: () async {
                     await Clipboard.setData(
-                        ClipboardData(text: secret.username));
+                        ClipboardData(text: secret.username ?? ''));
                     await NullPassDB.instance.addAuditRecord(AuditRecord(
                       type: AuditType.SecretUsernameCopied,
                       message:
@@ -263,13 +271,13 @@ class _SecretViewState extends State<SecretView> {
                   }),
             ),
             ListTile(
-              title: Text('Password'),
-              subtitle: Text('Hold to view password'),
+              title: const Text('Password'),
+              subtitle: const Text('Hold to view password'),
               trailing: IconButton(
-                  icon: Icon(Icons.content_copy),
+                  icon: const Icon(Icons.content_copy),
                   onPressed: () async {
                     await Clipboard.setData(
-                        ClipboardData(text: secret.message));
+                        ClipboardData(text: secret.message ?? ''));
                     await NullPassDB.instance.addAuditRecord(AuditRecord(
                       type: AuditType.SecretPasswordCopied,
                       message:
@@ -295,7 +303,7 @@ class _SecretViewState extends State<SecretView> {
                       return SimpleDialog(
                         children: <Widget>[
                           Center(
-                            child: SecretPreview(secret.message),
+                            child: SecretPreview(secret.message ?? ''),
                           ),
                         ],
                       );
@@ -303,7 +311,7 @@ class _SecretViewState extends State<SecretView> {
               },
             ),
             ListTile(
-              title: Text('Password Difficulty'),
+              title: const Text('Password Difficulty'),
               trailing: IconButton(
                   icon: Icon(Icons.stars, color: secret.strengthColor()),
                   onPressed: () {}),
@@ -311,19 +319,19 @@ class _SecretViewState extends State<SecretView> {
             ),
             if (secret.getOnetimePasscode().isNotEmpty)
               OneTimePasscodeTile(
-                otpCode: secret.otpCode,
+                otpCode: secret.otpCode ?? '',
                 nickname: secret.nickname,
                 uuid: secret.uuid,
                 vaults: secret.vaults,
                 scaffoldKey: _scaffoldKey,
               ),
             ListTile(
-              title: Text('Notes'),
+              title: const Text('Notes'),
               subtitle: Text(secret.notes ?? ''),
               trailing: IconButton(
-                  icon: Icon(Icons.content_copy),
+                  icon: const Icon(Icons.content_copy),
                   onPressed: () async {
-                    await Clipboard.setData(ClipboardData(text: secret.notes));
+                    await Clipboard.setData(ClipboardData(text: secret.notes ?? ''));
                     await NullPassDB.instance.addAuditRecord(AuditRecord(
                       type: AuditType.SecretNotesCopied,
                       message:
@@ -336,7 +344,7 @@ class _SecretViewState extends State<SecretView> {
                   }),
             ),
             ListTile(
-              contentPadding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+              contentPadding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
               title: Text(
                 "Vaults",
                 style: TextStyle(
@@ -345,18 +353,18 @@ class _SecretViewState extends State<SecretView> {
                 ),
               ),
               subtitle: Wrap(
-                children: _generateChips(context),
                 spacing: 5.0,
                 runSpacing: 5.0,
+                children: _generateChips(context),
               ),
             ),
             if (isDebug)
               ListTile(
-                title: Text('Thumbnail'),
+                title: const Text('Thumbnail'),
                 subtitle: Text(secret.thumbnailURI ?? ''),
                 onLongPress: () async {
                   await Clipboard.setData(
-                      ClipboardData(text: secret.thumbnailURI));
+                      ClipboardData(text: secret.thumbnailURI ?? ''));
                   await NullPassDB.instance.addAuditRecord(AuditRecord(
                     type: AuditType.SecretUrlCopied,
                     message:
@@ -365,8 +373,8 @@ class _SecretViewState extends State<SecretView> {
                     vaultsReferenceId: secret.vaults.toSet(),
                     date: DateTime.now().toUtc(),
                   ));
-                  _scaffoldKey.currentState.showSnackBar(
-                      SnackBar(content: Text('Copied the Thumbnail URL')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Copied the Thumbnail URL')));
                 },
               ),
             /*
@@ -389,11 +397,11 @@ class _SecretViewState extends State<SecretView> {
 
 class SecretPreview extends StatelessWidget {
   final String _secretText;
-  Runes get _secretRunes => (this._secretText.runes);
+  Runes get _secretRunes => (_secretText.runes);
   List<TextSpan> get secretSpan {
     List<TextSpan> sList = <TextSpan>[];
-    _secretRunes.forEach((int rune) {
-      var character = new String.fromCharCode(rune);
+    for (var rune in _secretRunes) {
+      var character = String.fromCharCode(rune);
       var textColor = Colors.black;
       if (65 <= rune && rune <= 90) {
         // uppercase alpha
@@ -406,22 +414,22 @@ class SecretPreview extends StatelessWidget {
         textColor = Colors.orange;
       }
 
-      sList.add(new TextSpan(
+      sList.add(TextSpan(
         text: character,
         style: GoogleFonts.robotoMono(
           fontWeight: FontWeight.bold,
           color: textColor,
-          fontSize: sharedPrefs.getInt(PasswordPreviewSizePrefKey).toDouble(),
+          fontSize: (sharedPrefs.getInt(PasswordPreviewSizePrefKey) ?? 14).toDouble(),
         ),
       ));
-    });
+    }
     return sList;
   }
 
-  SecretPreview(
+  const SecretPreview(
     this._secretText, {
-    Key key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -442,26 +450,27 @@ class OneTimePasscodeTile extends StatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
 
   OneTimePasscodeTile({
-    Key key,
-    @required this.otpCode,
-    @required this.nickname,
-    @required this.scaffoldKey,
-    @required this.uuid,
-    @required this.vaults,
-  }) : super(key: key);
+    super.key,
+    required this.otpCode,
+    required this.nickname,
+    required this.scaffoldKey,
+    required this.uuid,
+    required this.vaults,
+  });
 
   @override
   _OneTimePasscodeTileState createState() => _OneTimePasscodeTileState();
 }
 
 class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
-  GlobalKey<State> _key = new GlobalKey();
-  Timer timer;
+  final GlobalKey<State> _key = GlobalKey();
+  Timer? timer;
 
+  @override
   @protected
   @mustCallSuper
   void dispose() {
-    timer.cancel();
+    timer?.cancel();
     super.dispose();
   }
 
@@ -469,7 +478,7 @@ class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
   void initState() {
     super.initState();
     timer = Timer.periodic(
-      Duration(milliseconds: 500),
+      const Duration(milliseconds: 500),
       (Timer t) {
         setState(() {});
       },
@@ -478,12 +487,12 @@ class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
 
   @override
   Widget build(BuildContext context) {
-    var code = Secret.generateOnetimePasscode(this.widget.otpCode).trim() ?? '';
+    var code = Secret.generateOnetimePasscode(widget.otpCode).trim() ?? '';
     return ListTile(
-      title: Text('One-Time Passcode'),
+      title: const Text('One-Time Passcode'),
       subtitle: Text(code),
       trailing: IconButton(
-          icon: Icon(Icons.content_copy),
+          icon: const Icon(Icons.content_copy),
           onPressed: () async {
             await Clipboard.setData(ClipboardData(
               text: code,
@@ -491,12 +500,12 @@ class _OneTimePasscodeTileState extends State<OneTimePasscodeTile> {
             await NullPassDB.instance.addAuditRecord(AuditRecord(
               type: AuditType.SecretOTPCodeCopied,
               message:
-                  'The "${this.widget.nickname}" secret\'s one-time passcode was copied.',
-              secretsReferenceId: <String>{this.widget.uuid},
-              vaultsReferenceId: this.widget.vaults.toSet(),
+                  'The "${widget.nickname}" secret\'s one-time passcode was copied.',
+              secretsReferenceId: <String>{widget.uuid},
+              vaultsReferenceId: widget.vaults.toSet(),
               date: DateTime.now().toUtc(),
             ));
-            showSnackBar(this.widget.scaffoldKey, 'One-Time Passcode Copied');
+            showSnackBar(widget.scaffoldKey, 'One-Time Passcode Copied');
           }),
     );
   }

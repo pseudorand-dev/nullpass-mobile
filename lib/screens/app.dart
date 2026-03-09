@@ -10,9 +10,10 @@ import 'package:nullpass/screens/secrets/secretList.dart';
 import 'package:nullpass/services/datastore.dart';
 import 'package:nullpass/services/logging.dart';
 import 'package:nullpass/setup.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class NullPassApp extends StatefulWidget {
+  const NullPassApp({super.key});
+
   @override
   _NullPassAppState createState() => _NullPassAppState();
 }
@@ -25,7 +26,7 @@ class _NullPassAppState extends State<NullPassApp> {
 
   Future<void> encryptionKeyCallback() async {
     _completeEncryptionKeyGeneration =
-        sharedPrefs.getBool(EncryptionKeyPairSetupPrefKey);
+        sharedPrefs.getBool(EncryptionKeyPairSetupPrefKey) ?? false;
     if (_completeEncryptionKeyGeneration && _completeSecretsPull) {
       setState(() {
         _loading = false;
@@ -33,8 +34,8 @@ class _NullPassAppState extends State<NullPassApp> {
     }
   }
 
-  Future<void> secretsPullCallback(List<Secret> result) async {
-    _secrets = result;
+  Future<void> secretsPullCallback(List<Secret>? result) async {
+    _secrets = result ?? <Secret>[];
     _completeSecretsPull = true;
     if (_completeEncryptionKeyGeneration && _completeSecretsPull) {
       setState(() {
@@ -57,15 +58,8 @@ class _NullPassAppState extends State<NullPassApp> {
       Log.debug('OneSignal Setup');
     });
 
-    if (sharedPrefs == null) {
-      SharedPreferences.getInstance().then((sp) {
-        sharedPrefs = sp;
-        setupSharedPreferences(encryptionKeyCallback: encryptionKeyCallback);
-      });
-    } else {
-      encryptionKeyCallback();
-    }
-
+    encryptionKeyCallback();
+  
     NullPassDB helper = NullPassDB.instance;
 
     helper.getAllSecrets().then(secretsPullCallback);
@@ -74,9 +68,9 @@ class _NullPassAppState extends State<NullPassApp> {
   void _reloadSecretList(result) async {
     if (isTrue(result)) {
       NullPassDB npDB = NullPassDB.instance;
-      List<Secret> sList = await npDB.getAllSecrets();
+      List<Secret>? sList = await npDB.getAllSecrets();
       setState(() {
-        _secrets = sList;
+        _secrets = sList ?? <Secret>[];
       });
     }
   }

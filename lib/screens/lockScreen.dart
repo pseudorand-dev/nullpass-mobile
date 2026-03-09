@@ -1,29 +1,28 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app_lock/flutter_app_lock.dart';
-import 'package:local_auth/auth_strings.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:nullpass/common.dart';
 import 'package:nullpass/services/logging.dart';
 
 class LockScreen extends StatefulWidget {
+  const LockScreen({super.key});
+
   @override
   _LockScreenState createState() => _LockScreenState();
 }
 
 class _LockScreenState extends State<LockScreen> {
   final String _title = "NullPass";
-  LocalAuthentication localAuth;
-  bool cancelled;
+  late LocalAuthentication localAuth;
+  bool cancelled = false;
 
   @override
   void initState() {
     super.initState();
     localAuth = LocalAuthentication();
-    cancelled = false;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await authenticate();
@@ -37,17 +36,12 @@ class _LockScreenState extends State<LockScreen> {
       });
       if (canCheckBiometrics) {
         bool didAuthenticate = await localAuth.authenticate(
-          androidAuthStrings: (Platform.isAndroid)
-              ? AndroidAuthMessages(
-                  signInTitle: "Unlock NullPass",
-                  biometricHint: "",
-                )
-              : null,
-          iOSAuthStrings: IOSAuthMessages(),
-          localizedReason: (Platform.isAndroid) ? "" : "Unlock NullPass",
-          stickyAuth: true,
-          useErrorDialogs: false,
-          biometricOnly: true,
+          localizedReason: "Unlock NullPass",
+          options: const AuthenticationOptions(
+            stickyAuth: true,
+            useErrorDialogs: false,
+            biometricOnly: true,
+          ),
         );
         if (didAuthenticate) {
           unlock();
@@ -80,7 +74,7 @@ class _LockScreenState extends State<LockScreen> {
   }
 
   void unlock() {
-    AppLock.of(context).didUnlock();
+    AppLock.of(context)?.didUnlock();
   }
 
   @override
@@ -99,17 +93,19 @@ class _LockScreenState extends State<LockScreen> {
               children: [
                 if (cancelled)
                   Padding(
-                    padding: EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(24),
                     child: ListTile(
-                      title: RaisedButton(
-                        color: Colors.white,
-                        textColor: Theme.of(context).accentColor,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            side: BorderSide(
-                                color: Theme.of(context).accentColor)),
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      title: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Theme.of(context).colorScheme.secondary,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              side: BorderSide(
+                                  color: Theme.of(context).colorScheme.secondary)),
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        ),
                         onPressed: () async {
                           await authenticate();
                         },
@@ -117,12 +113,12 @@ class _LockScreenState extends State<LockScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Padding(
-                              padding: EdgeInsets.only(left: 5),
+                              padding: const EdgeInsets.only(left: 5),
                               child: Text(
                                 "Unlock NullPass",
                                 style: TextStyle(
                                   backgroundColor: Colors.transparent,
-                                  color: Theme.of(context).accentColor,
+                                  color: Theme.of(context).colorScheme.secondary,
                                   fontSize: 18,
                                 ),
                               ),

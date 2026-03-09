@@ -12,13 +12,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 
 /* VARIABLES */
-// TODO: Determine a better way to handle the OneSignal Key
-const String OneSignalKey = "<THIS_NEEDS_TO_BE_ADDED_BEFORE_COMPILATION>";
+// TODO: Add your actual OneSignal App ID before building
+// Get it from: https://dashboard.onesignal.com/ -> Your App -> Settings -> Keys & IDs
+// Note: OneSignal v5.x has breaking changes - may need to update initialization in setup.dart
+const String OneSignalKey = "<YOUR_ONESIGNAL_APP_ID_HERE>";
 
 // A common variable for the internal notification system
-np.NotificationManager notify;
+late np.NotificationManager notify;
 
-SharedPreferences sharedPrefs;
+late SharedPreferences sharedPrefs;
 const String AuthOnLoadPrefKey = 'AuthenticateOnAppLoad';
 const String AuthTimeoutSecondsPrefKey = 'AutenticationTimeoutSeconds';
 const String SecretLengthPrefKey = 'SecretLength';
@@ -54,20 +56,19 @@ bool isTrue(dynamic value) {
 }
 
 List<Secret> secretsListFromJsonString(String jsonBlob) {
-  List<Secret> secretList;
+  List<Secret>? secretList;
   var decoded = jsonDecode(jsonBlob);
 
   try {
     var jsonList = decoded as List;
-    secretList = jsonList != null
-        ? jsonList.map((i) => Secret.fromJson(i)).toList()
-        : null;
-    // secretList = jsonList.map((i) => Secret.fromJson(i)).toList();
-  } catch (e) {}
+    secretList = jsonList.map((i) => Secret.fromJson(i)).toList();
+  } catch (e) {
+    secretList = null;
+  }
   if (secretList == null) {
     secretList = <Secret>[];
     var jsonMap = decoded as Map;
-    jsonMap.forEach((k, v) => secretList.add(Secret.fromJson(v)));
+    jsonMap.forEach((k, v) => secretList!.add(Secret.fromJson(v)));
   }
 
   return secretList;
@@ -82,8 +83,9 @@ List<Secret> secretsListFromJsonString(String jsonBlob) {
 
 void showSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String text,
     {bool vibrate = true, int vibrateDuration = 5}) async {
-  scaffoldKey.currentState.showSnackBar(
-      SnackBar(content: Text(text), duration: Duration(milliseconds: 1000)));
+  final messenger = ScaffoldMessenger.of(scaffoldKey.currentContext!);
+  messenger.showSnackBar(
+      SnackBar(content: Text(text), duration: const Duration(milliseconds: 1000)));
   var hasVibrator = await Vibration.hasVibrator();
   if (vibrate && hasVibrator) {
     // if (Vibration.hasVibrator())
@@ -98,11 +100,11 @@ String base64DecodeString(String input) => utf8.decode(base64.decode(input));
 String stringListToString(List<String> stringList) {
   var str = "[";
 
-  stringList.forEach((s) {
+  for (var s in stringList) {
     str = "$str\"$s\",";
-  });
+  }
 
-  if (stringList.length > 0) {
+  if (stringList.isNotEmpty) {
     str = str.substring(0, str.length - 1);
   }
 

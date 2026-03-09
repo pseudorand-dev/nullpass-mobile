@@ -25,14 +25,14 @@ class Notification {
   Notification(
     this.notificationType, {
     dynamic data,
-    this.parts,
-    this.position,
-    this.deviceID,
-    this.notificationID,
-  }) : this.data = data;
+    required this.parts,
+    required this.position,
+    required this.deviceID,
+    required this.notificationID,
+  }) : data = data;
 
   Map<String, dynamic> toJson() => {
-        _TYPE_KEY: notificationTypeToString(this.notificationType),
+        _TYPE_KEY: notificationTypeToString(notificationType),
         _DATA_KEY: data,
         _PARTS_KEY: parts ?? 1,
         _POSITION_KEY: position ?? 1,
@@ -82,7 +82,7 @@ class Notification {
         notificationID: nid);
   }
 
-  static Notification fromMap(Map<String, dynamic> input) {
+  static Notification? fromMap(Map<String, dynamic>? input) {
     if (input == null) return null;
 
     var nType = notificationTypeFromString(input[_TYPE_KEY]);
@@ -105,17 +105,17 @@ class Notification {
 
   Map toMap() {
     return <String, dynamic>{
-      _TYPE_KEY: notificationTypeToString(this.notificationType),
-      _DATA_KEY: this.data,
-      _DEVICE_ID_KEY: this.deviceID,
-      _NOTIFICATION_ID_KEY: this.notificationID,
+      _TYPE_KEY: notificationTypeToString(notificationType),
+      _DATA_KEY: data,
+      _DEVICE_ID_KEY: deviceID,
+      _NOTIFICATION_ID_KEY: notificationID,
     };
   }
 
   List<Map> toDataChunks() {
     var msgChunks = <Map<String, dynamic>>[];
 
-    var b64Data = base64.encode(utf8.encode(this.data.toString()));
+    var b64Data = base64.encode(utf8.encode(data.toString()));
     var b64Len = b64Data.length;
     var chunks = (b64Len / _MESSAGE_CHUNK_MAX_SIZE).ceil();
     // var mod = b64Len % _MESSAGE_CHUNK_MAX_SIZE;
@@ -147,12 +147,12 @@ class Notification {
 
   Map<String, dynamic> chunkMap(int totalChunks, int currChunk, String data) =>
       {
-        _TYPE_KEY: notificationTypeToString(this.notificationType),
+        _TYPE_KEY: notificationTypeToString(notificationType),
         _DATA_KEY: data,
         _PARTS_KEY: totalChunks,
         _POSITION_KEY: currChunk,
-        _DEVICE_ID_KEY: this.deviceID,
-        _NOTIFICATION_ID_KEY: this.notificationID,
+        _DEVICE_ID_KEY: deviceID,
+        _NOTIFICATION_ID_KEY: notificationID,
       };
 }
 
